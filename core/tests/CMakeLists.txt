@@ -1,7 +1,5 @@
 include_directories(../)
 
-project(test_me)
-
 # GTest
 enable_testing()
 find_package(GTest REQUIRED)
