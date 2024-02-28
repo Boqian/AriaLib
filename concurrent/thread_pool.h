@@ -8,6 +8,10 @@
 
 namespace aria {
 
+/*
+reference: https://github.com/bshoshany/thread-pool/blob/master/README.md
+*/
+
 class ThreadPool {
  public:
   explicit ThreadPool(size_t n) : m_size(n) {}

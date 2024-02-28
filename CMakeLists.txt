@@ -16,6 +16,7 @@ project ("AriaLib")
 
 add_subdirectory(core)
 add_subdirectory(concurrent)
+add_subdirectory(meta)
 
 # Add source to this project's executable.
 add_executable (AriaLib "AriaLib.cpp" "AriaLib.h")
