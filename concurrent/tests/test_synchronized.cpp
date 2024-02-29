@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 #include <vector>
 #include <queue>
+#include <thread>
 
 using namespace aria;
 
@@ -31,10 +32,24 @@ TEST(test_synchronized, mutex_basic) {
   }
 }
 
-TEST(test_synchronized, try_lock) {
-  auto q = Synchronized<std::queue<int>, std::mutex>();
+TEST(test_synchronized, try_exclusive_lock) {
+  auto q = Synchronized<int, std::mutex>();
   auto lock1 = q.lock();
-  EXPECT_TRUE(lock1.as_lock());
-  auto lock2 = q.try_lock();
-  EXPECT_FALSE(lock2.as_lock());
+  EXPECT_TRUE(lock1.is_locked());
+
+  auto t = std::jthread([&] {
+    auto lock2 = q.try_lock();
+    EXPECT_FALSE(lock2.is_locked());
+  });
+}
+
+TEST(test_synchronized, try_shared_lock) {
+  auto q = Synchronized<std::queue<int>>();
+  auto lock1 = q.rlock();
+  EXPECT_TRUE(lock1.is_locked());
+
+  auto t = std::jthread([&] {
+    auto lock2 = q.try_rlock();
+    EXPECT_TRUE(lock2.is_locked());
+  });
 }

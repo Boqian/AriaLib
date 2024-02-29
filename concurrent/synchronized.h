@@ -8,23 +8,21 @@ a simple implementation of folly::Synchronized
 https://github.com/facebook/folly/blob/main/folly/docs/Synchronized.md
 */
 
-
-
 template <class T, class LockType>
 class LockedPtr {
  public:
-  LockedPtr(T* a_ptr, LockType::mutex_type& mut, bool try_to_lock = false)
+  using mutex_type = LockType::mutex_type;
+  LockedPtr(T* a_ptr, mutex_type& mut, bool try_to_lock = false)
       : ptr(a_ptr),
-        lock(try_to_lock ? LockType(mut, std::try_to_lock_t()) : LockType(mut)) {}
+        lock(try_to_lock ? LockType(mut, std::try_to_lock)
+                         : LockType(mut)) {}
   ~LockedPtr() = default;
- 
-  T* operator->() noexcept {
-    return ptr;
-  }
- 
-  const T* operator->() const noexcept {
-    return ptr;
-  }
+
+  T* operator->() noexcept { return ptr; }
+
+  const T* operator->() const noexcept { return ptr; }
+
+  bool is_locked() const { return lock.owns_lock(); }
 
   void unlock() { lock.unlock(); }
 
