@@ -5,7 +5,7 @@
 
 using namespace aria;
 
-TEST(test_synchronized, vector) {
+TEST(test_synchronized, shared_mutex_basic) {
   auto v = Synchronized<std::vector<int>>();
   {
     auto wl = v.wlock();
@@ -17,7 +17,7 @@ TEST(test_synchronized, vector) {
   }
 }
 
-TEST(test_synchronized, mutex) {
+TEST(test_synchronized, mutex_basic) {
   auto q = Synchronized<std::queue<int>, std::mutex>();
   {
     auto wl = q.lock();
@@ -29,4 +29,12 @@ TEST(test_synchronized, mutex) {
     EXPECT_EQ(rl->size(), 1);
     EXPECT_EQ(rl->front(), 124);
   }
+}
+
+TEST(test_synchronized, try_lock) {
+  auto q = Synchronized<std::queue<int>, std::mutex>();
+  auto lock1 = q.lock();
+  EXPECT_TRUE(lock1.as_lock());
+  auto lock2 = q.try_lock();
+  EXPECT_FALSE(lock2.as_lock());
 }

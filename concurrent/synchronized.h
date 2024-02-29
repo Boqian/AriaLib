@@ -13,8 +13,9 @@ https://github.com/facebook/folly/blob/main/folly/docs/Synchronized.md
 template <class T, class LockType>
 class LockedPtr {
  public:
-  LockedPtr(T* a_ptr, LockType::mutex_type& mut)
-      : ptr(a_ptr), lock(mut) {  }
+  LockedPtr(T* a_ptr, LockType::mutex_type& mut, bool try_to_lock = false)
+      : ptr(a_ptr),
+        lock(try_to_lock ? LockType(mut, std::try_to_lock_t()) : LockType(mut)) {}
   ~LockedPtr() = default;
  
   T* operator->() noexcept {
@@ -36,7 +37,8 @@ class LockedPtr {
 };
 
 template <class T, class TMutex> 
-class SynchronizedBase {};
+class SynchronizedBase {
+};
 
 template <class T>
 class SynchronizedBase<T, std::shared_mutex> {
@@ -51,8 +53,8 @@ class SynchronizedBase<T, std::shared_mutex> {
 
   auto wlock() { return wlocked_ptr_type(&obj, mut); }
   auto rlock() { return rlocked_ptr_type(&obj, mut); }
-  // auto try_wlock() { return WlockPtr(&obj, mut, true); }
-  // auto try_rlock() { return RlockPtr(&obj, mut, false); }
+  auto try_wlock() { return wlocked_ptr_type(&obj, mut, true); }
+  auto try_rlock() { return rlocked_ptr_type(&obj, mut, false); }
 
  private:
   mutex_type mut;
@@ -68,6 +70,7 @@ class SynchronizedBase<T, std::mutex> {
   SynchronizedBase() : obj{} {}
 
   auto lock() { return locked_ptr_type(&obj, mut); }
+  auto try_lock() { return locked_ptr_type(&obj, mut, true); }
 
 private:
   mutex_type mut;
