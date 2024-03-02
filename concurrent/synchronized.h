@@ -19,11 +19,12 @@ class LockedPtr {
   ~LockedPtr() = default;
 
   T* operator->() noexcept { return ptr; }
-
   const T* operator->() const noexcept { return ptr; }
 
-  bool is_locked() const { return lock.owns_lock(); }
+  T& operator*() { return *ptr; }
+  const T& operator*() const { return *ptr; }
 
+  bool is_locked() const { return lock.owns_lock(); }
   void unlock() { lock.unlock(); }
 
   LockType& as_lock() noexcept { return lock; }

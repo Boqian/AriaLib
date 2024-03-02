@@ -19,46 +19,66 @@ class ThreadPool {
  public:
   explicit ThreadPool(size_t n) : m_size(n) {}
 
+  ThreadPool(const ThreadPool&) = delete;
+  ThreadPool& operator=(const ThreadPool&) = delete;
+
   void start() {
     for (int i = 0; i < m_size; i++) {
-      m_pool.emplace_back([&] { deque_task(); });
+      m_pool.emplace_back([&] { worker(); });
     }
 
-    m_is_running = true;
+    m_stopped = false;
   }
 
-  void pause() { m_is_running = false; }
+  //wait for running task done
+  void wait() {
 
-  void unpause() { m_is_running = true; }
+  }
 
-  bool is_paused() const { return m_is_running; }
+  void stop() {
+    m_stopped = true;
+    m_tasks_cv.notify_all();
+  }
+
+  void pause() { m_paused = true; }
+
+  void unpause() { m_paused = false; }
+
+  bool is_running() const { return !m_stopped; }
 
   template <typename F>
   void detach_task(F&& task) {
     auto lock = m_tasks.wlock();
-    if (m_is_running) lock->push(std::move(task));
+    if (!m_stopped) lock->push(std::move(task));
+  }
+
+  void purge() {
+    auto lock = m_tasks.wlock();
+    while (!lock->empty()) lock->pop();
   }
 
  private:
   using TTask = std::function<void()>;
 
-  void deque_task() {
-    while (m_is_running) {
+  void worker() {
+    while (!m_stopped) {
       auto lock = m_tasks.wlock();
-      m_cv.wait(lock.as_lock(), [&]() { return !lock->empty(); });
-      auto task = std::move(lock->front());
+      m_tasks_cv.wait(lock.as_lock(), [&]() { return m_stopped || (!m_paused && !lock->empty()); });
+      if (m_stopped) break;
+      auto task{std::move(lock->front())};
       lock->pop();
       lock.unlock();
-      m_cv.notify_all();
+      m_tasks_cv.notify_one();
       task();
     }
   }
 
   size_t m_size;
   Synchronized<std::queue<TTask>> m_tasks;
-  std::vector<std::thread> m_pool;
-  std::atomic_bool m_is_running = false;
-  std::condition_variable_any m_cv;
+  std::vector<std::jthread> m_pool;
+  std::atomic_bool m_stopped = true;
+  std::atomic_bool m_paused = false;
+  std::condition_variable_any m_tasks_cv;
 };
 
 }  // namespace aria

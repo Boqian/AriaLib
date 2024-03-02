@@ -5,6 +5,7 @@
 
 #directories
 vcpkg_installed/
+Testing/
 
 # User-specific files
 *.rsuser

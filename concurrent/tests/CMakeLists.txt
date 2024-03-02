@@ -4,13 +4,11 @@ include_directories(../)
 find_package(GTest REQUIRED)
 include(GoogleTest)
 
-add_executable(
-  test_synchronized
-  test_synchronized.cpp
-)
-target_link_libraries(
-  test_synchronized
-  GTest::gtest_main GTest::GTest concurrent
-)
+file(GLOB TEST_SOURCES "test_*.cpp")
 
-gtest_discover_tests(test_synchronized)
+foreach(TEST_SOURCE ${TEST_SOURCES})
+    get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_SOURCE})
+    target_link_libraries(${TEST_NAME} GTest::gtest_main GTest::GTest)
+    gtest_discover_tests(${TEST_NAME})
+endforeach()
