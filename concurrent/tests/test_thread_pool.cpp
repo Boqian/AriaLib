@@ -14,7 +14,7 @@ TEST(test_thread_pool, basic) { ThreadPool tp(4);
     tp.detach_task([&, i] { f(i); });
   }
 
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   auto result = *st.rlock();
   EXPECT_EQ(result, std::set<int>({0, 1, 2, 3, 4}));
 

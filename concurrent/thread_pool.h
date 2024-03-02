@@ -22,6 +22,10 @@ class ThreadPool {
   ThreadPool(const ThreadPool&) = delete;
   ThreadPool& operator=(const ThreadPool&) = delete;
 
+  ~ThreadPool() { 
+      stop();
+  }
+
   void start() {
     for (int i = 0; i < m_size; i++) {
       m_pool.emplace_back([&] { worker(); });
@@ -30,13 +34,12 @@ class ThreadPool {
     m_stopped = false;
   }
 
-  //wait for running task done
-  void wait() {
-
-  }
-
   void stop() {
-    m_stopped = true;
+    {
+      std::lock_guard lg(tasks_mutex);
+      if (m_stopped) return;
+      m_stopped = true;
+    }
     m_tasks_cv.notify_all();
   }
 
@@ -73,14 +76,17 @@ class ThreadPool {
       if (m_stopped) break;
       auto task{std::move(m_tasks.front())};
       m_tasks.pop();
+      m_num_running_tasks++;
       lock.unlock();
-      m_tasks_cv.notify_all();
+      m_tasks_cv.notify_one();
       task();
       lock.lock();
+      m_num_running_tasks--;
     }
   }
 
   size_t m_size;
+  size_t m_num_running_tasks = 0;
   std::queue<TTask> m_tasks;
   std::vector<std::jthread> m_pool;
   std::atomic_bool m_stopped = true;
