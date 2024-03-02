@@ -40,45 +40,53 @@ class ThreadPool {
     m_tasks_cv.notify_all();
   }
 
-  void pause() { m_paused = true; }
+  void pause() {
+    std::lock_guard lg(tasks_mutex);
+    m_paused = true;
+  }
 
-  void unpause() { m_paused = false; }
+  void unpause() {
+    std::lock_guard lg(tasks_mutex);
+    m_paused = false;
+  }
 
   bool is_running() const { return !m_stopped; }
 
   template <typename F>
   void detach_task(F&& task) {
-    auto lock = m_tasks.wlock();
-    if (!m_stopped) lock->push(std::move(task));
+    std::lock_guard lg(tasks_mutex);
+    if (!m_stopped) m_tasks.push(std::move(task));
   }
 
   void purge() {
-    auto lock = m_tasks.wlock();
-    while (!lock->empty()) lock->pop();
+    std::lock_guard lg(tasks_mutex);
+    while (!m_tasks.empty()) m_tasks.pop();
   }
 
  private:
   using TTask = std::function<void()>;
 
-  void worker() {
-    while (!m_stopped) {
-      auto lock = m_tasks.wlock();
-      m_tasks_cv.wait(lock.as_lock(), [&]() { return m_stopped || (!m_paused && !lock->empty()); });
+  void worker() {    
+    std::unique_lock lock(tasks_mutex);
+    while (true) {
+      m_tasks_cv.wait(lock, [&]() { return m_stopped || (!m_paused && !m_tasks.empty()); });
       if (m_stopped) break;
-      auto task{std::move(lock->front())};
-      lock->pop();
+      auto task{std::move(m_tasks.front())};
+      m_tasks.pop();
       lock.unlock();
-      m_tasks_cv.notify_one();
+      m_tasks_cv.notify_all();
       task();
+      lock.lock();
     }
   }
 
   size_t m_size;
-  Synchronized<std::queue<TTask>> m_tasks;
+  std::queue<TTask> m_tasks;
   std::vector<std::jthread> m_pool;
   std::atomic_bool m_stopped = true;
   std::atomic_bool m_paused = false;
   std::condition_variable_any m_tasks_cv;
+  std::mutex tasks_mutex;
 };
 
 }  // namespace aria
