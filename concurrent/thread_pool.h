@@ -25,11 +25,14 @@ class ThreadPool {
   ThreadPool& operator=(const ThreadPool&) = delete;
 
   void start() {
-    for (int i = 0; i < m_size; i++) {
-      m_pool.emplace_back([&] { worker(); });
+    {
+      std::lock_guard lg(tasks_mutex);
+      m_stopped = false;
+      for (int i = 0; i < m_size; i++) {
+        m_pool.emplace_back([&] { worker(); });
+      }
     }
-
-    m_stopped = false;
+    m_tasks_cv.notify_all();
   }
 
   void stop() {
@@ -56,10 +59,8 @@ class ThreadPool {
   template <typename F>
   void detach_task(F&& task) {
     std::lock_guard lg(tasks_mutex);
-    if (!m_stopped) {
-      m_tasks.push(std::forward<F>(task));
-      m_tasks_cv.notify_one();
-    }
+    m_tasks.push(std::forward<F>(task));
+    m_tasks_cv.notify_one();
   }
 
   template <typename F, typename R = std::invoke_result_t<std::decay_t<F>>>
@@ -93,6 +94,7 @@ class ThreadPool {
 
   void worker() {    
     std::unique_lock lock(tasks_mutex);
+    m_num_active_threads++;
     while (true) {
       m_tasks_cv.wait(lock, [&]() { return m_stopped || (!m_paused && !m_tasks.empty()); });
       if (m_stopped) break;
@@ -105,16 +107,18 @@ class ThreadPool {
       lock.lock();
       m_num_running_tasks--;
     }
+    m_num_active_threads--;
   }
 
   size_t m_size;
   size_t m_num_running_tasks = 0;
+  size_t m_num_active_threads = 0; 
   std::queue<TTask> m_tasks;
-  std::vector<std::jthread> m_pool;
   std::atomic_bool m_stopped = true;
   std::atomic_bool m_paused = false;
   std::condition_variable_any m_tasks_cv;
   std::mutex tasks_mutex;
+  std::vector<std::jthread> m_pool;
 };
 
 }  // namespace aria

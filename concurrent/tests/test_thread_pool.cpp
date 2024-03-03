@@ -24,9 +24,16 @@ TEST(test_thread_pool, basic) {
 
 TEST(test_thread_pool, future) {
   ThreadPool tp(4);
-  tp.start();
   auto fut = tp.submit_task([] { return 123; });
+  tp.start();
   auto x = fut.get();
   EXPECT_EQ(x, 123);
+  tp.stop();
+}
+
+TEST(test_thread_pool, start_stop) {
+  ThreadPool tp(4);
+  tp.detach_task([] { });
+  tp.start();
   tp.stop();
 }
