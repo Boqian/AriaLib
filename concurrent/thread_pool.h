@@ -72,7 +72,7 @@ class ThreadPool {
           task();
           task_promise->set_value();
         } else {
-          task_promise->set_value(123);
+          task_promise->set_value(task());
         }
       } catch (...) {
         try {
