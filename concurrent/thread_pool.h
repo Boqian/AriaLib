@@ -6,8 +6,10 @@
 #include <queue>
 #include <thread>
 #include <vector>
+#include <future>
 
 #include "synchronized.h"
+#include <iostream>
 
 namespace aria {
 
@@ -21,10 +23,6 @@ class ThreadPool {
 
   ThreadPool(const ThreadPool&) = delete;
   ThreadPool& operator=(const ThreadPool&) = delete;
-
-  ~ThreadPool() { 
-      stop();
-  }
 
   void start() {
     for (int i = 0; i < m_size; i++) {
@@ -58,7 +56,31 @@ class ThreadPool {
   template <typename F>
   void detach_task(F&& task) {
     std::lock_guard lg(tasks_mutex);
-    if (!m_stopped) m_tasks.push(std::move(task));
+    if (!m_stopped) {
+      m_tasks.push(std::forward<F>(task));
+      m_tasks_cv.notify_one();
+    }
+  }
+
+  template <typename F, typename R = std::invoke_result_t<std::decay_t<F>>>
+  [[nodiscard]] std::future<R> submit_task(F&& task) {
+    auto task_promise = std::make_shared<std::promise<R>>();
+    detach_task([task = std::forward<F>(task), task_promise] {
+      try {
+        if constexpr (std::is_void_v<R>) {
+          task();
+          task_promise->set_value();
+        } else {
+          task_promise->set_value(123);
+        }
+      } catch (...) {
+        try {
+          task_promise->set_exception(std::current_exception());
+        } catch (...) {
+        }
+      }
+    });
+    return task_promise->get_future();
   }
 
   void purge() {
