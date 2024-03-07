@@ -28,7 +28,7 @@
         },
         "cacheVariables": {
           "CMAKE_BUILD_TYPE": "Debug",
-          "CMAKE_CXX_FLAGS": "/ZI"
+          "CMAKE_CXX_FLAGS": "/Zi"
         }
       },
         {

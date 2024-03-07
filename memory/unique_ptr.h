@@ -1,46 +1,83 @@
 #pragma once
-namespace aria {
+#include <utility> //std::forward
+#include <memory> //std::default_delete
 
+namespace aria {
 
 template <class T, class Deleter = std::default_delete<T>>
 class unique_ptr {
-public:
-using element_type = T;
-using pointer = T*;
-using deleter_type = Deleter;
+ public:
+  using element_type = T;
+  using pointer = T*;
+  using deleter_type = Deleter;
 
-  unique_ptr(T* ptr) : m_ptr(ptr) {}
+  unique_ptr() : m_ptr(nullptr), m_deleter() {}
+
+  unique_ptr(T* ptr) : m_ptr(ptr), m_deleter() {}
 
   unique_ptr(T* ptr, Deleter&& deleter)
-      : m_ptr(ptr),
-        m_deleter(std::forward<Deleter>(deleter)){}
+      : m_ptr(ptr), m_deleter(std::forward<Deleter>(deleter)) {}
 
-  ~unique_ptr() { reset();
-  }
+  ~unique_ptr() { reset(); }
 
   unique_ptr(const unique_ptr&) = delete;
-  unique_ptr& operator=(const& unique_ptr) noexcept = delete;  
+  unique_ptr& operator=(const unique_ptr&) noexcept = delete;
 
-  unique_ptr& operaor = (std::nullptr_t) {
+  unique_ptr& operator=(std::nullptr_t) noexcept {
     reset();
-    return m_ptr;
+    return *this;
   }
 
-  unique_ptr(unique_ptr&& ptr) noexcept {
-
+  unique_ptr& operator=(unique_ptr&& rhs) noexcept {
+    swap(rhs);
+    rhs.reset();
+    return *this;
   }
 
-  void reset() {
+  unique_ptr(unique_ptr&& rhs) noexcept {
+    swap(rhs);
+    rhs.reset();
+  }
+
+  void reset() noexcept {
     if (m_ptr) {
       m_deleter(m_ptr);
       m_ptr = nullptr;
     }
   }
 
-private:
-  T* m_ptr;
- Deleter m_deleter;
+  T* get() const noexcept { return m_ptr; }
 
+  const Deleter& get_deleter() const noexcept { return m_deleter; }
+  Deleter& get_deleter() noexcept { return m_deleter; }
+
+  operator bool() const noexcept { return m_ptr; }
+
+  T* operator->() noexcept { return m_ptr; }
+  const T* operator->() const noexcept { return m_ptr; }
+
+  T& operator*() { return *m_ptr; }
+  const T& operator*() const { return *m_ptr; }
+
+  void swap(unique_ptr& rhs) noexcept {
+    std::swap(m_ptr, rhs.m_ptr);
+    std::swap(m_deleter, rhs.m_deleter);
+  }
+
+  T* release() noexcept {
+    auto p = m_ptr;
+    m_ptr = nullptr;
+    return p;
+  }
+
+ private:
+  T* m_ptr;
+  Deleter m_deleter;
 };
+
+template<class T, class... Args>
+unique_ptr<T> make_unique(Args&&... args) {
+  return unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 }  // namespace aria
