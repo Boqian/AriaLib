@@ -6,3 +6,4 @@ add_library(meta ${SOURCES})
 
 set_target_properties(meta PROPERTIES LINKER_LANGUAGE CXX)
 
+add_subdirectory(tests)

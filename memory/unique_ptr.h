@@ -13,10 +13,21 @@ class unique_ptr {
 
   unique_ptr() : m_ptr(nullptr), m_deleter() {}
 
-  unique_ptr(T* ptr) : m_ptr(ptr), m_deleter() {}
+  explicit unique_ptr(T* ptr) : m_ptr(ptr), m_deleter() {}
 
   unique_ptr(T* ptr, Deleter&& deleter)
       : m_ptr(ptr), m_deleter(std::forward<Deleter>(deleter)) {}
+
+  unique_ptr(unique_ptr&& rhs) noexcept {
+    swap(rhs);
+    rhs.reset();
+  }
+
+  //template<class U, class E>
+  //unique_ptr(unique_ptr<U, E>&& u) requires {
+
+  //}
+
 
   ~unique_ptr() { reset(); }
 
@@ -32,11 +43,6 @@ class unique_ptr {
     swap(rhs);
     rhs.reset();
     return *this;
-  }
-
-  unique_ptr(unique_ptr&& rhs) noexcept {
-    swap(rhs);
-    rhs.reset();
   }
 
   void reset() noexcept {

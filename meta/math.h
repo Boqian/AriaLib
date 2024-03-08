@@ -1,7 +1,5 @@
 #pragma once
 
-#include <type_traits>
-
 namespace aria {
 namespace meta {
 // compile time gcd
