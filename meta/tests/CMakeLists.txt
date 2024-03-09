@@ -1,4 +1,3 @@
-include_directories(../)
 
 # GTest
 find_package(GTest REQUIRED)

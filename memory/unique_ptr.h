@@ -1,6 +1,7 @@
 #pragma once
 #include <utility> //std::forward
 #include <memory> //std::default_delete
+#include "concepts.h"
 
 namespace aria {
 
@@ -23,9 +24,12 @@ class unique_ptr {
     rhs.reset();
   }
 
+  //todo
   //template<class U, class E>
-  //unique_ptr(unique_ptr<U, E>&& u) requires {
-
+  //unique_ptr(unique_ptr<U, E>&& rhs) requires convertable_to<U, T> {
+  //  auto prev = std::move(this);
+  //  m_ptr = rhs.m_ptr;
+  //  m_deleter = rhs.m_deleter;
   //}
 
 
