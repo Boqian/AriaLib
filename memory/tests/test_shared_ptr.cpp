@@ -40,3 +40,9 @@ TEST(test_shared_ptr, reset) {
   EXPECT_FALSE(p);
   EXPECT_EQ(p.use_count(), 0);
 }
+
+TEST(test_shared_ptr, make_shard) {
+  auto p = make_shared<std::pair<int, double>>(1, 1.3);
+  EXPECT_EQ(p->first, 1);
+  EXPECT_DOUBLE_EQ(p->second, 1.3);
+}

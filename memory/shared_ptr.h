@@ -60,6 +60,7 @@ class shared_ptr {
   operator bool() const noexcept { return m_ptr; }
 
   long use_count() const noexcept { return m_shared ? m_shared->m_counter.load() : 0; }
+  bool unique() const noexcept { return use_count() == 1; }
 
   void reset() noexcept{
     if (m_shared) {
@@ -77,10 +78,13 @@ class shared_ptr {
   }
 
  private:
-
-
   T* m_ptr = nullptr;
   details::shared* m_shared = nullptr;
 };
+
+template<class T, class... Args> 
+shared_ptr<T> make_shared(Args&&... args) {
+  return shared_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 }  // namespace aria
