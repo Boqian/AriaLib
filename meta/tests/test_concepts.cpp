@@ -1,9 +1,19 @@
 #include "../concepts.h"
 
 void test_concepts() {
-  static_assert(aria::same_as<int, int>);
-  static_assert(!aria::same_as<int, double>);
+  using namespace aria;
+  static_assert(same_as<int, int>);
+  static_assert(!same_as<int, double>);
 
+  struct Base {};
+  struct Derived : Base {
+    int x;
+  };
+
+  static_assert(convertible_to<int, double>);
+  static_assert(!convertible_to<int, Base>);
+  static_assert(convertible_to<Derived, Base>);
+  static_assert(!convertible_to<Base, Derived>);
 
 
 }
