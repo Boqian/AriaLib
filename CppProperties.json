@@ -11,7 +11,7 @@
         "${workspaceRoot}\\**"
       ],
       "intelliSenseMode": "windows-msvc-x64",
-      "compilerSwitches": "/std:c++20"
+      "compilerSwitches": "/std:c++latest"
     },
     {
       "inheritEnvironments": [
@@ -24,7 +24,7 @@
         "${workspaceRoot}\\**"
       ],
       "intelliSenseMode": "windows-msvc-x64",
-      "compilerSwitches": "/std:c++20"
+      "compilerSwitches": "/std:c++latest"
     }
   ],
   "version": 4
