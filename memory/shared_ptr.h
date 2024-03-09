@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
 #include <functional>
-
+#include <utility>
 #include "concepts.h"
 
 namespace aria {
@@ -72,12 +72,11 @@ class shared_ptr {
   }
 
   void swap(shared_ptr& rhs) noexcept {
-    swap(m_shared, rhs.m_shared);
-    swap(m_ptr, rhs.ptr);
+    std::swap(m_shared, rhs.m_shared);
+    std::swap(m_ptr, rhs.m_ptr);
   }
 
  private:
-  
 
 
   T* m_ptr = nullptr;

@@ -11,19 +11,32 @@ TEST(test_shared_ptr, empty) {
   }
 }
 
-TEST(test_shared_ptr, construct) {
+TEST(test_shared_ptr, copy_construct) {
+  auto p = shared_ptr<int>(new int(100));
+  EXPECT_TRUE(p);
+  EXPECT_EQ(p.use_count(), 1);
+  EXPECT_EQ(*p, 100);
   {
-    auto p = shared_ptr<int>(new int(100));
-    EXPECT_TRUE(p);
-    EXPECT_EQ(p.use_count(), 1);
-    EXPECT_EQ(*p, 100);
-    {
-      auto q = p;
-      EXPECT_TRUE(q);
-      EXPECT_EQ(p.use_count(), 2);
-      EXPECT_EQ(q.use_count(), 2);
-      EXPECT_EQ(*q, 100);
-    }
-    EXPECT_EQ(p.use_count(), 1);
+    auto q = p;
+    EXPECT_TRUE(q);
+    EXPECT_EQ(p.use_count(), 2);
+    EXPECT_EQ(q.use_count(), 2);
+    EXPECT_EQ(*q, 100);
   }
+  EXPECT_EQ(p.use_count(), 1);
+}
+
+TEST(test_shared_ptr, swap) {
+  auto p = shared_ptr<int>(new int(100));
+  auto q = shared_ptr<int>(new int(33));
+  p.swap(q);
+  EXPECT_EQ(*p, 33);
+  EXPECT_EQ(*q, 100);
+}
+
+TEST(test_shared_ptr, reset) {
+  auto p = shared_ptr<int>(new int(100));
+  p.reset();
+  EXPECT_FALSE(p);
+  EXPECT_EQ(p.use_count(), 0);
 }
