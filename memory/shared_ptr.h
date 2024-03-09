@@ -40,7 +40,7 @@ class shared_ptr {
 
   shared_ptr(shared_ptr&& rhs) { 
     swap(rhs);
-    rhs.swap(shared_ptr());
+    shared_ptr().swap(rhs);
   }
 
   shared_ptr(const shared_ptr& rhs) {

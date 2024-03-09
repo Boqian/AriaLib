@@ -42,7 +42,34 @@ TEST(test_shared_ptr, reset) {
 }
 
 TEST(test_shared_ptr, make_shard) {
-  auto p = make_shared<std::pair<int, double>>(1, 1.3);
-  EXPECT_EQ(p->first, 1);
-  EXPECT_DOUBLE_EQ(p->second, 1.3);
+  {
+    auto p = make_shared<std::pair<int, double>>(1, 1.3);
+    EXPECT_EQ(p->first, 1);
+    EXPECT_DOUBLE_EQ(p->second, 1.3);
+  }
+  {
+    auto p = make_shared<int>();
+    EXPECT_EQ(*p, 0);
+  }
+}
+
+TEST(test_shared_ptr, move_construct) {
+    {
+    auto q = make_shared<int>(100);
+    shared_ptr<int> p(std::move(q));
+    EXPECT_FALSE(q);
+    EXPECT_EQ(*p, 100);
+    }
+    { auto q1 = make_shared<int>(100);
+      auto q2 = q1;
+      auto p = std::move(q1);
+      EXPECT_FALSE(q1);
+      EXPECT_EQ(*p, 100);
+      EXPECT_EQ(*q2, 100);
+      EXPECT_EQ(p.use_count(), 2);
+      EXPECT_EQ(q2.use_count(), 2);
+      q2.reset();
+      EXPECT_FALSE(q2);
+      EXPECT_EQ(p.use_count(), 1);
+    }
 }
