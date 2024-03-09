@@ -14,6 +14,8 @@ class shared {
    shared(Deleter&& deleter)
        : m_deleter(std::forward<Deleter>(deleter)), m_counter(1) {}
 
+   ~shared() { m_deleter(); }
+
   template <class Y>
    static shared* create(Y* ptr) {
      return new shared([ptr]() { delete ptr; });
@@ -43,10 +45,16 @@ class shared_ptr {
     shared_ptr().swap(rhs);
   }
 
-  shared_ptr(const shared_ptr& rhs) {
+  shared_ptr(const shared_ptr& rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) {
+    if (m_shared) m_shared->m_counter++;
+  }
+
+  shared_ptr& operator=(const shared_ptr& rhs) noexcept {
+    reset();
     m_ptr = rhs.m_ptr;
     m_shared = rhs.m_shared;
     if (m_shared) m_shared->m_counter++;
+    return *this;
   }
 
   T* get() { return m_ptr; }

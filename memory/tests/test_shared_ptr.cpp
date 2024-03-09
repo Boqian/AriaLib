@@ -73,3 +73,11 @@ TEST(test_shared_ptr, move_construct) {
       EXPECT_EQ(p.use_count(), 1);
     }
 }
+
+TEST(test_shared_ptr, assign) {
+  auto q = make_shared<int>(100);
+  shared_ptr<int> p;
+  p = q;
+  EXPECT_EQ(*p, 100);
+  EXPECT_EQ(p.use_count(), 2);
+}
