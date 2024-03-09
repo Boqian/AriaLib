@@ -75,9 +75,21 @@ TEST(test_shared_ptr, move_construct) {
 }
 
 TEST(test_shared_ptr, assign) {
-  auto q = make_shared<int>(100);
-  shared_ptr<int> p;
-  p = q;
-  EXPECT_EQ(*p, 100);
-  EXPECT_EQ(p.use_count(), 2);
+  {
+    auto q = make_shared<int>(100);
+    shared_ptr<int> p;
+    p = q;
+    EXPECT_EQ(*p, 100);
+    EXPECT_EQ(*q, 100);
+    EXPECT_EQ(p.use_count(), 2);
+    EXPECT_EQ(q.use_count(), 2);
+  }
+  {
+    auto q = make_shared<int>(100);
+    shared_ptr<int> p;
+    p = std::move(q);
+    EXPECT_EQ(*p, 100);
+    EXPECT_EQ(p.use_count(), 1);
+    EXPECT_FALSE(q);
+  }
 }

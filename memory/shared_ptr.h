@@ -57,6 +57,12 @@ class shared_ptr {
     return *this;
   }
 
+  shared_ptr& operator=(shared_ptr&& rhs) noexcept {
+    swap(rhs);
+    shared_ptr().swap(rhs);
+    return *this;
+  }
+
   T* get() { return m_ptr; }
   const T* get() const { return m_ptr; }
 
