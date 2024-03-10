@@ -1,8 +1,28 @@
 #include "shared_ptr.h"
 #include "gtest/gtest.h"
 #include <utility>
-
 using namespace aria;
+
+struct Counter {
+  static inline int n1 = 0;
+  static inline int n2 = 0;
+  static void init() {
+    n1 = 0;
+    n2 = 0;
+  }
+};
+
+struct Base {
+  Base() = default;
+  virtual ~Base() { Counter::n1++; }
+};
+
+struct Derived : Base {
+  Derived() = default;
+  ~Derived() { Counter::n2++; }
+};
+
+
 TEST(test_shared_ptr, empty) {
   {
     auto p = shared_ptr<int>();
@@ -91,5 +111,35 @@ TEST(test_shared_ptr, assign) {
     EXPECT_EQ(*p, 100);
     EXPECT_EQ(p.use_count(), 1);
     EXPECT_FALSE(q);
+  }
+}
+
+TEST(test_shared_ptr, destructor) {
+  {
+    Counter::init();
+    auto p = make_shared<Base>();
+    EXPECT_EQ(Counter::n1, 0);
+  }
+  EXPECT_EQ(Counter::n1, 1);
+  {
+    Counter::init();
+    auto p = make_shared<Base>();
+    EXPECT_EQ(Counter::n1, 0);
+    p.reset();
+    EXPECT_EQ(Counter::n1, 1);
+  }
+  EXPECT_EQ(Counter::n1, 1);
+  {
+    Counter::init();
+    auto p = make_shared<Base>();
+    auto q = p;
+    auto r = q;
+    EXPECT_EQ(Counter::n1, 0);
+    r.reset();
+    EXPECT_EQ(Counter::n1, 0);
+    p.reset();
+    EXPECT_EQ(Counter::n1, 0);
+    q.reset();
+    EXPECT_EQ(Counter::n1, 1);
   }
 }
