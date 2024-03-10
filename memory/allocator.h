@@ -7,10 +7,17 @@ namespace aria {
 
 template <class T>
 struct allocator {
-  [[nodiscard]] T* allocate(std::size_t n) {}
+  using size_type = unsigned int;
+  using value_type = T;
+  using pointer = value_type*;
 
-  void deallocate(T* p, std::size_t n) {}
+  allocator() noexcept = default;
 
+  [[nodiscard]] pointer allocate(size_type n) {
+    return reinterpret_cast<pointer>(::operator new(n * sizeof(T)));
+  }
+
+  void deallocate(T* p, size_type n) { ::operator delete(p); }
 };
 
 
