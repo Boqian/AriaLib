@@ -155,3 +155,15 @@ TEST(test_shared_ptr, inheritance) {
     EXPECT_EQ(Counter::n2, 1);
   }
 }
+
+TEST(test_shared_ptr, type_erase) {
+  {
+    Counter::init();
+    shared_ptr<void> p(new Derived());
+    EXPECT_EQ(Counter::n1, 0);
+    EXPECT_EQ(Counter::n2, 0);
+    p.reset();
+    EXPECT_EQ(Counter::n1, 1);
+    EXPECT_EQ(Counter::n2, 1);
+  }
+}

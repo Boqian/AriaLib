@@ -66,9 +66,11 @@ class shared_ptr {
   T* get() { return m_ptr; }
   const T* get() const { return m_ptr; }
 
-  T& operator*() { return *m_ptr;  }
-  const T& operator*() const { return *m_ptr; }
-  T* operator->() { return m_ptr; }
+  const add_lvalue_reference_t<T> operator*() const
+    requires !is_void_t<T>
+  {
+    return *m_ptr;
+  }
   const T* operator->() const { return m_ptr; }
 
   operator bool() const noexcept { return m_ptr; }

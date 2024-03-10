@@ -13,4 +13,7 @@ void test_traits() {
   static_assert(is_convertible_v<int, double>);
   static_assert(!is_convertible_v<int, std::string>);
   static_assert(!is_convertible_v<std::string, int>);
+
+  static_assert(is_same_v<void, add_lvalue_reference_t<void>>);
+  static_assert(is_same_v<int&, add_lvalue_reference_t<int>>);
 }
