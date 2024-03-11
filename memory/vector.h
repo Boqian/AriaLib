@@ -24,15 +24,15 @@ class vector {
   ~vector() { free_and_destruct_all(); }
 
   vector(std::initializer_list<T> init) {
-    add_space(init.size());
-    m_size += init.size();
+    reserve(init.size());
+    m_size = init.size();
     for (size_type i = 0; auto& value : init) {
       construct_at(get(i++), value);
     }
   }
 
   vector(size_type n, const T& value = T()) {
-    add_space(n);
+    reserve(n);
     m_size += n;
     for (int i = 0; i < n; i++) {
       construct_at(get(i), value);
@@ -40,16 +40,16 @@ class vector {
   }
 
   vector(const vector& rhs) {
-    add_space(rhs.capacity());
+    reserve(rhs.capacity());
     m_size = rhs.size();
-    m_capacity = rhs.capacity();
     for (int i = 0; i < m_size; i++) {
       construct_at(get(i), rhs[i]);
     }
   }
 
   void push_back(const T& value) {
-    add_space(1);
+    auto new_cap = new_capacity(1);
+    reserve(new_cap);
     *get(m_size) = value;
     m_size++;
   }
@@ -59,7 +59,12 @@ class vector {
   }
 
   void reserve(size_type new_cap) {
-
+    if (new_cap <= capacity()) return;
+    auto new_ptr = m_alloc.allocate(new_cap);
+    memcpy(new_ptr, m_ptr, m_size * sizeof(T));
+    m_alloc.deallocate(m_ptr, m_capacity);
+    m_capacity = new_cap;
+    m_ptr = new_ptr;
   }
 
   size_type size() const { return m_size; }
@@ -99,17 +104,13 @@ class vector {
     m_alloc.deallocate(m_ptr, m_capacity);
   }
 
-  void add_space(size_type n) {
-    if (m_capacity >= m_size + n) return;
-    auto new_capacity = std::max<size_type>(1, m_capacity); 
-    while (new_capacity < m_size + n) new_capacity *= 2;
-    auto new_ptr = m_alloc.allocate(new_capacity);
-    memcpy(new_ptr, m_ptr, m_size * sizeof(T));
-    m_alloc.deallocate(m_ptr, m_capacity);
-    m_capacity = new_capacity;
-    m_ptr = new_ptr;
+  size_type new_capacity(size_type add_size) { 
+      if (capacity() == 0) return add_size;
+      auto min_capacity = m_size + add_size;
+      auto new_capacity = capacity();
+      while (new_capacity < min_capacity) new_capacity *= 2;
+      return new_capacity;
   }
-
 }; 
 
 }  // namespace aria

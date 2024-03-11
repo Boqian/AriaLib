@@ -18,7 +18,9 @@ TEST(test_vector, base) {
   EXPECT_EQ(v.at(1), 100);
 }
 
-TEST(test_vector, construct) { auto v = vector<int>({1, 2, 3});
+TEST(test_vector, construct) {
+  auto v = vector<int>({1, 2, 3});
+  EXPECT_EQ(v.capacity(), 3);
   EXPECT_EQ(v.size(), 3);
   EXPECT_EQ(v[0], 1);
   EXPECT_EQ(v[1], 2);
