@@ -48,9 +48,15 @@ class vector {
   }
 
   void push_back(const T& value) {
-    auto new_cap = new_capacity(1);
-    reserve(new_cap);
-    *get(m_size) = value;
+    reserve(new_capacity(1));
+    construct_at(get(m_size), value);
+    m_size++;
+  }
+
+  template<class... Args>
+  void emplace_back(Args&& ... args) {
+    reserve(new_capacity(1));
+    aria::construct_at(get(m_size), std::forward<Args>(args)...);
     m_size++;
   }
 

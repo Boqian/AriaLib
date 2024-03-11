@@ -5,6 +5,20 @@
 
 using namespace aria;
 
+struct Counter {
+  static inline int n1 = 0;
+  static inline int n2 = 0;
+  static void init() {
+    n1 = 0;
+    n2 = 0;
+  }
+};
+
+struct A {
+  A() { Counter::n1++; }
+  ~A() { Counter::n2++; }
+};
+
 TEST(test_vector, base) {
   vector<int> v(2, 100);
   EXPECT_EQ(v.size(), 2);
@@ -32,3 +46,13 @@ TEST(test_vector, construct) {
   EXPECT_EQ(u[1], 2);
   EXPECT_EQ(u[2], 3);
 }
+
+TEST(test_vector, emplace_back) {
+  auto v = vector<std::pair<int, double>>();
+  v.emplace_back(3, 1.5);
+  EXPECT_EQ(v.size(), 1);
+  EXPECT_EQ(v[0].first, 3);
+  EXPECT_DOUBLE_EQ(v[0].second, 1.5);
+}
+
+TEST(test_vector, low_level) { int a = 0; }
