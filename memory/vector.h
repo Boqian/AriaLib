@@ -108,10 +108,10 @@ class vector {
   const T* data() const noexcept { return m_ptr; }
 
   void swap(vector& rhs) noexcept {
-    std::swap(m_size, rhs.size());
-    std::swap(m_capacity, rhs.capacity);
+    std::swap(m_size, rhs.m_size);
+    std::swap(m_capacity, rhs.m_capacity);
     std::swap(m_ptr, rhs.m_ptr);
-    std::swap(m_alloc, rhs.alloc);
+    std::swap(m_alloc, rhs.m_alloc);
   }
 
   bool operator==(const vector& rhs) const noexcept {

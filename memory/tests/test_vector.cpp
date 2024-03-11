@@ -64,3 +64,13 @@ TEST(test_vector, compare) {
   EXPECT_NE(v, a);
   EXPECT_NE(v, b);
 }
+
+TEST(test_vector, assign) {
+  auto v = vector<int>({1, 2, 3});
+  auto a = vector<int>({1}), b = a;
+  a = v;
+  EXPECT_EQ(a, v);
+  b = std::move(v);
+  EXPECT_EQ(a, b);
+  EXPECT_EQ(v, vector<int>());
+}
