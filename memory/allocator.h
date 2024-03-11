@@ -1,9 +1,16 @@
 #pragma once
+#include<utility> //std::forward
+
 namespace aria {
 
 /* similar to std::allocator
  * https://en.cppreference.com/w/cpp/memory/allocator
  */
+
+template <class T, class... Args>
+constexpr T* construct_at(T* p, Args&&... args) {
+  return ::new (static_cast<void*>(p)) T(std::forward<Args>(args)...);
+}
 
 template <class T>
 struct allocator {

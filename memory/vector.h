@@ -2,15 +2,10 @@
 
 #include <cstring> //memcpy
 #include <stdexcept>
+#include <utility>
 #include "allocator.h"
-#include <initializer_list>
 
 namespace aria {
-
-template <class T, class... Args>
-constexpr T* construct_at(T* p, Args&&... args) {
-  return ::new (static_cast<void*>(p)) T(std::forward<Args>(args)...);
-}
 
 template <class T, class Allocator = allocator<T>>
 class vector {
