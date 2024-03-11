@@ -42,6 +42,27 @@ class vector {
     }
   }
 
+  vector(vector&& rhs) noexcept {
+    swap(rhs);
+    vector().swap(rhs);
+  }
+
+  vector& operator=(const vector& rhs) {
+    if (this != &rhs) {
+      auto v = rhs;
+      swap(v);
+    }
+    return *this;
+  }
+
+  vector& operator=(vector&& rhs) noexcept {
+    if (this != &rhs) {
+      auto v = std::move(rhs);
+      swap(v);
+    }
+    return *this;
+  }
+
   void push_back(const T& value) {
     reserve(new_capacity(1));
     construct_at(get(m_size), value);
@@ -68,8 +89,9 @@ class vector {
     m_ptr = new_ptr;
   }
 
-  size_type size() const { return m_size; }
-  size_type capacity() const { return m_capacity; }
+  size_type size() const noexcept { return m_size; }
+  size_type capacity() const noexcept { return m_capacity; }
+  bool empty() const noexcept { return m_size == 0; }
 
   T& operator[](size_type i) { return *get(i); }
   const T& operator[](size_type i) const { return *get(i); }
@@ -84,6 +106,22 @@ class vector {
 
   T* data() noexcept { return m_ptr; }
   const T* data() const noexcept { return m_ptr; }
+
+  void swap(vector& rhs) noexcept {
+    std::swap(m_size, rhs.size());
+    std::swap(m_capacity, rhs.capacity);
+    std::swap(m_ptr, rhs.m_ptr);
+    std::swap(m_alloc, rhs.alloc);
+  }
+
+  bool operator==(const vector& rhs) const noexcept {
+    if (this == &rhs) return true;
+    if (size() != rhs.size()) return false;
+    for (size_type i = 0; i < size(); i++) {
+      if ((*this)[i] != rhs[i]) return false;
+    }
+    return true;
+  }
 
  private:
   Allocator m_alloc;

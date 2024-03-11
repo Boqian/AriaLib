@@ -55,4 +55,12 @@ TEST(test_vector, emplace_back) {
   EXPECT_DOUBLE_EQ(v[0].second, 1.5);
 }
 
-TEST(test_vector, low_level) { int a = 0; }
+TEST(test_vector, compare) {
+  auto v = vector<int>({1, 2, 3});
+  auto u = vector<int>({1, 2, 3});
+  EXPECT_EQ(u, v);
+  auto a = vector<int>({1, 2, 4});
+  auto b = vector<int>({1, 2});
+  EXPECT_NE(v, a);
+  EXPECT_NE(v, b);
+}
