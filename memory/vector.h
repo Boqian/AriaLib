@@ -22,7 +22,7 @@ class vector {
     reserve(init.size());
     m_size = init.size();
     for (size_type i = 0; auto& value : init) {
-      aria::construct_at(get(i++), value);
+      construct_at(get(i++), value);
     }
   }
 
@@ -30,7 +30,7 @@ class vector {
     reserve(n);
     m_size += n;
     for (int i = 0; i < n; i++) {
-      aria::construct_at(get(i), value);
+      construct_at(get(i), value);
     }
   }
 
@@ -38,7 +38,7 @@ class vector {
     reserve(rhs.capacity());
     m_size = rhs.size();
     for (int i = 0; i < m_size; i++) {
-      aria::construct_at(get(i), rhs[i]);
+      construct_at(get(i), rhs[i]);
     }
   }
 

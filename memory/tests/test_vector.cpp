@@ -12,10 +12,10 @@ struct A {
     n_ctor = 0;
     n_dtor = 0;
   }
-  A(int x=0) : val(x) { n_ctor++; }
+  A() { n_ctor++; }
+  A(const A&) { n_ctor++; }
+  A(A&&) = default;
   ~A() { n_dtor++; }
-
-  int val = 0;
 };
 
 TEST(test_vector, base) {
@@ -74,16 +74,34 @@ TEST(test_vector, assign) {
   EXPECT_EQ(v, vector<int>());
 }
 
-TEST(test_vector, destruct) {
+TEST(test_vector, ctor_and_dtor) {
   A::reset();
   int n = 10;
   {
     auto v = vector<A>();
     for (int i = 0; i < n; i++) {
-      v.emplace_back(123);
-      EXPECT_EQ(A::n_ctor, i+1);
+      v.emplace_back();
+      EXPECT_EQ(A::n_ctor, i + 1);
       EXPECT_EQ(A::n_dtor, 0);
     }
   }
   EXPECT_EQ(A::n_dtor, n);
+}
+
+TEST(test_vector, ctor_and_dtor_copy) {
+  int n = 10;
+  A a;
+  A::reset();
+  {
+    auto v = vector<A>(n, a);
+    EXPECT_EQ(A::n_ctor, n);
+    EXPECT_EQ(A::n_dtor, 0);
+    auto u = std::move(v);
+    EXPECT_EQ(A::n_ctor, n);
+    EXPECT_EQ(A::n_dtor, 0);
+    auto w = u;
+    EXPECT_EQ(A::n_ctor, n*2);
+    EXPECT_EQ(A::n_dtor, 0);
+  }
+  EXPECT_EQ(A::n_dtor, n*2);
 }
