@@ -75,12 +75,15 @@ TEST(test_vector, assign) {
 }
 
 TEST(test_vector, destruct) {
-  A::reset();  
+  A::reset();
+  int n = 10;
   {
     auto v = vector<A>();
-    v.emplace_back(100);
-    EXPECT_EQ(A::n_ctor, 1);
-    EXPECT_EQ(A::n_dtor, 0);
+    for (int i = 0; i < n; i++) {
+      v.emplace_back(123);
+      EXPECT_EQ(A::n_ctor, i+1);
+      EXPECT_EQ(A::n_dtor, 0);
+    }
   }
-  EXPECT_EQ(A::n_dtor, 1);
+  EXPECT_EQ(A::n_dtor, n);
 }
