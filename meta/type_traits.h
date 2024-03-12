@@ -17,6 +17,9 @@ struct integral_constant {
 using true_type = integral_constant<bool, true>;
 using false_type = integral_constant<bool, false>;
 
+template<bool v>
+using bool_constant = integral_constant<bool, v>;
+
 //----------------- conditional -----------------------
 template<bool B, class T, class F>
 struct conditional { using type = T; };
@@ -78,9 +81,10 @@ template <class T>
 struct is_void : is_same<void, typename remove_cv<T>::type> {};
 
 template <class T>
-inline constexpr bool is_void_t = is_void<T>::value;
+inline constexpr bool is_void_v = is_void<T>::value;
 
-//------ add_lvalue_reference, add_rvalue_reference
+//----------------- add_lvalue_reference, add_rvalue_reference -----------------------
+
 template <class T>
 struct type_identity {
   using type = T;
@@ -112,5 +116,12 @@ using add_lvalue_reference_t = add_lvalue_reference<T>::type;
 
 template< class T >
 using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
+
+//----------------- is_base_of -----------------------
+template <class T, class U>
+struct is_base_of : bool_constant<!is_void_v<T> && is_convertible_v<U*, T*>> {};
+
+template <class T, class U>
+inline constexpr bool is_base_of_v = is_base_of<T, U>::value;
 
 }  // namespace aria

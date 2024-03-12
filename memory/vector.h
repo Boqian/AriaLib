@@ -92,6 +92,8 @@ class vector {
   size_type size() const noexcept { return m_size; }
   size_type capacity() const noexcept { return m_capacity; }
   bool empty() const noexcept { return m_size == 0; }
+  T& back() noexcept { return *get(m_size - 1); }
+  const T& back() const noexcept { return *get(m_size - 1); }
 
   T& operator[](size_type i) { return *get(i); }
   const T& operator[](size_type i) const { return *get(i); }

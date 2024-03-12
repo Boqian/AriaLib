@@ -67,7 +67,7 @@ class shared_ptr {
   const T* get() const { return m_ptr; }
 
   const add_lvalue_reference_t<T> operator*() const
-    requires !is_void_t<T>
+    requires !is_void_v<T>
   {
     return *m_ptr;
   }

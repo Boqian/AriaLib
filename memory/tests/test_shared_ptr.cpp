@@ -14,7 +14,7 @@ struct Counter {
 
 struct Base {
   Base() = default;
-  virtual ~Base() { Counter::n1++; }
+  ~Base() { Counter::n1++; } //intend not virtual
 };
 
 struct Derived : Base {
@@ -160,6 +160,15 @@ TEST(test_shared_ptr, type_erase) {
   {
     Counter::init();
     shared_ptr<void> p(new Derived());
+    EXPECT_EQ(Counter::n1, 0);
+    EXPECT_EQ(Counter::n2, 0);
+    p.reset();
+    EXPECT_EQ(Counter::n1, 1);
+    EXPECT_EQ(Counter::n2, 1);
+  }
+  {
+    Counter::init();
+    shared_ptr<Base> p(new Derived());
     EXPECT_EQ(Counter::n1, 0);
     EXPECT_EQ(Counter::n2, 0);
     p.reset();

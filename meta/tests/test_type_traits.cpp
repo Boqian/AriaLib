@@ -1,6 +1,9 @@
 #include "../type_traits.h"
 #include <string>
 
+struct Base {};
+struct Derived : Base {};
+
 void test_traits() {
   using namespace aria;
   static_assert(is_same_v<conditional_t<true, int, double>, int>);
@@ -16,4 +19,7 @@ void test_traits() {
 
   static_assert(is_same_v<void, add_lvalue_reference_t<void>>);
   static_assert(is_same_v<int&, add_lvalue_reference_t<int>>);
+
+  static_assert(!is_base_of_v<int, double>);
+  static_assert(is_base_of_v<Base, Derived>);
 }
