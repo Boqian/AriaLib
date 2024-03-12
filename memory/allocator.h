@@ -13,6 +13,11 @@ constexpr T* construct_at(T* p, Args&&... args) {
 }
 
 template <class T>
+constexpr void destroy_at(T* p) {
+  p->~T();
+}
+
+template <class T>
 struct allocator {
   using size_type = unsigned int;
   using value_type = T;
@@ -24,7 +29,7 @@ struct allocator {
     return reinterpret_cast<pointer>(::operator new(n * sizeof(T)));
   }
 
-  void deallocate(T* p, size_type n) { ::operator delete(p); }
+  void deallocate(T* p, size_type n) { ::operator delete(p, n); }
 };
 
 

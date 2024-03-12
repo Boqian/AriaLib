@@ -5,18 +5,17 @@
 
 using namespace aria;
 
-struct Counter {
-  static inline int n1 = 0;
-  static inline int n2 = 0;
-  static void init() {
-    n1 = 0;
-    n2 = 0;
-  }
-};
-
 struct A {
-  A() { Counter::n1++; }
-  ~A() { Counter::n2++; }
+  static inline int n_ctor = 0;
+  static inline int n_dtor = 0;
+  static void reset() {
+    n_ctor = 0;
+    n_dtor = 0;
+  }
+  A(int x=0) : val(x) { n_ctor++; }
+  ~A() { n_dtor++; }
+
+  int val = 0;
 };
 
 TEST(test_vector, base) {
@@ -73,4 +72,15 @@ TEST(test_vector, assign) {
   b = std::move(v);
   EXPECT_EQ(a, b);
   EXPECT_EQ(v, vector<int>());
+}
+
+TEST(test_vector, destruct) {
+  A::reset();  
+  {
+    auto v = vector<A>();
+    v.emplace_back(100);
+    EXPECT_EQ(A::n_ctor, 1);
+    EXPECT_EQ(A::n_dtor, 0);
+  }
+  EXPECT_EQ(A::n_dtor, 1);
 }

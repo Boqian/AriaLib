@@ -22,7 +22,7 @@ class vector {
     reserve(init.size());
     m_size = init.size();
     for (size_type i = 0; auto& value : init) {
-      construct_at(get(i++), value);
+      aria::construct_at(get(i++), value);
     }
   }
 
@@ -30,7 +30,7 @@ class vector {
     reserve(n);
     m_size += n;
     for (int i = 0; i < n; i++) {
-      construct_at(get(i), value);
+      aria::construct_at(get(i), value);
     }
   }
 
@@ -38,7 +38,7 @@ class vector {
     reserve(rhs.capacity());
     m_size = rhs.size();
     for (int i = 0; i < m_size; i++) {
-      construct_at(get(i), rhs[i]);
+      aria::construct_at(get(i), rhs[i]);
     }
   }
 
@@ -136,10 +136,8 @@ class vector {
     if (i >= m_size) throw std::out_of_range("");
   }
 
-  void destruct(size_type i) { (m_ptr + i)->~T(); }
-
   void free_and_destruct_all() {
-    for (int i = 0; i < m_size; i++) destruct(i);
+    for (int i = 0; i < m_size; i++) aria::destroy_at(get(i));
     m_alloc.deallocate(m_ptr, m_capacity);
   }
 
