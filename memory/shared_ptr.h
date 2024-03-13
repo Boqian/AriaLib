@@ -12,7 +12,7 @@ class shared {
  public:
    template <class Deleter>
    shared(Deleter&& deleter)
-       : m_deleter(std::forward<Deleter>(deleter)), m_counter(1) {}
+      : m_deleter(std::forward<Deleter>(deleter)), m_uses(1), m_weaks(0) {}
 
    ~shared() { m_deleter(); }
 
@@ -21,7 +21,8 @@ class shared {
      return new shared([ptr]() { delete ptr; });
    }
 
-   std::atomic<long> m_counter;
+   std::atomic<long> m_uses;
+   std::atomic<long> m_weaks;
    std::function<void()> m_deleter;
 };
 }  // namespace details
@@ -46,14 +47,14 @@ class shared_ptr {
   }
 
   shared_ptr(const shared_ptr& rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) {
-    if (m_shared) m_shared->m_counter++;
+    if (m_shared) m_shared->m_uses++;
   }
 
   shared_ptr& operator=(const shared_ptr& rhs) noexcept {
     reset();
     m_ptr = rhs.m_ptr;
     m_shared = rhs.m_shared;
-    if (m_shared) m_shared->m_counter++;
+    if (m_shared) m_shared->m_uses++;
     return *this;
   }
 
@@ -75,12 +76,12 @@ class shared_ptr {
 
   operator bool() const noexcept { return m_ptr; }
 
-  long use_count() const noexcept { return m_shared ? m_shared->m_counter.load() : 0; }
+  long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
   bool unique() const noexcept { return use_count() == 1; }
 
   void reset() noexcept{
     if (m_shared) {
-      if (--m_shared->m_counter == 0) {
+      if (--m_shared->m_uses == 0) {
         delete m_shared;  
       }
       m_shared = nullptr;    

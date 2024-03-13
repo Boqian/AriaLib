@@ -22,4 +22,8 @@ void test_traits() {
 
   static_assert(!is_base_of_v<int, double>);
   static_assert(is_base_of_v<Base, Derived>);
+  static_assert(!is_base_of_v<Base, void>);
+  static_assert(!is_base_of_v<void, Derived>);
+  static_assert(!is_base_of_v<int, short>);
+  static_assert(!is_base_of_v<int, const int>);
 }
