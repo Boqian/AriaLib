@@ -4,13 +4,12 @@ include_directories(../)
 find_package(GTest REQUIRED)
 include(GoogleTest)
 
-add_executable(
-  test_dummy
-  test_dummy.cpp
-)
-target_link_libraries(
-  test_dummy
-  GTest::gtest_main GTest::GTest
-)
+file(GLOB TEST_SOURCES "test_*.cpp")
 
-gtest_discover_tests(test_dummy)
+foreach(TEST_SOURCE ${TEST_SOURCES})
+    get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_SOURCE})
+    target_link_libraries(${TEST_NAME} GTest::gtest_main GTest::GTest)
+    gtest_discover_tests(${TEST_NAME}) 
+    target_include_directories(${TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/memory ${CMAKE_SOURCE_DIR}/meta )
+endforeach()

@@ -13,10 +13,9 @@ enable_testing()
 add_subdirectory(core)
 add_subdirectory(concurrent)
 add_subdirectory(meta)
-add_subdirectory(memory)
 
 # Add source to this project's executable.
-add_executable (AriaLib "AriaLib.cpp" "AriaLib.h")
+add_executable (AriaLib "AriaLib.cpp" "AriaLib.h" "core/allocator.cpp" "core/allocator.h" "core/shared_ptr.h" "core/unique_ptr.h" "core/vector.h")
 
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(AriaLib PRIVATE fmt::fmt)
