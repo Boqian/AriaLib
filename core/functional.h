@@ -12,7 +12,7 @@ class function<Ret(Args...)> {
  public:
   template<class T>
   function(T&& t)
-      : ptr(unique_ptr<ICallable>(new Callable<T>(std::forward<T>(t)))) {}
+      : ptr(make_unique<Callable<T>>(std::forward<T>(t))) {}
 
   Ret operator()(Args... args) {
     return ptr->invoke(std::forward<Args>(args)...);

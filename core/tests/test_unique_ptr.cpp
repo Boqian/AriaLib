@@ -45,7 +45,17 @@ TEST(test_unique_ptr, make_unique) {
   EXPECT_DOUBLE_EQ(q->second, 2.2);
 }
 
-//todo
+struct Base {
+  virtual ~Base() = default;
+  virtual int foo() { return 1; }
+};
+struct Derived : public Base {
+  int foo() override { return 2; } 
+};
+
 TEST(test_unique_ptr, convertable) {
-  auto p = make_unique<int>(1);
+  auto p = make_unique<Derived>();
+  EXPECT_EQ(p->foo(), 2);
+  auto q = unique_ptr<Base>(std::move(p));
+  EXPECT_EQ(q->foo(), 2);
 }

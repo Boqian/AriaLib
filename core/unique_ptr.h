@@ -24,13 +24,10 @@ class unique_ptr {
     rhs.reset();
   }
 
-  //todo
-  //template<class U, class E>
-  //unique_ptr(unique_ptr<U, E>&& rhs) requires convertable_to<U, T> {
-  //  auto prev = std::move(this);
-  //  m_ptr = rhs.m_ptr;
-  //  m_deleter = rhs.m_deleter;
-  //}
+  template <class U, class E>
+    requires convertible_to<U*, T*>
+  unique_ptr(unique_ptr<U, E>&& rhs)
+      : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
 
 
   ~unique_ptr() { reset(); }
