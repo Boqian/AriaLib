@@ -1,7 +1,5 @@
 #include "unique_ptr.h"
 #include "gtest/gtest.h"
-#include <utility>
-
 
 using namespace aria;
 
@@ -30,7 +28,7 @@ TEST(test_unique_ptr, basic) {
     p.swap(q);
     EXPECT_EQ(*p, 50);
     EXPECT_EQ(*q, 100);
-    p = std::move(q);
+    p = aria::move(q);
     EXPECT_FALSE(q);
     EXPECT_EQ(*p, 100);
   }
@@ -56,6 +54,6 @@ struct Derived : public Base {
 TEST(test_unique_ptr, convertable) {
   auto p = make_unique<Derived>();
   EXPECT_EQ(p->foo(), 2);
-  auto q = unique_ptr<Base>(std::move(p));
+  auto q = unique_ptr<Base>(aria::move(p));
   EXPECT_EQ(q->foo(), 2);
 }

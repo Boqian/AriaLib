@@ -1,6 +1,6 @@
 #include "shared_ptr.h"
 #include "gtest/gtest.h"
-#include <utility>
+
 using namespace aria;
 
 struct Counter {
@@ -76,13 +76,13 @@ TEST(test_shared_ptr, make_shard) {
 TEST(test_shared_ptr, move_construct) {
     {
     auto q = make_shared<int>(100);
-    shared_ptr<int> p(std::move(q));
+    shared_ptr<int> p(move(q));
     EXPECT_FALSE(q);
     EXPECT_EQ(*p, 100);
     }
     { auto q1 = make_shared<int>(100);
       auto q2 = q1;
-      auto p = std::move(q1);
+      auto p = move(q1);
       EXPECT_FALSE(q1);
       EXPECT_EQ(*p, 100);
       EXPECT_EQ(*q2, 100);
@@ -107,7 +107,7 @@ TEST(test_shared_ptr, assign) {
   {
     auto q = make_shared<int>(100);
     shared_ptr<int> p;
-    p = std::move(q);
+    p = move(q);
     EXPECT_EQ(*p, 100);
     EXPECT_EQ(p.use_count(), 1);
     EXPECT_FALSE(q);

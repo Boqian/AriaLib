@@ -15,7 +15,7 @@ constexpr T&& forward(remove_reference_t<T> &t) noexcept {
 
 template <typename T>
 constexpr T&& forward(remove_reference_t<T> &&t) noexcept {
-  static_assert(!std::is_lvalue_reference_v<T>);
+  static_assert(!is_lvalue_reference_v<T>);
   return static_cast<T &&>(t);
 }
 

@@ -1,5 +1,5 @@
 #pragma once
-#include <utility>
+#include "utility.h"
 #include "unique_ptr.h"
 
 namespace aria {
@@ -16,10 +16,10 @@ class function<Ret(Args...)> {
 
   function() = default;
   function(const function&) = delete;
-  function(function&& rhs) noexcept : ptr(std::move(rhs.ptr)) {}
+  function(function&& rhs) noexcept : ptr(aria::move(rhs.ptr)) {}
   function& operator=(const function&) = delete;
   function& operator=(function&& rhs) noexcept {
-    ptr = std::move(rhs.ptr);
+    ptr = aria::move(rhs.ptr);
     return *this;
   }
 

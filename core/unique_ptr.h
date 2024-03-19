@@ -1,5 +1,5 @@
 #pragma once
-#include <utility> //std::forward
+#include "utility.h"
 #include <memory> //std::default_delete
 #include "concepts.h"
 
@@ -17,7 +17,7 @@ class unique_ptr {
   explicit unique_ptr(T* ptr) : m_ptr(ptr), m_deleter() {}
 
   unique_ptr(T* ptr, Deleter&& deleter)
-      : m_ptr(ptr), m_deleter(std::forward<Deleter>(deleter)) {}
+      : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
 
   unique_ptr(unique_ptr&& rhs) noexcept {
     swap(rhs);
@@ -84,7 +84,7 @@ class unique_ptr {
 
 template<class T, class... Args>
 unique_ptr<T> make_unique(Args&&... args) {
-  return unique_ptr<T>(new T(std::forward<Args>(args)...));
+  return unique_ptr<T>(new T(forward<Args>(args)...));
 }
 
 }  // namespace aria

@@ -17,7 +17,7 @@ TEST(test_function, bool_operator) {
 
 TEST(test_function, move_ctor) {
   function<int(int)> f([](int x) { return x * 2; });
-  function<int(int)> g(std::move(f));
+  function<int(int)> g(move(f));
   EXPECT_FALSE(f);
   EXPECT_TRUE(g);
   EXPECT_EQ(g(3), 6);
@@ -26,7 +26,7 @@ TEST(test_function, move_ctor) {
 TEST(test_function, move_assign) {
   function<int(int)> f([](int x) { return x * 2; });
   function<int(int)> g;
-  g = std::move(f);
+  g = move(f);
   EXPECT_FALSE(f);
   EXPECT_TRUE(g);
   EXPECT_EQ(g(3), 6);

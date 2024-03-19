@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
-#include <functional>
-#include <utility>
+#include "functional.h"
+#include "utility.h"
 #include "concepts.h"
 
 namespace aria {
@@ -12,7 +12,7 @@ class shared {
  public:
    template <class Deleter>
    shared(Deleter&& deleter)
-      : m_deleter(std::forward<Deleter>(deleter)), m_uses(1), m_weaks(0) {}
+      : m_deleter(forward<Deleter>(deleter)), m_uses(1), m_weaks(0) {}
 
    ~shared() { m_deleter(); }
 
@@ -23,7 +23,7 @@ class shared {
 
    std::atomic<long> m_uses;
    std::atomic<long> m_weaks;
-   std::function<void()> m_deleter;
+   function<void()> m_deleter;
 };
 }  // namespace details
 
@@ -101,7 +101,7 @@ class shared_ptr {
 
 template<class T, class... Args> 
 shared_ptr<T> make_shared(Args&&... args) {
-  return shared_ptr<T>(new T(std::forward<Args>(args)...));
+  return shared_ptr<T>(new T(forward<Args>(args)...));
 }
 
 }  // namespace aria
