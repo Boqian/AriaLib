@@ -2,7 +2,7 @@
 
 #include <cstring> //memcpy
 #include <stdexcept>
-#include <utility>
+#include "utility.h"
 #include "allocator.h"
 
 namespace aria {
@@ -57,7 +57,7 @@ class vector {
 
   vector& operator=(vector&& rhs) noexcept {
     if (this != &rhs) {
-      auto v = std::move(rhs);
+      auto v = move(rhs);
       swap(v);
     }
     return *this;
@@ -72,7 +72,7 @@ class vector {
   template<class... Args>
   void emplace_back(Args&& ... args) {
     reserve(new_capacity(1));
-    aria::construct_at(get(m_size), std::forward<Args>(args)...);
+    aria::construct_at(get(m_size), forward<Args>(args)...);
     m_size++;
   }
 
@@ -110,10 +110,10 @@ class vector {
   const T* data() const noexcept { return m_ptr; }
 
   void swap(vector& rhs) noexcept {
-    std::swap(m_size, rhs.m_size);
-    std::swap(m_capacity, rhs.m_capacity);
-    std::swap(m_ptr, rhs.m_ptr);
-    std::swap(m_alloc, rhs.m_alloc);
+    aria::swap(m_size, rhs.m_size);
+    aria::swap(m_capacity, rhs.m_capacity);
+    aria::swap(m_ptr, rhs.m_ptr);
+    aria::swap(m_alloc, rhs.m_alloc);
   }
 
   bool operator==(const vector& rhs) const noexcept {

@@ -69,7 +69,7 @@ TEST(test_vector, assign) {
   auto a = vector<int>({1}), b = a;
   a = v;
   EXPECT_EQ(a, v);
-  b = std::move(v);
+  b = move(v);
   EXPECT_EQ(a, b);
   EXPECT_EQ(v, vector<int>());
 }
@@ -96,7 +96,7 @@ TEST(test_vector, ctor_and_dtor_copy) {
     auto v = vector<A>(n, a);
     EXPECT_EQ(A::n_ctor, n);
     EXPECT_EQ(A::n_dtor, 0);
-    auto u = std::move(v);
+    auto u = move(v);
     EXPECT_EQ(A::n_ctor, n);
     EXPECT_EQ(A::n_dtor, 0);
     auto w = u;

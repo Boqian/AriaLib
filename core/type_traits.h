@@ -141,4 +141,7 @@ template <class T> struct is_rvalue_reference<T &&> : true_type {};
 template <class T>
 inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
 
+//----------------- declval -----------------------
+template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
+
 }  // namespace aria

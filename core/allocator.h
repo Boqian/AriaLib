@@ -1,5 +1,5 @@
 #pragma once
-#include<utility> //std::forward
+#include "utility.h"
 
 namespace aria {
 
@@ -9,7 +9,7 @@ namespace aria {
 
 template <class T, class... Args>
 constexpr T* construct_at(T* p, Args&&... args) {
-  return ::new (static_cast<void*>(p)) T(std::forward<Args>(args)...);
+  return ::new (static_cast<void*>(p)) T(forward<Args>(args)...);
 }
 
 template <class T>

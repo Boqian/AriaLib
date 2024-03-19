@@ -1,6 +1,5 @@
 #include "allocator.h"
 #include "gtest/gtest.h"
-#include <utility>
 
 using namespace aria;
 

@@ -1,7 +1,5 @@
 #pragma once
 #include "type_traits.h"
-#include <utility> //std::declval
-
 
 namespace aria {
 /*
@@ -12,7 +10,7 @@ concept same_as = is_same_v<T, U> && is_same_v<U, T>;
 
 template <class From, class To> 
 concept convertible_to = is_convertible_v<From, To> && requires {
-  static_cast<To>(std::declval<From>());
+  static_cast<To>(declval<From>());
 };
 
 

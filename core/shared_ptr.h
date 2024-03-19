@@ -90,8 +90,8 @@ class shared_ptr {
   }
 
   void swap(shared_ptr& rhs) noexcept {
-    std::swap(m_shared, rhs.m_shared);
-    std::swap(m_ptr, rhs.m_ptr);
+    aria::swap(m_shared, rhs.m_shared);
+    aria::swap(m_ptr, rhs.m_ptr);
   }
 
  private:

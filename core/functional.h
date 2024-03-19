@@ -12,24 +12,24 @@ class function<Ret(Args...)> {
  public:
   template<class T>
   function(T&& t)
-      : ptr(make_unique<Callable<T>>(std::forward<T>(t))) {}
+      : ptr(make_unique<Callable<T>>(forward<T>(t))) {}
 
   function() = default;
   function(const function&) = delete;
-  function(function&& rhs) noexcept : ptr(aria::move(rhs.ptr)) {}
+  function(function&& rhs) noexcept : ptr(move(rhs.ptr)) {}
   function& operator=(const function&) = delete;
   function& operator=(function&& rhs) noexcept {
-    ptr = aria::move(rhs.ptr);
+    ptr = move(rhs.ptr);
     return *this;
   }
 
   Ret operator()(Args... args) const {
-    return ptr->invoke(std::forward<Args>(args)...);
+    return ptr->invoke(forward<Args>(args)...);
   }
 
   operator bool() const noexcept { return ptr; }
 
-  void swap(function& rhs) noexcept { std::swap(ptr, rhs.ptr); }
+  void swap(function& rhs) noexcept { aria::swap(ptr, rhs.ptr); }
 
 private:
   struct ICallable {
@@ -41,10 +41,10 @@ private:
 
   template <class T>
   struct Callable : public ICallable {
-    Callable(T&& at) : t(std::forward<T>(at)) {}
+    Callable(T&& at) : t(forward<T>(at)) {}
     ~Callable() = default;
 
-    Ret invoke(Args... args) const override { return t(std::forward<Args>(args)...); }
+    Ret invoke(Args... args) const override { return t(forward<Args>(args)...); }
 
    private:
     T t;
