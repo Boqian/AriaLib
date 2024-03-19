@@ -78,8 +78,8 @@ class unique_ptr {
   const T& operator*() const { return *m_ptr; }
 
   void swap(unique_ptr& rhs) noexcept {
-    std::swap(m_ptr, rhs.m_ptr);
-    std::swap(m_deleter, rhs.m_deleter);
+    aria::swap(m_ptr, rhs.m_ptr);
+    aria::swap(m_deleter, rhs.m_deleter);
   }
 
   T* release() noexcept {
