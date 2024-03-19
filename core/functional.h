@@ -16,9 +16,12 @@ class function<Ret(Args...)> {
 
   function() = default;
   function(const function&) = delete;
-  function& operator=(const function&) = delete;
-  function& operator=(function&& rhs) noexcept { return ptr = std::move(rhs.ptr); }
   function(function&& rhs) noexcept : ptr(std::move(rhs.ptr)) {}
+  function& operator=(const function&) = delete;
+  function& operator=(function&& rhs) noexcept {
+    ptr = std::move(rhs.ptr);
+    return *this;
+  }
 
   Ret operator()(Args... args) const {
     return ptr->invoke(std::forward<Args>(args)...);
