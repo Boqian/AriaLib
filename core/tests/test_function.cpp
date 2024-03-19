@@ -31,3 +31,10 @@ TEST(test_function, move_assign) {
   EXPECT_TRUE(g);
   EXPECT_EQ(g(3), 6);
 }
+
+int foo(int x) { return x * 3; }
+
+TEST(test_function, free_function) {
+  function<int(int)> f(foo);
+  EXPECT_EQ(f(100), 300);
+}
