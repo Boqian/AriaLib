@@ -26,4 +26,16 @@ void test_traits() {
   static_assert(!is_base_of_v<void, Derived>);
   static_assert(!is_base_of_v<int, short>);
   static_assert(!is_base_of_v<int, const int>);
+
+  static_assert(is_same_v<int, remove_reference_t<int>>);
+  static_assert(is_same_v<int, remove_reference_t<int&>>);
+  static_assert(is_same_v<int, remove_reference_t<int&&>>);
+
+  static_assert(!is_lvalue_reference_v<int>);
+  static_assert(is_lvalue_reference_v<int &>);
+  static_assert(!is_lvalue_reference_v<int &&>);
+
+  static_assert(!is_rvalue_reference_v<int>);
+  static_assert(!is_rvalue_reference_v<int &>);
+  static_assert(is_rvalue_reference_v<int &&>);
 }

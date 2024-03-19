@@ -20,6 +20,11 @@ using false_type = integral_constant<bool, false>;
 template<bool v>
 using bool_constant = integral_constant<bool, v>;
 
+//----------------- type_identity -----------------------
+template <class T> struct type_identity {
+  using type = T;
+}; 
+
 //----------------- conditional -----------------------
 template<bool B, class T, class F>
 struct conditional { using type = T; };
@@ -85,11 +90,6 @@ inline constexpr bool is_void_v = is_void<T>::value;
 
 //----------------- add_lvalue_reference, add_rvalue_reference -----------------------
 
-template <class T>
-struct type_identity {
-  using type = T;
-}; 
-
 namespace detail {
 
 template <class T>  // Note that “cv void&” is a substitution failure
@@ -123,5 +123,22 @@ struct is_base_of : bool_constant<!is_void_v<T> && is_convertible_v<U*, T*>> {};
 
 template <class T, class U>
 inline constexpr bool is_base_of_v = is_base_of<T, U>::value;
+
+//----------------- remove_reference -----------------------
+template <class T> struct remove_reference : type_identity<T> {};
+template <class T> struct remove_reference<T &> : type_identity<T> {};
+template <class T> struct remove_reference<T &&> : type_identity<T> {};
+template <class T> using remove_reference_t = remove_reference<T>::type;
+
+//----------------- is_lvalue_reference is_rvalue_reference-----------------------
+template <class T> struct is_lvalue_reference : false_type {};
+template <class T> struct is_lvalue_reference<T &> : true_type {};
+template <class T>
+inline constexpr bool is_lvalue_reference_v = is_lvalue_reference<T>::value;
+
+template <class T> struct is_rvalue_reference : false_type {};
+template <class T> struct is_rvalue_reference<T &&> : true_type {};
+template <class T>
+inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
 
 }  // namespace aria
