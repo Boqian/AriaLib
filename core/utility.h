@@ -4,6 +4,8 @@
 
 namespace aria {
 
+using nullptr_t = decltype(nullptr);
+
 template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept {
   return static_cast<remove_reference_t<T> &&>(t);
 }

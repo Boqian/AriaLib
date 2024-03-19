@@ -1,11 +1,22 @@
 #pragma once
 #include "utility.h"
-#include <memory> //std::default_delete
 #include "concepts.h"
 
 namespace aria {
 
-template <class T, class Deleter = std::default_delete<T>>
+template <class T> struct default_delete {
+  constexpr default_delete() noexcept = default;
+
+  template <class U> requires convertible_to<U*, T*>
+  default_delete(const default_delete<U> &) noexcept {}
+
+  void operator()(T *ptr) const noexcept {
+    static_assert(0 < sizeof(T), "can't delete incomplete type");
+    delete ptr;
+  }
+};
+
+template <class T, class Deleter = default_delete<T>>
 class unique_ptr {
  public:
   using element_type = T;
@@ -35,7 +46,7 @@ class unique_ptr {
   unique_ptr(const unique_ptr&) = delete;
   unique_ptr& operator=(const unique_ptr&) noexcept = delete;
 
-  unique_ptr& operator=(std::nullptr_t) noexcept {
+  unique_ptr& operator=(nullptr_t) noexcept {
     reset();
     return *this;
   }
