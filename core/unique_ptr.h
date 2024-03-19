@@ -12,7 +12,7 @@ class unique_ptr {
   using pointer = T*;
   using deleter_type = Deleter;
 
-  unique_ptr() : m_ptr(nullptr), m_deleter() {}
+  unique_ptr() = default;
 
   explicit unique_ptr(T* ptr) : m_ptr(ptr), m_deleter() {}
 
@@ -78,7 +78,7 @@ class unique_ptr {
   }
 
  private:
-  T* m_ptr;
+  T* m_ptr = nullptr;
   Deleter m_deleter;
 };
 
