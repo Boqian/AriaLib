@@ -144,4 +144,22 @@ inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
 //----------------- declval -----------------------
 template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
 
+//----------------- is_default_constructible -----------------------
+namespace details {
+template <class T>
+concept default_construct = requires {
+  T();
+  T{};
+  ::new T;
+};
+}
+
+template <class T>
+struct is_default_constructible : bool_constant<details::default_construct<T>> {
+};
+
+template <class T>
+inline constexpr bool is_default_constructible_v =
+    is_default_constructible<T>::value;
+
 }  // namespace aria

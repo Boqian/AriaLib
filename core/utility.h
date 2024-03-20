@@ -2,6 +2,12 @@
 
 #include "type_traits.h"
 
+/*
+nullptr_t
+move, forward
+swap
+*/
+
 namespace aria {
 
 using nullptr_t = decltype(nullptr);
@@ -26,5 +32,16 @@ template <class T> constexpr void swap(T &a, T &b) noexcept {
   a = move(b);
   b = move(temp);
 }
+
+template<class T1, class T2> struct pair {
+public:
+	using first_type = T1;
+	using second_type = T2;
+
+	constexpr pair() : first(), second() {}
+
+	T1 first;
+    T2 second;
+};
 
 } // namespace aria

@@ -6,9 +6,13 @@
 using namespace std;
 
 #include <fmt/core.h>
+#include <optional>
+
 
 int main()
 {
-    fmt::print("Hello World!\n");
+  std::optional<int> a = 1;
+
+    fmt::print("Hello World! {}\n", a.value());
     return 0;
 }
