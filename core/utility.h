@@ -1,11 +1,14 @@
 #pragma once
 
 #include "type_traits.h"
+#include "concepts.h"
+#include <compare>
 
 /*
 nullptr_t
 move, forward
 swap
+pair
 */
 
 namespace aria {
@@ -45,7 +48,7 @@ public:
     constexpr pair(U1 &&x, U2 &&y)
         : first{forward<U1>(x)}, second{forward<U2>(y)} {}
 
-	//auto operator<=>(const pair&) = default;
+	auto operator<=>(const pair&) const = default;
 
 	T1 first;
     T2 second;

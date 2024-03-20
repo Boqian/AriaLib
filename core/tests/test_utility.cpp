@@ -27,4 +27,13 @@ TEST(test_utility, pair) {
     EXPECT_DOUBLE_EQ(p.second, 2.5);
     auto q = make_pair(A(), B());
   }
+  {
+    auto p = make_pair(1, 2);
+    auto q = make_pair(2, 1);
+    EXPECT_TRUE(p != q);
+    EXPECT_TRUE(p < q);
+    EXPECT_TRUE(q > p);
+    auto r = make_pair(1, 2);
+    EXPECT_TRUE(p == r);
+  }
 }
