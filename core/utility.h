@@ -42,7 +42,11 @@ public:
 	using second_type = T2;
 
 	constexpr pair() : first{}, second{} {}
-    constexpr pair(const T1 &x, const T2 &y) : first(x), second(y){}
+    constexpr pair(const T1 &x, const T2 &y) : first(x), second(y) {}
+    constexpr pair(const pair &) = default;
+    constexpr pair(pair &&) noexcept = default;
+    constexpr pair &operator=(const pair &) noexcept = default;
+    constexpr pair &operator=(pair &&) noexcept = default;
 
 	template <class U1, class U2>
     constexpr pair(U1 &&x, U2 &&y)

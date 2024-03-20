@@ -6,7 +6,13 @@ using namespace aria;
 struct A {};
 struct B {};
 
-TEST(test_utility, pair) {
+struct C {
+  C() = default;
+  C(const C &) = default;
+  C &operator=(C &&) = delete;
+};
+
+TEST(test_pair, basic) {
   {
     pair<int, int> p(5, 6);
     EXPECT_EQ(p.first, 5);
@@ -36,4 +42,14 @@ TEST(test_utility, pair) {
     auto r = make_pair(1, 2);
     EXPECT_TRUE(p == r);
   }
+  {
+    pair<int, int> p(1, 2), q(0, 0);
+    const auto p1 = p, q1 = q;
+    EXPECT_EQ(p, p1);
+    p = move(q);
+    EXPECT_EQ(p, q1);
+    q = p;
+    EXPECT_EQ(q, q1);
+  }
 }
+
