@@ -111,4 +111,20 @@ constexpr auto &get(tuple<Types...> &t) noexcept {
     return get<I - 1>(t.rest);
 }
 
+template <class T, class... Types>
+constexpr const auto &get(const tuple<Types...> &t) noexcept {
+  if constexpr (is_same_v<T, decltype(t.value)>)
+    return t.value;
+  else
+    return get<T>(t.rest);
+}
+
+template <class T, class... Types>
+constexpr auto &get(tuple<Types...> &t) noexcept {
+  if constexpr (is_same_v<T, decltype(t.value)>)
+    return t.value;
+  else
+    return get<T>(t.rest);
+}
+
 } // namespace aria

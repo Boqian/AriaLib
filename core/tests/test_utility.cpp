@@ -71,14 +71,19 @@ TEST(test_tuple, basic) {
     tuple<int, double, A> tp(1, 2.5, A{});
     static_assert(tuple_size_v<decltype(tp)> == 3);
     EXPECT_EQ(get<0>(tp), 1);
+    EXPECT_EQ(get<int>(tp), 1);
     EXPECT_DOUBLE_EQ(get<1>(tp), 2.5);
     get<0>(tp) = 123;
     EXPECT_EQ(get<0>(tp), 123);
+    EXPECT_EQ(get<int>(tp), 123);
+    EXPECT_DOUBLE_EQ(get<double>(tp), 2.5);
+    get<double>(tp) = 4.8;
+    EXPECT_DOUBLE_EQ(get<1>(tp), 4.8);
   }
   {
     constexpr tuple<int, double> tp(1, 2.5);
     static_assert(tuple_size_v<decltype(tp)> == 2);
     static_assert(get<0>(tp) == 1);
+    static_assert(get<int>(tp) == 1);
   }
-
 }
