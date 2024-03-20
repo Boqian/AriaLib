@@ -97,4 +97,10 @@ TEST(test_tuple, basic) {
       static_assert(is_same_v<double, tuple_element<1, T>::type>);
       static_assert(is_same_v<A, tuple_element<2, T>::type>);
   }
+  {
+    tuple<int, int> a(1, 1), b(2, 0), a1=a, b1=b;
+    swap(a, b);
+    EXPECT_EQ(a, b1);
+    EXPECT_EQ(a1, b);
+  }
 }

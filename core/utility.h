@@ -9,7 +9,8 @@
 nullptr_t
 move, forward
 swap
-pair
+pair, make_pair
+tuple, tupe_element, get(), tupe_size
 */
 
 namespace aria {
@@ -81,6 +82,7 @@ template<class... Args> class tuple {};
 template <> class tuple<> {
 public:
   constexpr auto operator<=>(const tuple &) const = default;
+  void swap(tuple &rhs) noexcept {}
 };
 template <class T, class... Args>
 class tuple<T, Args...>{
@@ -90,6 +92,11 @@ public:
       : value(t), rest(args...){}
 
   constexpr auto operator<=>(const tuple &) const = default;
+
+  void swap(tuple &rhs) noexcept {
+    ::aria::swap(value, rhs.value);
+    rest.swap(rhs.rest);
+  }
 
   T value;
   tuple<Args...> rest;
@@ -137,5 +144,9 @@ template <size_t I, class... Args>
 struct tuple_element<I, tuple<Args...>> {
    using type = remove_cvref_t<decltype(get<I>(tuple<Args...>()))>;
 };
+
+template <class... Args> void swap(tuple<Args...> &a, tuple<Args...> &b) {
+  a.swap(b);
+}
 
 } // namespace aria
