@@ -38,11 +38,24 @@ public:
 	using first_type = T1;
 	using second_type = T2;
 
-	constexpr pair() : first(), second() {}
+	constexpr pair() : first{}, second{} {}
     constexpr pair(const T1 &x, const T2 &y) : first(x), second(y){}
+
+	template <class U1, class U2>
+    constexpr pair(U1 &&x, U2 &&y)
+        : first{forward<U1>(x)}, second{forward<U2>(y)} {}
+
+	//auto operator<=>(const pair&) = default;
 
 	T1 first;
     T2 second;
 };
+
+template <class T1, class T2> pair(T1, T2) -> pair<T1, T2>;
+
+template <class T1, class T2> 
+constexpr pair<T1, T2> make_pair(const T1 &&a, const T2 &&b) {
+  return pair(a, b);
+}
 
 } // namespace aria
