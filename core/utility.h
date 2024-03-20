@@ -86,7 +86,6 @@ public:
   constexpr tuple(const T& t, const Args&...args)
       : value(t), rest(args...){}
 
-private:
   T value;
   tuple<Args...> rest;
 };
@@ -94,6 +93,22 @@ private:
 template <typename> struct tuple_size;
 template <class... Args>
 struct tuple_size<tuple<Args...>> : integral_constant<size_t, sizeof...(Args)> {};
-template<class T> constexpr size_t tuple_size_v = tuple_size<T>::value;
+template<class T> inline constexpr size_t tuple_size_v = tuple_size<remove_cv_t<T>>::value;
+
+template <std::size_t I, class... Types>
+constexpr const auto &get(const tuple<Types...> &t) noexcept {
+  if constexpr (I == 0)
+    return t.value;
+  else
+    return get<I - 1>(t.rest);
+}
+
+template <std::size_t I, class... Types>
+constexpr auto &get(tuple<Types...> &t) noexcept {
+  if constexpr (I == 0)
+    return t.value;
+  else
+    return get<I - 1>(t.rest);
+}
 
 } // namespace aria

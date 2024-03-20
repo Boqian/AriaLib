@@ -63,22 +63,11 @@ inline constexpr bool is_convertible_v = is_convertible<From, To>::value;
 
 //----------------- remove_cv -----------------------
 
-template <class T>
-struct remove_cv {
-  using type = T;
-};
-template <class T>
-struct remove_cv<const T> {
-  using type = T;
-};
-template <class T>
-struct remove_cv<volatile T> {
-  using type = T;
-};
-template <class T>
-struct remove_cv<const volatile T> {
-  using type = T;
-};
+template <class T> struct remove_cv : type_identity<T> {};
+template <class T> struct remove_cv<const T> : type_identity<T> {};
+template <class T> struct remove_cv<volatile T> : type_identity<T> {};
+template <class T> struct remove_cv<const volatile T> : type_identity<T> {};
+template <class T> using remove_cv_t = remove_cv<T>::type;
 
 //----------------- is_...type -----------------------
 
