@@ -39,6 +39,7 @@ public:
 	using second_type = T2;
 
 	constexpr pair() : first(), second() {}
+    constexpr pair(const T1 &x, const T2 &y) : first(x), second(y){}
 
 	T1 first;
     T2 second;
