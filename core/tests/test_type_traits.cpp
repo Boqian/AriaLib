@@ -34,6 +34,10 @@ void test_traits() {
   static_assert(is_same_v<int, remove_reference_t<int&>>);
   static_assert(is_same_v<int, remove_reference_t<int&&>>);
 
+  static_assert(is_same_v<int, remove_cvref_t<const int &>>);
+  static_assert(is_same_v<int, remove_cvref_t<int &&>>);
+  static_assert(is_same_v<int, remove_cvref_t<const int>>);
+
   static_assert(!is_lvalue_reference_v<int>);
   static_assert(is_lvalue_reference_v<int &>);
   static_assert(!is_lvalue_reference_v<int &&>);
@@ -45,4 +49,5 @@ void test_traits() {
   static_assert(is_default_constructible_v<int>);
   static_assert(is_default_constructible_v<Base>);
   static_assert(!is_default_constructible_v<AA>);
+
 }

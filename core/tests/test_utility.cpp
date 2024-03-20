@@ -86,4 +86,15 @@ TEST(test_tuple, basic) {
     static_assert(get<0>(tp) == 1);
     static_assert(get<int>(tp) == 1);
   }
+  { 
+    constexpr tuple<int, int> a(1, 1), b(2, 0), c(1, 1);
+    static_assert(a < b );
+    static_assert(a == c);
+  }
+  { 
+      using T = tuple<int, double, A>;
+      static_assert(is_same_v<int, tuple_element<0, T>::type>);
+      static_assert(is_same_v<double, tuple_element<1, T>::type>);
+      static_assert(is_same_v<A, tuple_element<2, T>::type>);
+  }
 }

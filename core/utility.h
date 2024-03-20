@@ -59,7 +59,7 @@ public:
           ::aria::swap(second, rhs.second);
         }
 
-	auto operator<=>(const pair&) const = default;
+	const auto operator<=>(const pair&) const = default;
 
 	T1 first;
     T2 second;
@@ -78,13 +78,18 @@ template <class T1, class T2> void swap(pair<T1, T2> &a, pair<T1, T2> &b) {
 
 //------------------------- tuple -------------------------//
 template<class... Args> class tuple {};
-template <> class tuple<> {};
+template <> class tuple<> {
+public:
+  constexpr auto operator<=>(const tuple &) const = default;
+};
 template <class T, class... Args>
 class tuple<T, Args...>{
 public:
   constexpr tuple() = default;
   constexpr tuple(const T& t, const Args&...args)
       : value(t), rest(args...){}
+
+  constexpr auto operator<=>(const tuple &) const = default;
 
   T value;
   tuple<Args...> rest;
@@ -95,7 +100,7 @@ template <class... Args>
 struct tuple_size<tuple<Args...>> : integral_constant<size_t, sizeof...(Args)> {};
 template<class T> inline constexpr size_t tuple_size_v = tuple_size<remove_cv_t<T>>::value;
 
-template <std::size_t I, class... Types>
+template <size_t I, class... Types>
 constexpr const auto &get(const tuple<Types...> &t) noexcept {
   if constexpr (I == 0)
     return t.value;
@@ -103,7 +108,7 @@ constexpr const auto &get(const tuple<Types...> &t) noexcept {
     return get<I - 1>(t.rest);
 }
 
-template <std::size_t I, class... Types>
+template <size_t I, class... Types>
 constexpr auto &get(tuple<Types...> &t) noexcept {
   if constexpr (I == 0)
     return t.value;
@@ -126,5 +131,11 @@ constexpr auto &get(tuple<Types...> &t) noexcept {
   else
     return get<T>(t.rest);
 }
+
+template <size_t, typename> struct tuple_element;
+template <size_t I, class... Args>
+struct tuple_element<I, tuple<Args...>> {
+   using type = remove_cvref_t<decltype(get<I>(tuple<Args...>()))>;
+};
 
 } // namespace aria

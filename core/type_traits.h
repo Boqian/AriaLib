@@ -119,6 +119,12 @@ template <class T> struct remove_reference<T &> : type_identity<T> {};
 template <class T> struct remove_reference<T &&> : type_identity<T> {};
 template <class T> using remove_reference_t = remove_reference<T>::type;
 
+//----------------- remove_cvref -----------------------
+template <class T> struct remove_cvref {
+    using type = remove_cv_t<remove_reference_t<T>>;
+};
+template <class T> using remove_cvref_t = remove_cvref<T>::type;
+
 //----------------- is_lvalue_reference is_rvalue_reference-----------------------
 template <class T> struct is_lvalue_reference : false_type {};
 template <class T> struct is_lvalue_reference<T &> : true_type {};
