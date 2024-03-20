@@ -38,7 +38,7 @@ TEST(test_unique_ptr, make_unique) {
   auto p = make_unique<int>(1);
   EXPECT_EQ(*p, 1);
 
-  auto q = make_unique<std::pair<int, double>>(1, 2.2);
+  auto q = make_unique<pair<int, double>>(1, 2.2);
   EXPECT_EQ(q->first, 1);
   EXPECT_DOUBLE_EQ(q->second, 2.2);
 }

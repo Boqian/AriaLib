@@ -45,7 +45,7 @@ TEST(test_vector, construct) {
 }
 
 TEST(test_vector, emplace_back) {
-  auto v = vector<std::pair<int, double>>();
+  auto v = vector<pair<int, double>>();
   v.emplace_back(3, 1.5);
   EXPECT_EQ(v.size(), 1);
   EXPECT_EQ(v[0].first, 3);
