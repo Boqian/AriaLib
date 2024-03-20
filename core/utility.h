@@ -90,6 +90,10 @@ public:
   constexpr tuple() = default;
   constexpr tuple(const T& t, const Args&...args)
       : value(t), rest(args...){}
+  constexpr tuple(const tuple &) = default;
+  constexpr tuple(tuple &&) noexcept = default;
+  constexpr tuple &operator=(const tuple &) noexcept = default;
+  constexpr tuple &operator=(tuple &&) noexcept = default;
 
   constexpr auto operator<=>(const tuple &) const = default;
 
