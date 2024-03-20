@@ -51,5 +51,11 @@ TEST(test_pair, basic) {
     q = p;
     EXPECT_EQ(q, q1);
   }
+  {
+    pair<int, int> p(1, 2), q(3, 3);
+    swap(p, q);
+    EXPECT_EQ(p.first, 3);
+    EXPECT_EQ(q.first, 1);
+  }
 }
 

@@ -52,6 +52,11 @@ public:
     constexpr pair(U1 &&x, U2 &&y)
         : first{forward<U1>(x)}, second{forward<U2>(y)} {}
 
+    constexpr void swap(pair &rhs) noexcept {
+          ::aria::swap(first, rhs.first);
+          ::aria::swap(second, rhs.second);
+        }
+
 	auto operator<=>(const pair&) const = default;
 
 	T1 first;
@@ -64,5 +69,10 @@ template <class T1, class T2>
 constexpr pair<T1, T2> make_pair(const T1 &&a, const T2 &&b) {
   return pair(a, b);
 }
+
+template <class T1, class T2> void swap(pair<T1, T2> &a, pair<T1, T2> &b) {
+  a.swap(b);
+}
+
 
 } // namespace aria
