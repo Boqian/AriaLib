@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include "type_traits.h"
 #include "concepts.h"
 #include <compare>
@@ -12,7 +13,7 @@ pair
 */
 
 namespace aria {
-
+using std::size_t;
 using nullptr_t = decltype(nullptr);
 
 template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept {
@@ -36,6 +37,7 @@ template <class T> constexpr void swap(T &a, T &b) noexcept {
   b = move(temp);
 }
 
+//------------------------- pair -------------------------//
 template<class T1, class T2> struct pair {
 public:
 	using first_type = T1;
@@ -74,5 +76,24 @@ template <class T1, class T2> void swap(pair<T1, T2> &a, pair<T1, T2> &b) {
   a.swap(b);
 }
 
+//------------------------- tuple -------------------------//
+template<class... Args> class tuple {};
+template <> class tuple<> {};
+template <class T, class... Args>
+class tuple<T, Args...>{
+public:
+  constexpr tuple() = default;
+  constexpr tuple(const T& t, const Args&...args)
+      : value(t), rest(args...){}
+
+private:
+  T value;
+  tuple<Args...> rest;
+};
+
+template <typename> struct tuple_size;
+template <class... Args>
+struct tuple_size<tuple<Args...>> : integral_constant<size_t, sizeof...(Args)> {};
+template<class T> constexpr size_t tuple_size_v = tuple_size<T>::value;
 
 } // namespace aria

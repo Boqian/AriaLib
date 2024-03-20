@@ -57,5 +57,18 @@ TEST(test_pair, basic) {
     EXPECT_EQ(p.first, 3);
     EXPECT_EQ(q.first, 1);
   }
+  {
+    pair p(1, 2.5);
+    auto [x, y] = p;
+    EXPECT_EQ(x, 1);
+    EXPECT_DOUBLE_EQ(y, 2.5);
+  }
 }
 
+TEST(test_tuple, basic) {
+  { tuple<int, double, A> tp; }
+  {
+    tuple<int, double, A> tp(1, 2.5, A{});
+    static_assert(tuple_size_v<decltype(tp)> == 3);
+  }
+}
