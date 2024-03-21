@@ -35,4 +35,11 @@ TEST(test_optional, basic) {
     optional<int> b;
     EXPECT_EQ(b.value_or(3), 3);
   }
+  {
+    optional<int> a(5), b, c;
+    b = a;
+    EXPECT_EQ(b.value(), 5);
+    b = c;
+    EXPECT_FALSE(b);
+  }
 }
