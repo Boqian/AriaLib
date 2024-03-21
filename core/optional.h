@@ -23,20 +23,20 @@ public:
   constexpr optional() noexcept : empty_{} {}
   constexpr optional(nullopt_t) noexcept : empty_{} {}
   constexpr ~optional() {
-      destruct();
+      reset();
   }
 
   template <class U = T>
     requires is_constructible_v<T, U&&>
   constexpr optional(U &&u) : has_value_(true), value_{forward<U>(u)} {}
 
-  constexpr optional &operator=(std::nullopt_t) noexcept { destruct(); }
+  constexpr optional &operator=(std::nullopt_t) noexcept { reset(); }
 
   constexpr optional &operator=(const optional &rhs) {
     if (this == &rhs)
       return *this;
     if (!rhs.has_value()) {
-      destruct();
+      reset();
     } else if (has_value()) {
       value_ = rhs.value(); //copy-assign
     } else {
@@ -78,15 +78,15 @@ public:
                            : static_cast<T>(forward<U>(default_value));
   }
 
-private:
-  constexpr void destruct() {
+  constexpr void reset() noexcept {
     if constexpr (is_destructible_v<T>) {
-      if (has_value_) 
-          value_.~T();
+      if (has_value_)
+        value_.~T();
     }
     has_value_ = false;
   }
 
+private:
   template<class...Args> constexpr void construct_in_place(Args &&...args) {
     new (&value_) T(forward<Args>(args)...); 
   }
