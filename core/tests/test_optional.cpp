@@ -25,4 +25,14 @@ TEST(test_optional, basic) {
     a->first = 10;
     EXPECT_EQ(a->first, 10);
   }
+  {
+    optional<int> a(5);
+    EXPECT_TRUE(a.has_value());
+    EXPECT_EQ(a.value(), 5);
+    EXPECT_EQ(a.value_or(3), 5);
+    a.value() = 10;
+    EXPECT_EQ(a.value(), 10);
+    optional<int> b;
+    EXPECT_EQ(b.value_or(3), 3);
+  }
 }
