@@ -111,6 +111,8 @@ public:
   tuple<Args...> rest;
 };
 
+template <class... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
+
 template <typename> struct tuple_size;
 template <class... Args>
 struct tuple_size<tuple<Args...>> : integral_constant<size_t, sizeof...(Args)> {};
