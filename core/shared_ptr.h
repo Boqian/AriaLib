@@ -51,6 +51,8 @@ class shared_ptr {
   }
 
   shared_ptr& operator=(const shared_ptr& rhs) noexcept {
+    if (this == &rhs)
+      return *this;
     reset();
     m_ptr = rhs.m_ptr;
     m_shared = rhs.m_shared;
@@ -59,6 +61,8 @@ class shared_ptr {
   }
 
   shared_ptr& operator=(shared_ptr&& rhs) noexcept {
+    if (this == &rhs)
+      return *this;
     swap(rhs);
     shared_ptr().swap(rhs);
     return *this;
