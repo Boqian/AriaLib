@@ -45,16 +45,19 @@ TEST(test_optional, basic) {
 }
 
 struct A {
+  inline static int n_ctor = 0;
   inline static int n_copy_ctor = 0;
   inline static int n_copy_assign = 0;
   inline static int n_dtor = 0;
   static void reset() {
+    n_ctor = 0;
     n_copy_ctor = 0;
     n_copy_assign = 0;
     n_dtor = 0;
   }
 
-  A() {}
+  A() { n_ctor++; }
+  A(int) { n_ctor++; }
   A(const A &) { n_copy_ctor++; }
   A &operator=(const A &) {
     n_copy_assign++;
@@ -63,7 +66,7 @@ struct A {
   ~A() { n_dtor++; }
 };
 
-TEST(test_optional, ctor) { 
+TEST(test_optional, ctor) {
   A a;
   A::reset();
   {
@@ -77,11 +80,19 @@ TEST(test_optional, ctor) {
     EXPECT_EQ(A::n_copy_assign, 0);
   }
   EXPECT_EQ(A::n_dtor, 2);
-  { 
-      optional<A> b(a), c(a);
-      A::reset();
-      c = b;
-      EXPECT_EQ(A::n_copy_ctor, 0);
-      EXPECT_EQ(A::n_copy_assign, 1);
+  {
+    optional<A> b(a), c(a);
+    A::reset();
+    c = b;
+    EXPECT_EQ(A::n_copy_ctor, 0);
+    EXPECT_EQ(A::n_copy_assign, 1);
   }
+  EXPECT_EQ(A::n_dtor, 2);
+  {
+    A::reset();
+    optional<A> b(1);
+    EXPECT_EQ(A::n_copy_ctor, 0);
+    EXPECT_EQ(A::n_ctor, 1);
+  }
+  EXPECT_EQ(A::n_dtor, 1);
 }
