@@ -120,6 +120,21 @@ inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
 //----------------- declval -----------------------
 template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
 
+//----------------- move, forward------------------
+template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept {
+  return static_cast<remove_reference_t<T> &&>(t);
+}
+
+template <typename T> constexpr T &&forward(remove_reference_t<T> &t) noexcept {
+  return static_cast<T &&>(t);
+}
+
+template <typename T>
+constexpr T &&forward(remove_reference_t<T> &&t) noexcept {
+  static_assert(!is_lvalue_reference_v<T>);
+  return static_cast<T &&>(t);
+}
+
 //----------------- is_default_constructible -----------------------
 namespace details {
 template <class T>
@@ -128,6 +143,9 @@ concept default_construct = requires {
   T{};
   ::new T;
 };
+
+template <class T, class... Args>
+concept constructable = requires (Args... args) { T(args...); };
 }
 
 template <class T>
@@ -136,6 +154,12 @@ struct is_default_constructible : bool_constant<details::default_construct<T>> {
 template <class T>
 inline constexpr bool is_default_constructible_v =
     is_default_constructible<T>::value;
+
+template <class T, class... Args>
+struct is_constructible : bool_constant<details::constructable<T, Args...>> {};
+
+template <class T, class... Args>
+inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
 
 //----------------- is_destructible -----------------------
 namespace details {

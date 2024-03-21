@@ -11,6 +11,10 @@ struct BB {
   ~BB() = delete;
 };
 
+struct CC {
+  CC(int, double) {}
+};
+
 void test_traits() {
   using namespace aria;
   static_assert(is_same_v<conditional_t<true, int, double>, int>);
@@ -54,8 +58,15 @@ void test_traits() {
   static_assert(is_default_constructible_v<Base>);
   static_assert(!is_default_constructible_v<AA>);
 
+  static_assert(!is_constructible_v<CC, int>);
+  static_assert(is_constructible_v<CC, int, double>);
+  static_assert(is_constructible_v<AA, int>);
+  static_assert(!is_constructible_v<AA>);
+  static_assert(is_constructible_v<Base>);
+
   static_assert(is_destructible_v<int>);
   static_assert(!is_destructible_v<void>);
   static_assert(!is_destructible_v<BB>);
   static_assert(is_destructible_v<BB&>);
+
 }

@@ -1,4 +1,6 @@
 #pragma once
+#include "type_traits.h"
+
 
 namespace aria {
 
@@ -14,9 +16,20 @@ public:
   constexpr optional() noexcept : empty{} {}
   constexpr optional(nullopt_t) noexcept : empty{} {}
   constexpr ~optional() {
+    if constexpr (is_destructible_v<T>) {
       if (has_value)
         value.~T();
+    }
   }
+
+  template <class U = T>
+    requires is_constructible_v<T, U&&>
+  constexpr optional(U &&u) : has_value(true), value{forward<U>(u)} {}
+
+  constexpr const T& operator*() const noexcept { return value; }
+  constexpr T& operator*() noexcept { return value; }
+  constexpr const T* operator->() const noexcept { return &value; }
+  constexpr T *operator->() noexcept { return &value; }
 
   constexpr operator bool() const noexcept { return has_value; }
 
