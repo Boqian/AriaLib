@@ -2,6 +2,17 @@
 #include "optional.h"
 #include "utility.h"
 
+struct CC {
+  CC(int a) : x(a) {}
+  CC(CC &&rhs) : x(rhs.x) { rhs.x = 0; }
+  CC &operator=(CC &&rhs) {
+    x = rhs.x;
+    rhs.x = 0;
+    return *this;
+  }
+  int x = 0;
+};
+
 using namespace aria;
 
 TEST(test_optional, basic) {
@@ -46,6 +57,24 @@ TEST(test_optional, basic) {
     optional<int> a(5);
     auto b = a;
     EXPECT_EQ(b.value(), 5);
+  }
+  {
+    optional<int> a(5);
+    optional<int> b = move(a);
+    EXPECT_EQ(b.value(), 5);
+    EXPECT_EQ(a.value(), 5);
+  }
+  {
+    optional<CC> a(123);
+    optional<CC> b = move(a);
+    EXPECT_EQ(b->x, 123);
+    EXPECT_EQ(a->x, 0);
+  }
+  {
+    optional<CC> a(123), b;
+    b = move(a);
+    EXPECT_EQ(b->x, 123);
+    EXPECT_EQ(a->x, 0);
   }
 }
 

@@ -34,6 +34,13 @@ public:
     }
   }
 
+  constexpr optional(optional &&rhs) {
+    if (rhs) {
+      has_value_ = true;
+      construct_in_place(move(rhs.value()));
+    }
+  }
+
   constexpr optional &operator=(std::nullopt_t) noexcept { reset(); }
 
   constexpr optional &operator=(const optional &rhs) {
@@ -45,6 +52,20 @@ public:
       value_ = rhs.value(); // copy-assign
     } else {
       construct_in_place(rhs.value()); // in-place construct
+      has_value_ = true;
+    }
+    return *this;
+  }
+
+   constexpr optional &operator=(optional &&rhs) {
+    if (this == &rhs)
+      return *this;
+    if (!rhs.has_value()) {
+      reset();
+    } else if (has_value()) {
+      value_ = move(rhs.value()); // move-assign
+    } else {
+      construct_in_place(move(rhs.value())); // in-place move construct
       has_value_ = true;
     }
     return *this;
