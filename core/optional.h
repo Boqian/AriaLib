@@ -1,6 +1,6 @@
 #pragma once
 #include "type_traits.h"
-
+#include <exception>
 
 namespace aria {
 
@@ -9,6 +9,13 @@ struct nullopt_t {
   constexpr explicit nullopt_t(Tag) {}
 };
 inline constexpr auto nullopt = nullopt_t{nullopt_t::Tag{}};
+
+class bad_optional_access : public std::exception {
+public:
+  [[no_discard]] const char *what() const noexcept override {
+    return "Bad optional access";
+  }
+};
 
 template <class T> class optional {
 public:
@@ -34,7 +41,9 @@ public:
   constexpr operator bool() const noexcept { return has_value_; }
   constexpr bool has_value() const noexcept { return has_value_; }
 
-  template <class Self> constexpr auto& value(this Self &&self) {
+  template <class Self> constexpr auto&& value(this Self &&self) {
+    if (!self.has_value())
+      throw(bad_optional_access{});
     return self.value_;
   }
 
