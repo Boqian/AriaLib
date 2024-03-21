@@ -1,5 +1,5 @@
 #pragma once
-#include "type_traits.h"
+#include "utility.h"
 #include <exception>
 
 namespace aria {
@@ -12,9 +12,7 @@ inline constexpr auto nullopt = nullopt_t{nullopt_t::Tag{}};
 
 class bad_optional_access : public std::exception {
 public:
-  [[no_discard]] const char *what() const noexcept override {
-    return "Bad optional access";
-  }
+  [[no_discard]] const char *what() const noexcept override { return "Bad optional access"; }
 };
 
 template <class T> class optional {
@@ -22,13 +20,19 @@ public:
   using value_type = T;
   constexpr optional() noexcept : empty_{} {}
   constexpr optional(nullopt_t) noexcept : empty_{} {}
-  constexpr ~optional() {
-      reset();
-  }
+  constexpr ~optional() { reset(); }
 
   template <class U = T>
-    requires is_constructible_v<T, U&&>
-  constexpr optional(U &&u) : has_value_(true), value_{forward<U>(u)} {}
+    requires is_constructible_v<T, U &&> && !is_same_v<remove_cvref_t<U>, optional>
+             constexpr optional(U && u) : has_value_(true),
+  value_{forward<U>(u)} {}
+
+  constexpr optional(const optional &rhs) {
+    if (rhs) {
+      has_value_ = true;
+      construct_in_place(rhs.value());
+    }
+  }
 
   constexpr optional &operator=(std::nullopt_t) noexcept { reset(); }
 
@@ -38,19 +42,18 @@ public:
     if (!rhs.has_value()) {
       reset();
     } else if (has_value()) {
-      value_ = rhs.value(); //copy-assign
+      value_ = rhs.value(); // copy-assign
     } else {
-      construct_in_place(rhs.value()); //in-place construct
+      construct_in_place(rhs.value()); // in-place construct
       has_value_ = true;
     }
     return *this;
   }
 
-  template <class U = T> 
-  requires is_constructible_v<T, U> && !is_same_v<remove_cvref_t<U>, optional>
-  constexpr optional& operator=(U&& value) {
+  template <class U = T> requires is_constructible_v<T, U> && !is_same_v<remove_cvref_t<U>, optional>
+  constexpr optional &operator=(U &&value) {
     if (has_value()) {
-      value_ = value;  // copy-assign
+      value_ = value; // copy-assign
     } else {
       construct_in_place(value); // in-place construct
       has_value_ = true;
@@ -58,24 +61,22 @@ public:
     return *this;
   }
 
-  constexpr const T& operator*() const noexcept { return value_; }
-  constexpr T& operator*() noexcept { return value_; }
-  constexpr const T* operator->() const noexcept { return &value_; }
+  constexpr const T &operator*() const noexcept { return value_; }
+  constexpr T &operator*() noexcept { return value_; }
+  constexpr const T *operator->() const noexcept { return &value_; }
   constexpr T *operator->() noexcept { return &value_; }
 
   constexpr operator bool() const noexcept { return has_value_; }
   constexpr bool has_value() const noexcept { return has_value_; }
 
-  template <class Self> constexpr auto&& value(this Self &&self) {
+  template <class Self> constexpr auto &&value(this Self &&self) {
     if (!self.has_value())
       throw(bad_optional_access{});
     return self.value_;
   }
 
-  template <class Self, class U>
-  constexpr auto value_or(this Self &&self, U &&default_value) {
-    return self.has_value_ ? self.value_
-                           : static_cast<T>(forward<U>(default_value));
+  template <class Self, class U> constexpr auto value_or(this Self &&self, U &&default_value) {
+    return self.has_value_ ? self.value_ : static_cast<T>(forward<U>(default_value));
   }
 
   constexpr void reset() noexcept {
@@ -86,10 +87,17 @@ public:
     has_value_ = false;
   }
 
+  // constexpr void swap() noexcept(optional & rhs) {
+  //   if (*this && rhs) {
+  //     ::aria::swap(this->value(), rhs.value());
+  //   } else if (*this && !rhs) {
+
+  //  } else if (!*this && rhs) {
+  //  }
+  //}
+
 private:
-  template<class...Args> constexpr void construct_in_place(Args &&...args) {
-    new (&value_) T(forward<Args>(args)...); 
-  }
+  template <class... Args> constexpr void construct_in_place(Args &&...args) { new (&value_) T(forward<Args>(args)...); }
 
   struct empty_byte {};
   union {
@@ -99,4 +107,4 @@ private:
   bool has_value_ = false;
 };
 
-}
+} // namespace aria

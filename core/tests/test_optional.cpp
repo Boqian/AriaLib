@@ -42,6 +42,11 @@ TEST(test_optional, basic) {
     b = c;
     EXPECT_FALSE(b);
   }
+  {
+    optional<int> a(5);
+    auto b = a;
+    EXPECT_EQ(b.value(), 5);
+  }
 }
 
 struct A {
