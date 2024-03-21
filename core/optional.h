@@ -81,8 +81,8 @@ public:
 private:
   constexpr void destruct() {
     if constexpr (is_destructible_v<T>) {
-      if (has_value_)
-        value_.~T();
+      if (has_value_) 
+          value_.~T();
     }
     has_value_ = false;
   }

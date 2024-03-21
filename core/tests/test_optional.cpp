@@ -43,3 +43,45 @@ TEST(test_optional, basic) {
     EXPECT_FALSE(b);
   }
 }
+
+struct A {
+  inline static int n_copy_ctor = 0;
+  inline static int n_copy_assign = 0;
+  inline static int n_dtor = 0;
+  static void reset() {
+    n_copy_ctor = 0;
+    n_copy_assign = 0;
+    n_dtor = 0;
+  }
+
+  A() {}
+  A(const A &) { n_copy_ctor++; }
+  A &operator=(const A &) {
+    n_copy_assign++;
+    return *this;
+  }
+  ~A() { n_dtor++; }
+};
+
+TEST(test_optional, ctor) { 
+  A a;
+  A::reset();
+  {
+    optional<A> b(a);
+    EXPECT_EQ(A::n_copy_ctor, 1);
+    EXPECT_EQ(A::n_copy_assign, 0);
+
+    optional<A> c;
+    c = b;
+    EXPECT_EQ(A::n_copy_ctor, 2);
+    EXPECT_EQ(A::n_copy_assign, 0);
+  }
+  EXPECT_EQ(A::n_dtor, 2);
+  { 
+      optional<A> b(a), c(a);
+      A::reset();
+      c = b;
+      EXPECT_EQ(A::n_copy_ctor, 0);
+      EXPECT_EQ(A::n_copy_assign, 1);
+  }
+}
