@@ -81,6 +81,7 @@ template <class T1, class T2> void swap(pair<T1, T2> &a, pair<T1, T2> &b) {
 template<class... Args> class tuple {};
 template <> class tuple<> {
 public:
+  constexpr tuple() = default;
   constexpr auto operator<=>(const tuple &) const = default;
   void swap(tuple &rhs) noexcept {}
 };
@@ -88,12 +89,16 @@ template <class T, class... Args>
 class tuple<T, Args...>{
 public:
   constexpr tuple() = default;
-  constexpr tuple(const T& t, const Args&...args)
-      : value(t), rest(args...){}
+  constexpr tuple(const T &t, const Args &...args) : value(t), rest(args...) {}
   constexpr tuple(const tuple &) = default;
   constexpr tuple(tuple &&) noexcept = default;
   constexpr tuple &operator=(const tuple &) noexcept = default;
   constexpr tuple &operator=(tuple &&) noexcept = default;
+
+  template <class U, class... Us>
+    requires convertible_to<U, T> && convertible_to<Us..., Args...>
+  constexpr tuple(U &&u, Us &&...args)
+      : value(forward<U>(u)), rest(forward<Us>(args)...) {} 
 
   constexpr auto operator<=>(const tuple &) const = default;
 
@@ -148,6 +153,10 @@ template <size_t I, class... Args>
 struct tuple_element<I, tuple<Args...>> {
    using type = remove_cvref_t<decltype(get<I>(tuple<Args...>()))>;
 };
+
+template <class... Args> tuple<Args...> make_tuple(Args &&...args) {
+  return tuple<Args...>(forward<Args>(args)...);
+}
 
 template <class... Args> void swap(tuple<Args...> &a, tuple<Args...> &b) {
   a.swap(b);

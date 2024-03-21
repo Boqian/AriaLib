@@ -110,4 +110,12 @@ TEST(test_tuple, basic) {
     auto c = a;
     EXPECT_EQ(a, c);
   }
+  {
+    auto t = make_tuple(1, 2.5, A{});
+    EXPECT_EQ(get<0>(t), 1);
+    EXPECT_DOUBLE_EQ(get<double>(t), 2.5);
+  }
+  { 
+      tuple<int, int> p('a', 1u);
+  }
 }
