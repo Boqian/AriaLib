@@ -130,3 +130,12 @@ TEST(test_optional, ctor) {
   }
   EXPECT_EQ(A::n_dtor, 1);
 }
+
+TEST(test_optional, swap) {
+  optional<CC> a(1), b(2), c, d;
+  swap(a, b);
+  EXPECT_TRUE(a->x == 2 && b->x == 1);
+  swap(a, c);
+  EXPECT_FALSE(a);
+  EXPECT_EQ(c->x, 2);
+}

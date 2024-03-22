@@ -108,14 +108,17 @@ public:
     has_value_ = false;
   }
 
-  // constexpr void swap() noexcept(optional & rhs) {
-  //   if (*this && rhs) {
-  //     ::aria::swap(this->value(), rhs.value());
-  //   } else if (*this && !rhs) {
-
-  //  } else if (!*this && rhs) {
-  //  }
-  //}
+   constexpr void swap(optional &rhs) noexcept {
+    if (*this && rhs) {
+      ::aria::swap(this->value(), rhs.value());
+    } else if (*this && !rhs) {
+      rhs = move(*this);
+      reset();
+    } else if (!*this && rhs) {
+      *this = move(rhs);
+      rhs.reset();
+    }
+  }
 
 private:
   template <class... Args> constexpr void construct_in_place(Args &&...args) { new (&value_) T(forward<Args>(args)...); }
@@ -127,5 +130,7 @@ private:
   };
   bool has_value_ = false;
 };
+
+template <class T> void swap(optional<T>& a, optional<T>& b) noexcept { a.swap(b); }
 
 } // namespace aria
