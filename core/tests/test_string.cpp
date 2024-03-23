@@ -54,6 +54,12 @@ TEST(test_string, operation) {
     string a = "12345";
     EXPECT_EQ(a.substr(0, 2), "12");
     EXPECT_EQ(a.substr(1, 1), "2");
-    EXPECT_EQ(a.substr(3), "45"); 
+    EXPECT_EQ(a.substr(3), "45");
+  }
+  {
+    string a;
+    EXPECT_EQ((a += '1'), "1");
+    EXPECT_EQ((a += '2'), "12");
+    EXPECT_EQ((a += '3'), "123");
   }
 }

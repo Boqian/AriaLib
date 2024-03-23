@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstring> //strlen memcpy
-#include <stdexcept>
+#include "utility.h"
 #include "allocator.h"
 #include <algorithm> //min
+#include <stdexcept>
 
 namespace aria {
 
@@ -64,7 +64,7 @@ public:
       return;
     auto new_ptr = m_alloc.allocate(new_cap);
     memcpy(new_ptr, m_ptr, m_size * sizeof(value_type));
-    reset();
+    m_alloc.deallocate(m_ptr, m_capacity);
     m_capacity = new_cap;
     m_ptr = new_ptr;
   }
@@ -89,6 +89,13 @@ public:
 
     count = std::min(count, size() - pos);
     return basic_string(m_ptr + pos, count, count);
+  }
+
+  basic_string &operator+=(CharT ch) {
+    reserve_more(1);
+    *get(m_size) = ch;
+    m_size += 1;
+    return *this;
   }
 
 private:
@@ -116,6 +123,14 @@ private:
       memcpy(m_ptr, src, size * sizeof(value_type));
       m_size = size;
     }
+  }
+
+  void reserve_more(size_type added_size) { 
+    size_type new_capacity = std::max(size_type(1), capacity());
+    const size_type new_size = size() + added_size;
+    while (new_size > new_capacity)
+      new_capacity *= 2;
+    reserve(new_capacity);
   }
 
   Allocator m_alloc;
