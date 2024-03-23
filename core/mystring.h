@@ -98,6 +98,13 @@ public:
     return *this;
   }
 
+   basic_string &operator+=(const basic_string &rhs) {
+    reserve_more(rhs.size());
+    memcpy(m_ptr + m_size, rhs.m_ptr, rhs.size() * sizeof(value_type));
+    m_size += rhs.size();
+    return *this;
+  }
+
 private:
   pointer get(size_type i) { return m_ptr + i; }
   const pointer get(size_type i) const { return m_ptr + i; }
