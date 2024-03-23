@@ -48,3 +48,12 @@ TEST(test_string, basic) {
     EXPECT_EQ(a, "");
   }
 }
+
+TEST(test_string, operation) {
+  {
+    string a = "12345";
+    EXPECT_EQ(a.substr(0, 2), "12");
+    EXPECT_EQ(a.substr(1, 1), "2");
+    EXPECT_EQ(a.substr(3), "45"); 
+  }
+}

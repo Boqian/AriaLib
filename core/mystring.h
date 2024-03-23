@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstring> //strlen memcpy
+#include <stdexcept>
 #include "allocator.h"
+#include <algorithm> //min
 
 namespace aria {
 
@@ -13,6 +15,7 @@ public:
   using const_pointer = const value_type *;
   using reference = value_type &;
   using const_reference = const value_type &;
+  inline static const size_type npos = -1;
 
   basic_string() = default;
   ~basic_string() noexcept { reset(); }
@@ -80,6 +83,13 @@ public:
 
   void clear() noexcept { m_size = 0; }
 
+  basic_string substr(size_type pos = 0, size_type count = npos) const {
+    if (pos >= size())
+      throw std::out_of_range("basic_string::substr pos >= size()");
+
+    count = std::min(count, size() - pos);
+    return basic_string(m_ptr + pos, count, count);
+  }
 
 private:
   pointer get(size_type i) { return m_ptr + i; }
