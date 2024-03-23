@@ -20,6 +20,27 @@ public:
   basic_string(const_pointer str) : basic_string(str, strlen(str)) {}
   basic_string(const basic_string &rhs) : basic_string(rhs.m_ptr, rhs.size(), rhs.capacity()) {}
 
+  basic_string(basic_string &&rhs) noexcept {
+    swap(rhs);
+    rhs.reset();
+  }
+
+  basic_string &operator=(const basic_string &rhs) {
+    if (this != &rhs) {
+      reserve(rhs.capacity());
+      copy(rhs.m_ptr, rhs.size());
+    }
+    return *this;
+  }
+
+  basic_string &operator=(basic_string &&rhs) noexcept {
+    if (this != &rhs) {
+      swap(rhs);
+      rhs.reset();
+    }
+    return *this;
+  }
+
   void swap(basic_string &rhs) noexcept {
     ::aria::swap(m_alloc, rhs.m_alloc);
     ::aria::swap(m_ptr, rhs.m_ptr);
@@ -68,22 +89,22 @@ private:
     if (cap == 0)
       cap = size;
     reserve(cap);
-    copy(str, size, cap);
+    copy(str, size);
   }
 
   void reset() noexcept {
     if (m_ptr) {
       m_alloc.deallocate(m_ptr, m_capacity);
+      m_ptr = nullptr;
       m_size = 0;
       m_capacity = 0;
     }
   }
   
-  void copy(const_pointer src, size_type size, size_type cap) {
+  void copy(const_pointer src, size_type size) {
     if (src) {
       memcpy(m_ptr, src, size * sizeof(value_type));
       m_size = size;
-      m_capacity = cap;
     }
   }
 

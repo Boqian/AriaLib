@@ -28,4 +28,23 @@ TEST(test_string, basic) {
     string b = a;
     EXPECT_EQ(b, "123");
   }
+  {
+    string a = "123";
+    string b = move(a);
+    EXPECT_EQ(b, "123");
+    EXPECT_EQ(a, "");
+    EXPECT_TRUE(a.empty());
+  }
+  {
+    string a = "123", b = "44";
+    b = a;
+    EXPECT_EQ(b, "123");
+    EXPECT_EQ(a, "123");
+  }
+  {
+    string a = "123", b = "44";
+    b = move(a);
+    EXPECT_EQ(b, "123");
+    EXPECT_EQ(a, "");
+  }
 }
