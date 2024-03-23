@@ -47,6 +47,12 @@ TEST(test_string, basic) {
     EXPECT_EQ(b, "123");
     EXPECT_EQ(a, "");
   }
+  {
+    string a = "123";
+    a.clear();
+    EXPECT_TRUE(a.empty());
+    EXPECT_EQ(a, "");
+  }
 }
 
 TEST(test_string, operation) {
