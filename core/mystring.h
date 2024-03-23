@@ -105,6 +105,14 @@ public:
     return *this;
   }
 
+   basic_string &operator+=(const_pointer rhs) {
+    size_t added_size = strlen(rhs);
+    reserve_more(added_size);
+    memcpy(m_ptr + m_size, rhs, added_size * sizeof(value_type));
+    m_size += added_size;
+    return *this;
+  }
+
 private:
   pointer get(size_type i) { return m_ptr + i; }
   const pointer get(size_type i) const { return m_ptr + i; }

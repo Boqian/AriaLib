@@ -68,4 +68,11 @@ TEST(test_string, operation) {
     EXPECT_EQ((a += b), "1987987");
     EXPECT_EQ((a += b), "1987987987");
   }
+  {
+    string a = "1";
+    const char *b = "987";
+    EXPECT_EQ((a += b), "1987");
+    EXPECT_EQ((a += b), "1987987");
+    EXPECT_EQ((a += b), "1987987987");
+  }
 }
