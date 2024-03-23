@@ -11,14 +11,21 @@ TEST(test_string, empty_string) {
 }
 
 TEST(test_string, basic) {
-  string a = "123";
-  EXPECT_FALSE(a.empty());
-  EXPECT_EQ(a.size(), 3);
-  EXPECT_EQ(a.capacity(),3);
-  EXPECT_EQ(a[0], '1');
-  EXPECT_EQ(a[1], '2');
-  EXPECT_EQ(a.back(), '3');
-  EXPECT_EQ(a, "123");
-  a[0] = 's';
-  EXPECT_EQ(a, "s23");
+  {
+    string a = "123";
+    EXPECT_FALSE(a.empty());
+    EXPECT_EQ(a.size(), 3);
+    EXPECT_EQ(a.capacity(), 3);
+    EXPECT_EQ(a[0], '1');
+    EXPECT_EQ(a[1], '2');
+    EXPECT_EQ(a.back(), '3');
+    EXPECT_EQ(a, "123");
+    a[0] = 's';
+    EXPECT_EQ(a, "s23");
+  }
+  {
+    string a = "123";
+    string b = a;
+    EXPECT_EQ(b, "123");
+  }
 }

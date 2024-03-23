@@ -14,14 +14,10 @@ public:
   using const_reference = const value_type &;
 
   basic_string() = default;
-  ~basic_string() noexcept { deallocate(); }
+  ~basic_string() noexcept { reset(); }
 
-  basic_string(const char *str) {
-    const auto size = strlen(str);
-    m_capacity = m_size = strlen(str);
-    m_ptr = m_alloc.allocate(m_size);
-    memcpy(m_ptr, str, m_size * sizeof(value_type));
-  }
+  basic_string(const char *str) : basic_string(str, strlen(str)) {}
+  basic_string(const basic_string &rhs) : basic_string(rhs.m_ptr, rhs.m_size) {}
 
   void swap(basic_string &rhs) noexcept {
     ::aria::swap(m_alloc, rhs.m_alloc);
@@ -43,7 +39,7 @@ public:
       return;
     auto new_ptr = m_alloc.allocate(new_cap);
     memcpy(new_ptr, m_ptr, m_size * sizeof(value_type));
-    deallocate();
+    reset();
     m_capacity = new_cap;
     m_ptr = new_ptr;
   }
@@ -60,12 +56,33 @@ public:
     return true;
   }
 
+  void clear() noexcept { m_size = 0; }
+
 
 private:
   pointer get(size_type i) { return m_ptr + i; }
   const pointer get(size_type i) const { return m_ptr + i; }
 
-  void deallocate() noexcept { m_alloc.deallocate(m_ptr, m_capacity); }
+  basic_string(const char *str, size_type size) {
+    if (str) {
+      reserve(size);
+      copy(str, size);
+    }
+  }
+
+  void reset() noexcept {
+    if (m_ptr) {
+      m_alloc.deallocate(m_ptr, m_capacity);
+      m_size = 0;
+      m_capacity = 0;
+    }
+  }
+  
+  void copy(const char* src, size_type size) { 
+      reserve(size);
+      memcpy(m_ptr, src, size * sizeof(value_type));
+      m_size = size;
+  }
 
   Allocator m_alloc;
   pointer m_ptr = nullptr;
