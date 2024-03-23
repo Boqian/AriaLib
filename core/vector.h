@@ -10,7 +10,7 @@ namespace aria {
 template <class T, class Allocator = allocator<T>>
 class vector {
  public:
-  using size_type = unsigned int;
+  using size_type = size_t;
   using value_type = T;
   using pointer = value_type*;
 
