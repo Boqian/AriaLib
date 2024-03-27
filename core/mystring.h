@@ -59,6 +59,7 @@ public:
   reference operator[](size_type i) { return *get(i); }
   const_reference &operator[](size_type i) const { return *get(i); }
   void clear() noexcept { m_size = 0; }
+  void pop_back() { m_size--; }
 
   void reserve(size_type new_cap) {
     if (new_cap <= capacity())
