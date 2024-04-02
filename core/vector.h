@@ -77,7 +77,10 @@ class vector {
   }
 
   void pop_back() {
-    if (m_size > 0) m_size--;
+    if (m_size > 0) {
+      m_size--;
+      decstuct_at(m_size);
+    }
   }
 
   void reserve(size_type new_cap) {
@@ -138,8 +141,10 @@ class vector {
     if (i >= m_size) throw std::out_of_range("");
   }
 
+  void decstuct_at(size_type i) { destroy_at(get(i)); }
+
   void free_and_destruct_all() {
-    for (int i = 0; i < m_size; i++) aria::destroy_at(get(i));
+    for (int i = 0; i < m_size; i++) decstuct_at(i);
     m_alloc.deallocate(m_ptr, m_capacity);
   }
 

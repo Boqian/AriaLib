@@ -138,4 +138,6 @@ concept destructible = is_lvalue_reference_v<T> || requires { declval<T>().~T();
 template <class T> struct is_destructible : bool_constant<details::destructible<T>> {};
 template <class T> inline constexpr bool is_destructible_v = is_destructible<T>::value;
 
+//----------------- is_constructible -----------------------
+
 } // namespace aria
