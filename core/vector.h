@@ -7,13 +7,77 @@
 
 namespace aria {
 
+template <class VectorType> class vec_const_iterator {
+public:
+    using value_type = typename VectorType::value_type;
+    using pointer = typename VectorType::const_pointer;
+    using reference = const value_type &;
+    using difference_type = long long;
+
+    vec_const_iterator() = default;
+    vec_const_iterator(pointer p) : ptr(p) {}
+
+    reference operator*() const noexcept { return *ptr; }
+    reference operator->() const noexcept { return *ptr; }
+
+    vec_const_iterator &operator++() {
+      ++ptr;
+      return *this;
+    }
+    vec_const_iterator operator++(int) {
+      auto temp = *this;
+      ++ptr;
+      return temp;
+    }
+    vec_const_iterator &operator--() {
+      --ptr;
+      return *this;
+    }
+    vec_const_iterator operator--(int) {
+      auto temp = *this;
+      --ptr;
+      return temp;
+    }
+
+    vec_const_iterator &operator+=(difference_type d) {
+      ptr += d;
+      return *this;
+    }
+
+    vec_const_iterator &operator-=(difference_type d) {
+      ptr -= d;
+      return *this;
+    }
+
+    auto operator<=>(const vec_const_iterator &) const noexcept = default;
+
+protected:
+    pointer ptr = nullptr;
+};
+
+ template <class VectorType> class vec_iterator : public vec_const_iterator<VectorType> {
+     using Base = vec_const_iterator<VectorType>;
+ public:
+     using value_type = typename VectorType::value_type;
+     using pointer = typename VectorType::pointer;
+     using reference = value_type &;
+     using difference_type = typename Base::difference_type;
+     using Base::Base;
+
+     reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
+     reference operator->() const noexcept { return const_cast<reference>(Base::operator->()); }
+ };
+
 template <class T, class Allocator = allocator<T>>
 class vector {
  public:
   using size_type = size_t;
   using value_type = T;
   using pointer = value_type*;
-
+  using const_pointer = const value_type*;
+  using iterator = vec_iterator<vector<T,Allocator>>;
+  using const_iterator = vec_const_iterator<vector<T,Allocator>>;
+ 
   vector() noexcept = default;
 
   ~vector() { free_and_destruct_all(); }
@@ -127,6 +191,11 @@ class vector {
     }
     return true;
   }
+
+  const_iterator begin() const noexcept { return const_iterator(get(0)); }
+  const_iterator end() const noexcept { return const_iterator(get(m_size)); }
+  iterator begin() noexcept { return iterator(get(0)); }
+  iterator end() noexcept { return iterator(get(m_size)); } 
 
  private:
   Allocator m_alloc;

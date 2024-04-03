@@ -8,6 +8,8 @@ using namespace std;
 #include <fmt/core.h>
 #include <optional>
 #include <string>
+#include <vector>
+#include <iterator>
 
 
 int main()

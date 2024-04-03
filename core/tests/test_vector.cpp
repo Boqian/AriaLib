@@ -103,3 +103,34 @@ TEST(test_vector, ctor_and_dtor_copy) {
   }
   EXPECT_EQ(A::n_dtor, n*2);
 }
+
+TEST(test_vector, iterator) {
+  {
+    vector<int> v = {1, 2, 3};
+    auto it = v.begin();
+    EXPECT_EQ(*it, 1);
+    ++it;
+    EXPECT_EQ(*it, 2);
+    it += 2;
+    EXPECT_EQ(it, v.end());
+    --it;
+    EXPECT_EQ(*it, 3);
+    it -= 2;
+    EXPECT_EQ(it, v.begin());
+    *it = 5;
+    EXPECT_EQ(v[0], 5);
+  }
+  {
+    vector<int> v = {1, 2, 3};
+    for (auto &x : v) {x++;}
+    EXPECT_EQ(v, vector<int>({2, 3, 4}));
+  }
+  { const vector<int> v = {1, 2, 3};
+    vector<int> u;
+    for (auto it = v.begin(); it != v.end(); ++it)
+    {
+      u.push_back(*it * 2);
+    }
+    EXPECT_EQ(u, vector<int>({2, 4, 6}));
+  }
+}
