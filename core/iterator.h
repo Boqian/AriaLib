@@ -1,12 +1,21 @@
 #pragma once
 
 namespace aria {
-struct input_iterator_tag {};
-struct output_iterator_tag {};
-struct forward_iterator_tag : public input_iterator_tag {};
-struct bidirectional_iterator_tag : public forward_iterator_tag {};
-struct random_access_iterator_tag : public bidirectional_iterator_tag {};
-struct contiguous_iterator_tag : public random_access_iterator_tag {};
+
+template <class Iter> class reverse_iterator {
+public:
+  using iterator_type = Iter;
+  using value_type = typename iterator_type::value_type;
+  using difference_type = typename iterator_type::difference_type;
+  using pointer = typename iterator_type::pointer;
+  using reference = typename iterator_type::reference;
+
+  reverse_iterator() = default;
+  reverse_iterator(iterator_type a) : it(a) {}  
+
+private: 
+	iterator_type it;
+};
 
 
 }

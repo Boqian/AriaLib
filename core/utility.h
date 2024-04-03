@@ -6,7 +6,7 @@
 #include <compare>
 
 /*
-size_t, nullptr_t
+size_t, ptrdiff_t, nullptr_t
 move, forward //in type_traits.h
 swap
 pair, make_pair
@@ -15,6 +15,7 @@ tuple, tupe_element, get(), tupe_size
 
 namespace aria {
 using std::size_t;
+using std::ptrdiff_t;
 using nullptr_t = decltype(nullptr);
 
 //----------------- move, forward------------------

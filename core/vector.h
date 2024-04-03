@@ -49,6 +49,8 @@ public:
       return *this;
     }
 
+
+
     auto operator<=>(const vec_const_iterator &) const noexcept = default;
 
 protected:
@@ -72,6 +74,7 @@ template <class T, class Allocator = allocator<T>>
 class vector {
  public:
   using size_type = size_t;
+  using difference_type = ptrdiff_t;
   using value_type = T;
   using pointer = value_type*;
   using const_pointer = const value_type*;
