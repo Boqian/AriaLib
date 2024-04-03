@@ -15,13 +15,11 @@ public:
 
   reference operator*() const noexcept { 
 	auto temp = it;
-    --temp;
-    return *temp;
+    return *(--temp);
   }
   pointer operator->() const noexcept {
     auto temp = it;
-    --temp;
-    return (temp).operator->();
+    return (--temp).operator->();
   }
 
   reverse_iterator &operator++() {

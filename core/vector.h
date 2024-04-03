@@ -21,42 +21,42 @@ public:
     reference operator*() const noexcept { return *ptr; }
     pointer operator->() const noexcept { return ptr; }
 
-    vec_const_iterator &operator++() {
+    vec_const_iterator &operator++() noexcept {
       ++ptr;
       return *this;
     }
-    vec_const_iterator operator++(int) {
+    vec_const_iterator operator++(int) noexcept  {
       auto temp = *this;
       ++ptr;
       return temp;
     }
-    vec_const_iterator &operator--() {
+    vec_const_iterator &operator--() noexcept {
       --ptr;
       return *this;
     }
-    vec_const_iterator operator--(int) {
+    vec_const_iterator operator--(int) noexcept {
       auto temp = *this;
       --ptr;
       return temp;
     }
 
-    vec_const_iterator &operator+=(difference_type d) {
+    vec_const_iterator &operator+=(const difference_type d) noexcept  {
       ptr += d;
       return *this;
     }
 
-    vec_const_iterator &operator-=(difference_type d) {
+    vec_const_iterator &operator-=(const difference_type d) noexcept {
       ptr -= d;
       return *this;
     }
 
-    vec_const_iterator operator+(difference_type d) const {
+    vec_const_iterator operator+(const difference_type d) const noexcept {
       auto temp = *this;
       temp += d;
       return temp;
     }
 
-    vec_const_iterator operator-(difference_type d) const {
+    vec_const_iterator operator-(const difference_type d) const noexcept {
       auto temp = *this;
       temp -= d;
       return temp;
@@ -64,7 +64,7 @@ public:
 
     auto operator<=>(const vec_const_iterator &) const noexcept = default;
 
-protected:
+private:
     pointer ptr = nullptr;
 };
 
@@ -79,6 +79,48 @@ protected:
 
      reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
      pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
+
+     vec_iterator &operator++() noexcept {
+       Base::operator++();
+       return *this;
+     }
+     vec_iterator operator++(int) noexcept {
+       auto temp = *this;
+       Base::operator++();
+       return temp;
+     }
+     vec_iterator &operator--() noexcept {
+       Base::operator--();
+       return *this;
+     }
+     vec_iterator operator--(int) noexcept {
+       auto temp = *this;
+       Base::operator--();
+       return temp;
+     }
+
+     vec_iterator &operator+=(const difference_type d) {
+       Base::operator+=(d);
+       return *this;
+     }
+
+     vec_iterator &operator-=(const difference_type d) {
+       Base::operator-=(d);
+       return *this;
+     }
+
+     vec_iterator operator+(const difference_type d) const {
+       auto temp = *this;
+       temp += d;
+       return temp;
+     }
+
+     vec_iterator operator-(const difference_type d) const {
+       auto temp = *this;
+       temp -= d;
+       return temp;
+     }
+
  };
 
 template <class T, class Allocator = allocator<T>>
@@ -208,14 +250,14 @@ class vector {
     return true;
   }
 
-  const_iterator begin() const noexcept { return const_iterator(get(0)); }
-  const_iterator end() const noexcept { return const_iterator(get(m_size)); }
-  iterator begin() noexcept { return iterator(get(0)); }
-  iterator end() noexcept { return iterator(get(m_size)); } 
-  const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
-  const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
-  reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
-  reverse_iterator rend() noexcept { return reverse_iterator(begin()); } 
+  auto begin() const noexcept { return const_iterator(get(0)); }
+  auto end() const noexcept { return const_iterator(get(m_size)); }
+  auto begin() noexcept { return iterator(get(0)); }
+  auto end() noexcept { return iterator(get(m_size)); }
+  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
+  auto rend() const noexcept { return const_reverse_iterator(begin()); }
+  auto rbegin() noexcept { return reverse_iterator(end()); }
+  auto rend() noexcept { return reverse_iterator(begin()); } 
 
  private:
   Allocator m_alloc;
