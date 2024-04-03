@@ -13,6 +13,40 @@ public:
   reverse_iterator() = default;
   reverse_iterator(iterator_type a) : it(a) {}  
 
+  reference operator*() const noexcept { 
+	auto temp = it;
+    --temp;
+    return *temp;
+  }
+  pointer operator->() const noexcept {
+    auto temp = it;
+    --temp;
+    return (temp).operator->();
+  }
+
+  reverse_iterator &operator++() {
+    --it;
+    return *this;
+  }
+  reverse_iterator operator++(int) {
+    auto temp = *this;
+    --it;
+    return temp;
+  }
+
+  reverse_iterator &operator--() {
+    ++it;
+    return *this;
+  }
+
+  reverse_iterator operator--(int) {
+    auto temp = *this;
+    ++it;
+    return temp;
+  }
+
+    auto operator<=>(const reverse_iterator &) const noexcept = default;
+
 private: 
 	iterator_type it;
 };

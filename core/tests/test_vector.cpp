@@ -133,4 +133,33 @@ TEST(test_vector, iterator) {
     }
     EXPECT_EQ(u, vector<int>({2, 4, 6}));
   }
+  {
+    auto v = vector<pair<int, double>>();
+    v.emplace_back(3, 1.5);
+    EXPECT_EQ(v.begin()->first, 3);
+    EXPECT_DOUBLE_EQ(v.begin()->second, 1.5);
+    *v.begin() = pair(6, 1.0);
+    EXPECT_EQ(v[0].first, 6);
+  }
+}
+
+TEST(test_vector, reverse_iterator) {
+  {
+    vector<int> v = {1, 2, 3}, u;
+    for (auto it = v.rbegin(); it != v.rend(); ++it) {
+      u.push_back(*it);
+    }
+    EXPECT_EQ(u, vector<int>({3, 2, 1}));
+  }
+  {
+    auto v = vector<pair<int, double>>();
+    v.emplace_back(3, 1.5);
+    v.emplace_back(2, 4.4);
+    EXPECT_EQ(v.rbegin()->first, 2);
+    EXPECT_DOUBLE_EQ(v.rbegin()->second, 4.4);
+    v.rbegin()->first = 10;
+    EXPECT_EQ(v[1].first, 10);
+    *v.rbegin() = pair(11, 5.5);
+    EXPECT_EQ(v.rbegin()->first, 11);
+  }
 }

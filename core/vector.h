@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include "utility.h"
 #include "allocator.h"
+#include "iterator.h"
 
 namespace aria {
 
@@ -18,7 +19,7 @@ public:
     vec_const_iterator(pointer p) : ptr(p) {}
 
     reference operator*() const noexcept { return *ptr; }
-    reference operator->() const noexcept { return *ptr; }
+    pointer operator->() const noexcept { return ptr; }
 
     vec_const_iterator &operator++() {
       ++ptr;
@@ -49,7 +50,17 @@ public:
       return *this;
     }
 
+    vec_const_iterator operator+(difference_type d) const {
+      auto temp = *this;
+      temp += d;
+      return temp;
+    }
 
+    vec_const_iterator operator-(difference_type d) const {
+      auto temp = *this;
+      temp -= d;
+      return temp;
+    }
 
     auto operator<=>(const vec_const_iterator &) const noexcept = default;
 
@@ -67,7 +78,7 @@ protected:
      using Base::Base;
 
      reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
-     reference operator->() const noexcept { return const_cast<reference>(Base::operator->()); }
+     pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
  };
 
 template <class T, class Allocator = allocator<T>>
@@ -80,6 +91,8 @@ class vector {
   using const_pointer = const value_type*;
   using iterator = vec_iterator<vector<T,Allocator>>;
   using const_iterator = vec_const_iterator<vector<T,Allocator>>;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
  
   vector() noexcept = default;
 
@@ -199,6 +212,10 @@ class vector {
   const_iterator end() const noexcept { return const_iterator(get(m_size)); }
   iterator begin() noexcept { return iterator(get(0)); }
   iterator end() noexcept { return iterator(get(m_size)); } 
+  const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+  const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+  reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
+  reverse_iterator rend() noexcept { return reverse_iterator(begin()); } 
 
  private:
   Allocator m_alloc;
