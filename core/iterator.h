@@ -11,10 +11,10 @@ public:
   using reference = typename iterator_type::reference;
 
   reverse_iterator() = default;
-  reverse_iterator(iterator_type a) : it(a) {}  
+  reverse_iterator(iterator_type a) : it(a) {}
 
-  reference operator*() const noexcept { 
-	auto temp = it;
+  reference operator*() const noexcept {
+    auto temp = it;
     return *(--temp);
   }
   pointer operator->() const noexcept {
@@ -43,10 +43,10 @@ public:
     return temp;
   }
 
-    auto operator<=>(const reverse_iterator &) const noexcept = default;
+  auto operator<=>(const reverse_iterator &) const noexcept = default;
 
-private: 
-	iterator_type it;
+private:
+  iterator_type it;
 };
 
 
