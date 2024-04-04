@@ -2,7 +2,6 @@
 #include <atomic>
 #include "functional.h"
 #include "utility.h"
-#include "concepts.h"
 
 namespace aria {
 

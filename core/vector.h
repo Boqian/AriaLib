@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstring> //memcpy
-#include <stdexcept>
 #include "utility.h"
 #include "allocator.h"
 #include "iterator.h"
@@ -140,7 +138,7 @@ class vector {
 
   ~vector() { free_and_destruct_all(); }
 
-  vector(std::initializer_list<T> init) {
+  vector(initializer_list<T> init) {
     reserve(init.size());
     m_size = init.size();
     for (size_type i = 0; auto& value : init) {

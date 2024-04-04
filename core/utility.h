@@ -1,11 +1,15 @@
 #pragma once
 
+#include <initializer_list>
 #include <cstddef>
+#include <compare>
+#include <cstring> //memcpy
+#include <stdexcept>
 #include "type_traits.h"
 #include "concepts.h"
-#include <compare>
 
 /*
+initializer_list
 size_t, ptrdiff_t, nullptr_t
 move, forward //in type_traits.h
 swap
@@ -17,6 +21,7 @@ namespace aria {
 using std::size_t;
 using std::ptrdiff_t;
 using nullptr_t = decltype(nullptr);
+using std::initializer_list;
 
 //----------------- move, forward------------------
 template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept { return static_cast<remove_reference_t<T> &&>(t); }
