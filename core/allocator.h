@@ -22,6 +22,7 @@ struct allocator {
   using size_type = unsigned int;
   using value_type = T;
   using pointer = value_type*;
+  using const_pointer = const value_type*;
 
   allocator() noexcept = default;
 

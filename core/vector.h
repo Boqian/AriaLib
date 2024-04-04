@@ -127,8 +127,11 @@ class vector {
   using size_type = size_t;
   using difference_type = ptrdiff_t;
   using value_type = T;
-  using pointer = value_type*;
-  using const_pointer = const value_type*;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using allocator_type = Allocator;
+  using pointer = typename allocator_type::pointer;
+  using const_pointer = typename allocator_type::const_pointer;
   using iterator = vec_iterator<vector<T,Allocator>>;
   using const_iterator = vec_const_iterator<vector<T,Allocator>>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
@@ -215,22 +218,22 @@ class vector {
   size_type size() const noexcept { return m_size; }
   size_type capacity() const noexcept { return m_capacity; }
   bool empty() const noexcept { return m_size == 0; }
-  T& back() noexcept { return *get(m_size - 1); }
-  const T& back() const noexcept { return *get(m_size - 1); }
+  reference back() noexcept { return *get(m_size - 1); }
+  const_reference back() const noexcept { return *get(m_size - 1); }
 
-  T& operator[](size_type i) { return *get(i); }
-  const T& operator[](size_type i) const { return *get(i); }
-  T& at(size_type i) {
+  reference operator[](size_type i) { return *get(i); }
+  const_reference operator[](size_type i) const { return *get(i); }
+  reference at(size_type i) {
     check_position(i);
     return *get(i);
   }
-  const T& at(size_type i) const {
+  const_reference at(size_type i) const {
     check_position(i);
     return *get(i);
   }
 
-  T* data() noexcept { return m_ptr; }
-  const T* data() const noexcept { return m_ptr; }
+  pointer data() noexcept { return m_ptr; }
+  const_pointer data() const noexcept { return m_ptr; }
 
   void swap(vector& rhs) noexcept {
     aria::swap(m_size, rhs.m_size);
@@ -263,8 +266,8 @@ class vector {
   size_type m_size = 0;
   size_type m_capacity = 0;
 
-  T* get(size_type i) { return m_ptr + i; }
-  const T* get(size_type i) const { return m_ptr + i; }
+  pointer get(size_type i) { return m_ptr + i; }
+  const_pointer get(size_type i) const { return m_ptr + i; }
 
   void check_position(size_type i) const {
     if (i >= m_size) throw std::out_of_range("");
