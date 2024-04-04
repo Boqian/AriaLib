@@ -19,14 +19,7 @@ int main()
 {
   std::optional<int> a = 1;
 
- // std::vector<int> a;
- // auto it = std::reverse_iterator<std::vector<int>::iterator>();
-
-  std::set<int> s = {1, 2, 3};
-  //auto it = s.begin();
-  auto it = std::reverse_iterator<std::set<int>::iterator>();
-//  it += 2;
-  //  auto y = it + 2;
+    std::vector<std::pair<int, int>> v = {{1, 2}, {3, 4}};
 
     fmt::print("Hello World! {}\n", a.value());
     return 0;

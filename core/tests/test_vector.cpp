@@ -30,18 +30,30 @@ TEST(test_vector, base) {
 }
 
 TEST(test_vector, construct) {
-  auto v = vector<int>({1, 2, 3});
-  EXPECT_EQ(v.capacity(), 3);
-  EXPECT_EQ(v.size(), 3);
-  EXPECT_EQ(v[0], 1);
-  EXPECT_EQ(v[1], 2);
-  EXPECT_EQ(v[2], 3);
+  {
+    auto v = vector<int>({1, 2, 3});
+    EXPECT_EQ(v.capacity(), 3);
+    EXPECT_EQ(v.size(), 3);
+    EXPECT_EQ(v[0], 1);
+    EXPECT_EQ(v[1], 2);
+    EXPECT_EQ(v[2], 3);
 
-  auto u = v;
-  EXPECT_EQ(u.size(), 3);
-  EXPECT_EQ(u[0], 1);
-  EXPECT_EQ(u[1], 2);
-  EXPECT_EQ(u[2], 3);
+    auto u = v;
+    EXPECT_EQ(u.size(), 3);
+    EXPECT_EQ(u[0], 1);
+    EXPECT_EQ(u[1], 2);
+    EXPECT_EQ(u[2], 3);
+  }
+  {
+    vector<vector<int>> v = {{1, 2}, {2, 3}};
+    EXPECT_EQ(v[0], vector<int>({1, 2}));
+    EXPECT_EQ(v[1], vector<int>({2, 3}));
+  }
+  {
+    vector<pair<int,int>> v = {{1, 2}, {2, 3}};
+    EXPECT_EQ(v[0], pair(1, 2));
+    EXPECT_EQ(v[1], pair(2, 3));
+  }
 }
 
 TEST(test_vector, emplace_back) {
@@ -152,9 +164,7 @@ TEST(test_vector, reverse_iterator) {
     EXPECT_EQ(u, vector<int>({3, 2, 1}));
   }
   {
-    auto v = vector<pair<int, double>>();
-    v.emplace_back(3, 1.5);
-    v.emplace_back(2, 4.4);
+    vector<pair<int, double>> v = {{3, 1.5}, {2, 4.4}};
     EXPECT_EQ(v.rbegin()->first, 2);
     EXPECT_DOUBLE_EQ(v.rbegin()->second, 4.4);
     v.rbegin()->first = 10;
