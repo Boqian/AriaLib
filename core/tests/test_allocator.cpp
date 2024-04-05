@@ -51,3 +51,9 @@ TEST(test_allocator, construct) {
   EXPECT_EQ(A::n_dtor, 2);
 }
     
+TEST(test_allocator, rebind) {
+
+using alloc_int = allocator<int>;
+using alloc_A = allocator<A>;
+static_assert(is_same_v<alloc_int::rebind_alloc<A>, alloc_A>);
+}

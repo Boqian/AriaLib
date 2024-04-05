@@ -13,6 +13,7 @@ using namespace std;
 #include <set>
 #include <map>
 #include <initializer_list>
+#include <list>
 
 
 int main()

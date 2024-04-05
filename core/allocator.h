@@ -24,6 +24,9 @@ struct allocator {
   using pointer = value_type*;
   using const_pointer = const value_type*;
 
+  template<class U>
+  using rebind_alloc = allocator<U>;
+
   allocator() noexcept = default;
 
   [[nodiscard]] pointer allocate(size_type n) {
