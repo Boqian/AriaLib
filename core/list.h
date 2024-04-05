@@ -1,6 +1,7 @@
 #pragma once
 #include "allocator.h"
 #include "utility.h"
+#include "iterator.h"
 
 template <class T> struct node {
   node() = default;
@@ -17,6 +18,7 @@ public:
   using value_type = typename ListType::value_type;
   using pointer = typename ListType::const_pointer;
   using reference = const value_type &;
+  using difference_type = std::ptrdiff_t;
   using node_type = node<value_type>;
 
   list_const_iterator() = default;
@@ -62,6 +64,7 @@ public:
   using value_type = typename ListType::value_type;
   using pointer = typename ListType::pointer;
   using reference = value_type &;
+  using difference_type = std::ptrdiff_t;
   using Base::Base;
 
   reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
@@ -99,8 +102,8 @@ public:
   using const_pointer = typename allocator_type::const_pointer;
   using iterator = list_iterator<list<T,Allocator>>;
   using const_iterator = list_const_iterator<list<T,Allocator>>;
- // using reverse_iterator = aria::reverse_iterator<iterator>;
- // using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
   list() noexcept = default;
   ~list() noexcept { clear(); }
@@ -134,6 +137,10 @@ public:
   auto end() const noexcept { return const_iterator(nullptr, m_last); }
   auto begin() noexcept { return iterator(m_first, nullptr); }
   auto end() noexcept { return iterator(nullptr, m_last); }
+  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
+  auto rend() const noexcept { return const_reverse_iterator(begin()); }
+  auto rbegin() noexcept { return reverse_iterator(end()); }
+  auto rend() noexcept { return reverse_iterator(begin()); } 
 
   bool operator==(const list &rhs) const noexcept {
     if (this == &rhs)

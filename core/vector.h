@@ -11,7 +11,7 @@ public:
     using value_type = typename VectorType::value_type;
     using pointer = typename VectorType::const_pointer;
     using reference = const value_type &;
-    using difference_type = long long;
+    using difference_type = std::ptrdiff_t;
 
     vec_const_iterator() = default;
     vec_const_iterator(pointer p) : ptr(p) {}
