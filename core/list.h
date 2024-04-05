@@ -71,11 +71,16 @@ public:
  // using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
   list() noexcept = default;
-
   ~list() noexcept { clear(); }
 
-  void push_back(value_type &&value) { add_node(m_last, forward<value_type>(value)); }
-  void push_front(value_type &&value) { add_node(nullptr, forward<value_type>(value)); }
+  list(aria::initializer_list<value_type> init) {
+    for (auto& value : init) {
+      push_back(value);
+    }
+  }
+
+  void push_back(value_type value) { add_node(m_last, aria::move(value)); }
+  void push_front(value_type value) { add_node(nullptr, aria::move(value)); }
   void pop_back() noexcept { erase_node(m_last); }
   void pop_front() noexcept { erase_node(m_first); }
 
