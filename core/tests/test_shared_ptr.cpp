@@ -14,14 +14,13 @@ struct Counter {
 
 struct Base {
   Base() = default;
-  ~Base() { Counter::n1++; } //intend not virtual
+  ~Base() { Counter::n1++; } // intend not virtual
 };
 
 struct Derived : Base {
   Derived() = default;
   ~Derived() { Counter::n2++; }
 };
-
 
 TEST(test_shared_ptr, empty) {
   {
@@ -74,24 +73,25 @@ TEST(test_shared_ptr, make_shard) {
 }
 
 TEST(test_shared_ptr, move_construct) {
-    {
+  {
     auto q = make_shared<int>(100);
     shared_ptr<int> p(move(q));
     EXPECT_FALSE(q);
     EXPECT_EQ(*p, 100);
-    }
-    { auto q1 = make_shared<int>(100);
-      auto q2 = q1;
-      auto p = move(q1);
-      EXPECT_FALSE(q1);
-      EXPECT_EQ(*p, 100);
-      EXPECT_EQ(*q2, 100);
-      EXPECT_EQ(p.use_count(), 2);
-      EXPECT_EQ(q2.use_count(), 2);
-      q2.reset();
-      EXPECT_FALSE(q2);
-      EXPECT_EQ(p.use_count(), 1);
-    }
+  }
+  {
+    auto q1 = make_shared<int>(100);
+    auto q2 = q1;
+    auto p = move(q1);
+    EXPECT_FALSE(q1);
+    EXPECT_EQ(*p, 100);
+    EXPECT_EQ(*q2, 100);
+    EXPECT_EQ(p.use_count(), 2);
+    EXPECT_EQ(q2.use_count(), 2);
+    q2.reset();
+    EXPECT_FALSE(q2);
+    EXPECT_EQ(p.use_count(), 1);
+  }
 }
 
 TEST(test_shared_ptr, assign) {
@@ -144,7 +144,7 @@ TEST(test_shared_ptr, destructor) {
   }
 }
 
-TEST(test_shared_ptr, inheritance) {  
+TEST(test_shared_ptr, inheritance) {
   {
     Counter::init();
     shared_ptr<Base> p(new Derived());

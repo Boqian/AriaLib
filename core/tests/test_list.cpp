@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "list.h"
+#include "gtest/gtest.h"
 
 using namespace aria;
 

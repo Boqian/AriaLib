@@ -3,7 +3,6 @@
 
 namespace aria {
 
-	
 template <class ForwardIt1, class ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) { aria::swap(*a, *b); }
 
 template <class Iter> void reverse(Iter first, Iter last) {
@@ -14,6 +13,4 @@ template <class Iter> void reverse(Iter first, Iter last) {
     iter_swap(first, last);
 }
 
-
-
-}
+} // namespace aria

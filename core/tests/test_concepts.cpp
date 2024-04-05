@@ -14,6 +14,4 @@ void test_concepts() {
   static_assert(!convertible_to<int, Base>);
   static_assert(convertible_to<Derived, Base>);
   static_assert(!convertible_to<Base, Derived>);
-
-
 }

@@ -19,8 +19,8 @@ TEST(test_allocator, base) {
   int n = 5;
   auto p = alloc.allocate(n);
   for (int i = 0; i < n; i++) {
-    *(p+i) = 10+i;
-    EXPECT_EQ(*(p + i), 10+i);
+    *(p + i) = 10 + i;
+    EXPECT_EQ(*(p + i), 10 + i);
   }
   alloc.deallocate(p, n);
 }
@@ -50,10 +50,10 @@ TEST(test_allocator, construct) {
   alloc.deallocate(p, n);
   EXPECT_EQ(A::n_dtor, 2);
 }
-    
+
 TEST(test_allocator, rebind) {
 
-using alloc_int = allocator<int>;
-using alloc_A = allocator<A>;
-static_assert(is_same_v<alloc_int::rebind_alloc<A>, alloc_A>);
+  using alloc_int = allocator<int>;
+  using alloc_A = allocator<A>;
+  static_assert(is_same_v<alloc_int::rebind_alloc<A>, alloc_A>);
 }

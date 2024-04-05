@@ -11,8 +11,8 @@ struct A {
     n_dtor = 0;
   }
   A() { n_ctor++; }
-  A(const A&) { n_ctor++; }
-  A(A&&) = default;
+  A(const A &) { n_ctor++; }
+  A(A &&) = default;
   ~A() { n_dtor++; }
 };
 
@@ -50,7 +50,7 @@ TEST(test_vector, construct) {
     EXPECT_EQ(v[1], vector<int>({2, 3}));
   }
   {
-    vector<pair<int,int>> v = {{1, 2}, {2, 3}};
+    vector<pair<int, int>> v = {{1, 2}, {2, 3}};
     EXPECT_EQ(v[0], pair(1, 2));
     EXPECT_EQ(v[1], pair(2, 3));
   }
@@ -110,10 +110,10 @@ TEST(test_vector, ctor_and_dtor_copy) {
     EXPECT_EQ(A::n_ctor, n);
     EXPECT_EQ(A::n_dtor, 0);
     auto w = u;
-    EXPECT_EQ(A::n_ctor, n*2);
+    EXPECT_EQ(A::n_ctor, n * 2);
     EXPECT_EQ(A::n_dtor, 0);
   }
-  EXPECT_EQ(A::n_dtor, n*2);
+  EXPECT_EQ(A::n_dtor, n * 2);
 }
 
 TEST(test_vector, iterator) {
@@ -134,13 +134,15 @@ TEST(test_vector, iterator) {
   }
   {
     vector<int> v = {1, 2, 3};
-    for (auto &x : v) {x++;}
+    for (auto &x : v) {
+      x++;
+    }
     EXPECT_EQ(v, vector<int>({2, 3, 4}));
   }
-  { const vector<int> v = {1, 2, 3};
+  {
+    const vector<int> v = {1, 2, 3};
     vector<int> u;
-    for (auto it = v.begin(); it != v.end(); ++it)
-    {
+    for (auto it = v.begin(); it != v.end(); ++it) {
       u.push_back(*it * 2);
     }
     EXPECT_EQ(u, vector<int>({2, 4, 6}));

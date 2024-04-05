@@ -1,6 +1,6 @@
-#include "gtest/gtest.h"
 #include "optional.h"
 #include "utility.h"
+#include "gtest/gtest.h"
 
 struct CC {
   CC(int a) : x(a) {}

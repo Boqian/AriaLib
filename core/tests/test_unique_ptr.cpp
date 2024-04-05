@@ -48,7 +48,7 @@ struct Base {
   virtual int foo() { return 1; }
 };
 struct Derived : public Base {
-  int foo() override { return 2; } 
+  int foo() override { return 2; }
 };
 
 TEST(test_unique_ptr, convertable) {

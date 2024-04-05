@@ -115,7 +115,5 @@ TEST(test_tuple, basic) {
     EXPECT_EQ(get<0>(t), 1);
     EXPECT_DOUBLE_EQ(get<double>(t), 2.5);
   }
-  { 
-      tuple<int, int> p('a', 1u);
-  }
+  { tuple<int, int> p('a', 1u); }
 }

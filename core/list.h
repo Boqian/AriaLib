@@ -1,7 +1,7 @@
 #pragma once
 #include "allocator.h"
-#include "utility.h"
 #include "iterator.h"
+#include "utility.h"
 
 template <class T> struct node {
   node() = default;
@@ -23,7 +23,7 @@ public:
 
   list_const_iterator() = default;
 
-  //store prev pointer to handle case like list::end() where p is null
+  // store prev pointer to handle case like list::end() where p is null
   list_const_iterator(node_type *p, node_type *prev) : ptr(p), prev(prev) {}
 
   reference operator*() const noexcept { return ptr->value; }
@@ -57,7 +57,7 @@ private:
   node_type *prev = nullptr;
 };
 
- template <class ListType> class list_iterator : public list_const_iterator<ListType> {
+template <class ListType> class list_iterator : public list_const_iterator<ListType> {
   using Base = list_const_iterator<ListType>;
 
 public:
@@ -95,13 +95,13 @@ public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
   using value_type = T;
-  using reference = value_type&;
-  using const_reference = const value_type&;
+  using reference = value_type &;
+  using const_reference = const value_type &;
   using allocator_type = Allocator;
   using pointer = typename allocator_type::pointer;
   using const_pointer = typename allocator_type::const_pointer;
-  using iterator = list_iterator<list<T,Allocator>>;
-  using const_iterator = list_const_iterator<list<T,Allocator>>;
+  using iterator = list_iterator<list<T, Allocator>>;
+  using const_iterator = list_const_iterator<list<T, Allocator>>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
@@ -109,7 +109,7 @@ public:
   ~list() noexcept { clear(); }
 
   list(aria::initializer_list<value_type> init) {
-    for (auto& value : init) {
+    for (auto &value : init) {
       push_back(value);
     }
   }
@@ -119,10 +119,10 @@ public:
   void pop_back() noexcept { erase_node(m_last); }
   void pop_front() noexcept { erase_node(m_first); }
 
-  reference front() noexcept { return m_first->value; } 
-  const_reference front() const noexcept { return m_first->value; } 
+  reference front() noexcept { return m_first->value; }
+  const_reference front() const noexcept { return m_first->value; }
   reference back() noexcept { return m_last->value; }
-  const_reference back() const noexcept { return m_last->value; } 
+  const_reference back() const noexcept { return m_last->value; }
 
   bool empty() const noexcept { return m_size == 0; }
   size_type size() const noexcept { return m_size; }
@@ -132,7 +132,6 @@ public:
       pop_back();
   }
 
-
   auto begin() const noexcept { return const_iterator(m_first, nullptr); }
   auto end() const noexcept { return const_iterator(nullptr, m_last); }
   auto begin() noexcept { return iterator(m_first, nullptr); }
@@ -140,7 +139,7 @@ public:
   auto rbegin() const noexcept { return const_reverse_iterator(end()); }
   auto rend() const noexcept { return const_reverse_iterator(begin()); }
   auto rbegin() noexcept { return reverse_iterator(end()); }
-  auto rend() noexcept { return reverse_iterator(begin()); } 
+  auto rend() noexcept { return reverse_iterator(begin()); }
 
   bool operator==(const list &rhs) const noexcept {
     if (this == &rhs)
@@ -154,9 +153,9 @@ public:
     return true;
   }
 
-private: 
+private:
   using node_type = node<T>;
-  using node_allocator_type = typename Allocator:: template rebind_alloc<node_type>;
+  using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
 
   node_type *create_node(value_type &&x) {
     auto p = m_alloc.allocate(1);

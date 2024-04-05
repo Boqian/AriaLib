@@ -1,7 +1,7 @@
-#include "gtest/gtest.h"
+#include "algorithm.h"
 #include "list.h"
 #include "vector.h"
-#include "algorithm.h"
+#include "gtest/gtest.h"
 
 using namespace aria;
 

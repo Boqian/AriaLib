@@ -40,7 +40,7 @@ public:
     }
   }
 
-  constexpr optional &operator=(std::nullopt_t) noexcept { reset(); }
+  constexpr optional &operator=(nullopt_t) noexcept { reset(); }
 
   constexpr optional &operator=(const optional &rhs) {
     if (this == &rhs)
@@ -56,7 +56,7 @@ public:
     return *this;
   }
 
-   constexpr optional &operator=(optional &&rhs) {
+  constexpr optional &operator=(optional &&rhs) {
     if (this == &rhs)
       return *this;
     if (!rhs.has_value()) {
@@ -70,8 +70,10 @@ public:
     return *this;
   }
 
-  template <class U = T> requires is_constructible_v<T, U> && !is_same_v<remove_cvref_t<U>, optional>
-  constexpr optional &operator=(U &&value) {
+  template <class U = T>
+    requires is_constructible_v<T, U> && !is_same_v<remove_cvref_t<U>, optional>
+                                             constexpr optional &
+                                         operator=(U &&value) {
     if (has_value()) {
       value_ = value; // copy-assign
     } else {
@@ -107,7 +109,7 @@ public:
     has_value_ = false;
   }
 
-   constexpr void swap(optional &rhs) noexcept {
+  constexpr void swap(optional &rhs) noexcept {
     if (*this && rhs) {
       ::aria::swap(this->value(), rhs.value());
     } else if (*this && !rhs) {
@@ -130,6 +132,6 @@ private:
   bool has_value_ = false;
 };
 
-template <class T> void swap(optional<T>& a, optional<T>& b) noexcept { a.swap(b); }
+template <class T> void swap(optional<T> &a, optional<T> &b) noexcept { a.swap(b); }
 
 } // namespace aria

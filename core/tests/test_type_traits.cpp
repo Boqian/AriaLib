@@ -29,7 +29,7 @@ void test_traits() {
   static_assert(!is_convertible_v<std::string, int>);
 
   static_assert(is_same_v<void, add_lvalue_reference_t<void>>);
-  static_assert(is_same_v<int&, add_lvalue_reference_t<int>>);
+  static_assert(is_same_v<int &, add_lvalue_reference_t<int>>);
 
   static_assert(!is_base_of_v<int, double>);
   static_assert(is_base_of_v<Base, Derived>);
@@ -39,8 +39,8 @@ void test_traits() {
   static_assert(!is_base_of_v<int, const int>);
 
   static_assert(is_same_v<int, remove_reference_t<int>>);
-  static_assert(is_same_v<int, remove_reference_t<int&>>);
-  static_assert(is_same_v<int, remove_reference_t<int&&>>);
+  static_assert(is_same_v<int, remove_reference_t<int &>>);
+  static_assert(is_same_v<int, remove_reference_t<int &&>>);
 
   static_assert(is_same_v<int, remove_cvref_t<const int &>>);
   static_assert(is_same_v<int, remove_cvref_t<int &&>>);
@@ -67,6 +67,5 @@ void test_traits() {
   static_assert(is_destructible_v<int>);
   static_assert(!is_destructible_v<void>);
   static_assert(!is_destructible_v<BB>);
-  static_assert(is_destructible_v<BB&>);
-
+  static_assert(is_destructible_v<BB &>);
 }

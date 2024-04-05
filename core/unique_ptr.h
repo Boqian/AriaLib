@@ -6,7 +6,8 @@ namespace aria {
 template <class T> struct default_delete {
   constexpr default_delete() noexcept = default;
 
-  template <class U> requires convertible_to<U*, T*>
+  template <class U>
+    requires convertible_to<U *, T *>
   default_delete(const default_delete<U> &) noexcept {}
 
   void operator()(T *ptr) const noexcept {
@@ -15,42 +16,38 @@ template <class T> struct default_delete {
   }
 };
 
-template <class T, class Deleter = default_delete<T>>
-class unique_ptr {
- public:
+template <class T, class Deleter = default_delete<T>> class unique_ptr {
+public:
   using element_type = T;
-  using pointer = T*;
+  using pointer = T *;
   using deleter_type = Deleter;
 
   unique_ptr() = default;
 
-  explicit unique_ptr(T* ptr) : m_ptr(ptr), m_deleter() {}
+  explicit unique_ptr(T *ptr) : m_ptr(ptr), m_deleter() {}
 
-  unique_ptr(T* ptr, Deleter&& deleter)
-      : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
+  unique_ptr(T *ptr, Deleter &&deleter) : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
 
-  unique_ptr(unique_ptr&& rhs) noexcept {
+  unique_ptr(unique_ptr &&rhs) noexcept {
     swap(rhs);
     rhs.reset();
   }
 
   template <class U, class E>
-    requires convertible_to<U*, T*>
-  unique_ptr(unique_ptr<U, E>&& rhs)
-      : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
-
+    requires convertible_to<U *, T *>
+  unique_ptr(unique_ptr<U, E> &&rhs) : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
 
   ~unique_ptr() { reset(); }
 
-  unique_ptr(const unique_ptr&) = delete;
-  unique_ptr& operator=(const unique_ptr&) noexcept = delete;
+  unique_ptr(const unique_ptr &) = delete;
+  unique_ptr &operator=(const unique_ptr &) noexcept = delete;
 
-  unique_ptr& operator=(nullptr_t) noexcept {
+  unique_ptr &operator=(nullptr_t) noexcept {
     reset();
     return *this;
   }
 
-  unique_ptr& operator=(unique_ptr&& rhs) noexcept {
+  unique_ptr &operator=(unique_ptr &&rhs) noexcept {
     swap(rhs);
     rhs.reset();
     return *this;
@@ -63,38 +60,35 @@ class unique_ptr {
     }
   }
 
-  T* get() const noexcept { return m_ptr; }
+  T *get() const noexcept { return m_ptr; }
 
-  const Deleter& get_deleter() const noexcept { return m_deleter; }
-  Deleter& get_deleter() noexcept { return m_deleter; }
+  const Deleter &get_deleter() const noexcept { return m_deleter; }
+  Deleter &get_deleter() noexcept { return m_deleter; }
 
   operator bool() const noexcept { return m_ptr; }
 
-  T* operator->() noexcept { return m_ptr; }
-  const T* operator->() const noexcept { return m_ptr; }
+  T *operator->() noexcept { return m_ptr; }
+  const T *operator->() const noexcept { return m_ptr; }
 
-  T& operator*() { return *m_ptr; }
-  const T& operator*() const { return *m_ptr; }
+  T &operator*() { return *m_ptr; }
+  const T &operator*() const { return *m_ptr; }
 
-  void swap(unique_ptr& rhs) noexcept {
+  void swap(unique_ptr &rhs) noexcept {
     aria::swap(m_ptr, rhs.m_ptr);
     aria::swap(m_deleter, rhs.m_deleter);
   }
 
-  T* release() noexcept {
+  T *release() noexcept {
     auto p = m_ptr;
     m_ptr = nullptr;
     return p;
   }
 
- private:
-  T* m_ptr = nullptr;
+private:
+  T *m_ptr = nullptr;
   Deleter m_deleter;
 };
 
-template<class T, class... Args>
-unique_ptr<T> make_unique(Args&&... args) {
-  return unique_ptr<T>(new T(forward<Args>(args)...));
-}
+template <class T, class... Args> unique_ptr<T> make_unique(Args &&...args) { return unique_ptr<T>(new T(forward<Args>(args)...)); }
 
-}  // namespace aria
+} // namespace aria

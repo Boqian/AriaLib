@@ -49,5 +49,4 @@ private:
   iterator_type it;
 };
 
-
-}
+} // namespace aria
