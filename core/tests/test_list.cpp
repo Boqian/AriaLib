@@ -42,4 +42,6 @@ TEST(test_list, init) {
   li.front() = 5;
   li.back() = 4;
   EXPECT_EQ(li, list<int>({5, 2, 4}));
+  li.clear();
+  EXPECT_EQ(li, list<int>());
 }

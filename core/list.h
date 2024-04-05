@@ -55,6 +55,38 @@ private:
   node_type *prev = nullptr;
 };
 
+ template <class ListType> class list_iterator : public list_const_iterator<ListType> {
+  using Base = list_const_iterator<ListType>;
+
+public:
+  using value_type = typename ListType::value_type;
+  using pointer = typename ListType::pointer;
+  using reference = value_type &;
+  using Base::Base;
+
+  reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
+  pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
+
+  list_iterator &operator++() noexcept {
+    Base::operator++();
+    return *this;
+  }
+  list_iterator operator++(int) noexcept {
+    auto temp = *this;
+    Base::operator++();
+    return temp;
+  }
+  list_iterator &operator--() noexcept {
+    Base::operator--();
+    return *this;
+  }
+  list_iterator operator--(int) noexcept {
+    auto temp = *this;
+    Base::operator--();
+    return temp;
+  }
+};
+
 template <class T, class Allocator = allocator<T>> class list {
 public:
   using size_type = size_t;
@@ -65,7 +97,7 @@ public:
   using allocator_type = Allocator;
   using pointer = typename allocator_type::pointer;
   using const_pointer = typename allocator_type::const_pointer;
- // using iterator = vec_iterator<vector<T,Allocator>>;
+  using iterator = list_iterator<list<T,Allocator>>;
   using const_iterator = list_const_iterator<list<T,Allocator>>;
  // using reverse_iterator = aria::reverse_iterator<iterator>;
  // using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
@@ -100,8 +132,8 @@ public:
 
   auto begin() const noexcept { return const_iterator(m_first, nullptr); }
   auto end() const noexcept { return const_iterator(nullptr, m_last); }
- // auto begin() noexcept { return iterator(get(0)); }
- // auto end() noexcept { return iterator(get(m_size)); }
+  auto begin() noexcept { return iterator(m_first, nullptr); }
+  auto end() noexcept { return iterator(nullptr, m_last); }
 
   bool operator==(const list &rhs) const noexcept {
     if (this == &rhs)
