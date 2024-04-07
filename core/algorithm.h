@@ -1,4 +1,5 @@
 #pragma once
+#include "iterator.h"
 #include "utility.h"
 
 namespace aria {
@@ -11,6 +12,20 @@ template <class Iter> void reverse(Iter first, Iter last) {
   --last;
   for (; first != last; ++first, --last)
     iter_swap(first, last);
+}
+
+template <class InputIt, class T> constexpr InputIt find(InputIt first, InputIt last, const T &value) {
+  auto it = first;
+  for (; it != last && *it != value; ++it) {
+  }
+  return it;
+}
+
+template <class InputIt, class UnaryPred> constexpr InputIt find_if(InputIt first, InputIt last, UnaryPred p) {
+  auto it = first;
+  for (; it != last && !p(*it); ++it) {
+  }
+  return it;
 }
 
 } // namespace aria

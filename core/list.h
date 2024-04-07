@@ -3,14 +3,16 @@
 #include "iterator.h"
 #include "utility.h"
 
-template <class T> struct node {
+struct node_base {
+  node_base *prev = nullptr;
+  node_base *next = nullptr;
+};
+
+template <class T> struct node : public node_base {
   node() = default;
-
-  node(T &&x, node *p = nullptr, node *n = nullptr) : value(forward<T>(x)), prev(p), next(n) {}
-
+  node(T &&x) : value(forward<T>(x)) {}
+  node_base base;
   T value;
-  node *prev = nullptr;
-  node *next = nullptr;
 };
 
 template <class ListType> class list_const_iterator {
@@ -23,14 +25,12 @@ public:
 
   list_const_iterator() = default;
 
-  // store prev pointer to handle case like list::end() where p is null
-  list_const_iterator(node_type *p, node_type *prev) : ptr(p), prev(prev) {}
+  list_const_iterator(const node_base *p) : ptr(p) {}
 
-  reference operator*() const noexcept { return ptr->value; }
-  pointer operator->() const noexcept { return &(ptr->value); }
+  reference operator*() const noexcept { return value(); }
+  pointer operator->() const noexcept { return &value(); }
 
   list_const_iterator &operator++() noexcept {
-    prev = ptr;
     ptr = ptr->next;
     return *this;
   }
@@ -40,8 +40,7 @@ public:
     return temp;
   }
   list_const_iterator &operator--() noexcept {
-    ptr = prev;
-    prev = prev->prev;
+    ptr = ptr->prev;
     return *this;
   }
   list_const_iterator operator--(int) noexcept {
@@ -53,8 +52,8 @@ public:
   bool operator==(const list_const_iterator &rhs) const noexcept { return ptr == rhs.ptr; }
 
 private:
-  node_type *ptr = nullptr;
-  node_type *prev = nullptr;
+  reference value() const noexcept { return static_cast<const node_type *>(ptr)->value; }
+  const node_base *ptr;
 };
 
 template <class ListType> class list_iterator : public list_const_iterator<ListType> {
@@ -114,15 +113,15 @@ public:
     }
   }
 
-  void push_back(value_type value) { add_node(m_last, aria::move(value)); }
+  void push_back(value_type value) { add_node(last(), aria::move(value)); }
   void push_front(value_type value) { add_node(nullptr, aria::move(value)); }
-  void pop_back() noexcept { erase_node(m_last); }
+  void pop_back() noexcept { erase_node(last()); }
   void pop_front() noexcept { erase_node(m_first); }
 
-  reference front() noexcept { return m_first->value; }
-  const_reference front() const noexcept { return m_first->value; }
-  reference back() noexcept { return m_last->value; }
-  const_reference back() const noexcept { return m_last->value; }
+  reference front() noexcept { return first()->value; }
+  const_reference front() const noexcept { return first()->value; }
+  reference back() noexcept { return last()->value; }
+  const_reference back() const noexcept { return last()->value; }
 
   bool empty() const noexcept { return m_size == 0; }
   size_type size() const noexcept { return m_size; }
@@ -132,10 +131,10 @@ public:
       pop_back();
   }
 
-  auto begin() const noexcept { return const_iterator(m_first, nullptr); }
-  auto end() const noexcept { return const_iterator(nullptr, m_last); }
-  auto begin() noexcept { return iterator(m_first, nullptr); }
-  auto end() noexcept { return iterator(nullptr, m_last); }
+  auto begin() const noexcept { return const_iterator(m_first); }
+  auto end() const noexcept { return const_iterator(&m_end); }
+  auto begin() noexcept { return iterator(m_first); }
+  auto end() noexcept { return iterator(&m_end); }
   auto rbegin() const noexcept { return const_reverse_iterator(end()); }
   auto rend() const noexcept { return const_reverse_iterator(begin()); }
   auto rbegin() noexcept { return reverse_iterator(end()); }
@@ -146,8 +145,10 @@ public:
       return true;
     if (size() != rhs.size())
       return false;
-    for (auto p = m_first, q = rhs.m_first; p && q; p = p->next, q = q->next) {
-      if (p->value != q->value)
+    if (size() == 0)
+      return true;
+    for (auto p = m_first, q = rhs.m_first; p != &m_end; p = p->next, q = q->next) {
+      if (cast(p)->value != cast(q)->value)
         return false;
     }
     return true;
@@ -157,50 +158,56 @@ private:
   using node_type = node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
 
+  node_type *cast(node_base *p) const noexcept { return static_cast<node_type *>(p); }
+  node_type *last() const noexcept { return cast(m_end.prev); }
+  node_type *first() const noexcept { return cast(m_first); }
+
   node_type *create_node(value_type &&x) {
     auto p = m_alloc.allocate(1);
     aria::construct_at(p, forward<value_type>(x));
     return p;
   }
 
-  void add_node(node_type *prev, node_type *p) {
+  void add_node(node_base *prev, node_base *p) {
     if (!prev) {
       p->next = m_first;
       m_first = p;
     } else {
       p->next = prev->next;
       p->prev = prev;
+      p->prev->next = p;
     }
 
-    if (p->prev)
-      p->prev->next = p;
-    if (p->next)
-      p->next->prev = p;
+    if (!p->next)
+      p->next = &m_end;
 
-    if (prev == m_last)
-      m_last = p;
+    p->next->prev = p;
 
     m_size++;
   }
 
   void add_node(node_type *prev, value_type &&x) { add_node(prev, create_node(forward<value_type>(x))); }
 
-  void erase_node(node_type *p) {
+  void erase_node(node_base *p) {
     if (p == m_first) {
-      m_first = p->next;
-    } else if (p == m_last) {
-      m_last = p->prev;
+      if (p->next == &m_end) {
+        m_first = nullptr;
+        m_end.prev = nullptr;
+      } else {
+        m_first = p->next;
+      }
     } else {
       p->prev->next = p->next;
+      p->next->prev = p->prev;
     }
 
-    aria::destroy_at(p);
-    m_alloc.deallocate(p, 1);
+    aria::destroy_at(cast(p));
+    m_alloc.deallocate(cast(p), 1);
     m_size--;
   }
 
-  node_type *m_first = nullptr;
-  node_type *m_last = nullptr;
+  node_base *m_first = nullptr;
+  node_base m_end;
   size_type m_size = 0;
   node_allocator_type m_alloc;
 };
