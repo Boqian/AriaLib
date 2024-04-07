@@ -22,6 +22,7 @@ public:
   using reference = const value_type &;
   using difference_type = std::ptrdiff_t;
   using node_type = node<value_type>;
+  friend ListType;
 
   list_const_iterator() = default;
 
@@ -113,8 +114,8 @@ public:
     }
   }
 
-  void push_back(value_type value) { add_node(last(), aria::move(value)); }
-  void push_front(value_type value) { add_node(nullptr, aria::move(value)); }
+  void push_back(value_type value) { insert_node(&m_end, aria::move(value)); }
+  void push_front(value_type value) { insert_node(m_first, aria::move(value)); }
   void pop_back() noexcept { erase_node(last()); }
   void pop_front() noexcept { erase_node(m_first); }
 
@@ -140,6 +141,8 @@ public:
   auto rbegin() noexcept { return reverse_iterator(end()); }
   auto rend() noexcept { return reverse_iterator(begin()); }
 
+  // iterator insert(const_iterator pos, const T &value) { insert_node(pos.ptr, value); }
+
   bool operator==(const list &rhs) const noexcept {
     if (this == &rhs)
       return true;
@@ -162,31 +165,30 @@ private:
   node_type *last() const noexcept { return cast(m_end.prev); }
   node_type *first() const noexcept { return cast(m_first); }
 
+  static void link(node_base *first, node_base *second) noexcept {
+    first->next = second;
+    second->prev = first;
+  }
+
   node_type *create_node(value_type &&x) {
     auto p = m_alloc.allocate(1);
     aria::construct_at(p, forward<value_type>(x));
     return p;
   }
 
-  void add_node(node_base *prev, node_base *p) {
-    if (!prev) {
-      p->next = m_first;
-      m_first = p;
+  node_base *insert_node(node_base *pos, node_base *p) {
+    auto prev = pos->prev;
+    link(p, pos);
+    if (prev) {
+      link(prev, p);
     } else {
-      p->next = prev->next;
-      p->prev = prev;
-      p->prev->next = p;
+      m_first = p;
     }
-
-    if (!p->next)
-      p->next = &m_end;
-
-    p->next->prev = p;
-
     m_size++;
+    return p;
   }
 
-  void add_node(node_type *prev, value_type &&x) { add_node(prev, create_node(forward<value_type>(x))); }
+  node_base *insert_node(node_base *pos, value_type &&x) { return insert_node(pos, create_node(forward<value_type>(x))); }
 
   void erase_node(node_base *p) {
     if (p == m_first) {
@@ -206,8 +208,8 @@ private:
     m_size--;
   }
 
-  node_base *m_first = nullptr;
   node_base m_end;
+  node_base *m_first = &m_end;
   size_type m_size = 0;
   node_allocator_type m_alloc;
 };
