@@ -68,18 +68,10 @@ TEST(test_list, reverse_iterator) {
 TEST(test_list, insert) {
   {
     list<int> v = {1, 2, 3}, u;
-    for (auto it = v.rbegin(); it != v.rend(); ++it) {
-      u.push_back(*it);
-    }
-    EXPECT_EQ(u, list<int>({3, 2, 1}));
-  }
-  {
-    list<pair<int, double>> v = {{3, 1.5}, {2, 4.4}};
-    EXPECT_EQ(v.rbegin()->first, 2);
-    EXPECT_DOUBLE_EQ(v.rbegin()->second, 4.4);
-    v.rbegin()->first = 10;
-    EXPECT_EQ(v.back().first, 10);
-    *v.rbegin() = pair(11, 5.5);
-    EXPECT_EQ(v.rbegin()->first, 11);
+    auto pos = ++v.begin();
+    EXPECT_EQ(*pos, 2);
+    auto it = v.insert(pos, 10);
+    EXPECT_EQ(*it, 10);
+    EXPECT_EQ(v, list<int>({1, 10, 2, 3}));
   }
 }

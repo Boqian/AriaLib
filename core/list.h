@@ -141,7 +141,7 @@ public:
   auto rbegin() noexcept { return reverse_iterator(end()); }
   auto rend() noexcept { return reverse_iterator(begin()); }
 
-  // iterator insert(const_iterator pos, const T &value) { insert_node(pos.ptr, value); }
+  iterator insert(const_iterator pos, T &&value) { return insert_node(const_cast<node_base *>(pos.ptr), forward<T>(value)); }
 
   bool operator==(const list &rhs) const noexcept {
     if (this == &rhs)
@@ -165,7 +165,7 @@ private:
   node_type *last() const noexcept { return cast(m_end.prev); }
   node_type *first() const noexcept { return cast(m_first); }
 
-  static void link(node_base *first, node_base *second) noexcept {
+  static void link(node_base *&first, node_base *&second) noexcept {
     first->next = second;
     second->prev = first;
   }
@@ -199,8 +199,7 @@ private:
         m_first = p->next;
       }
     } else {
-      p->prev->next = p->next;
-      p->next->prev = p->prev;
+      link(p->prev, p->next);
     }
 
     aria::destroy_at(cast(p));
