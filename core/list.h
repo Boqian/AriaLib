@@ -141,7 +141,9 @@ public:
   auto rbegin() noexcept { return reverse_iterator(end()); }
   auto rend() noexcept { return reverse_iterator(begin()); }
 
-  iterator insert(const_iterator pos, T &&value) { return insert_node(const_cast<node_base *>(pos.ptr), forward<T>(value)); }
+  iterator insert(const_iterator pos, T &&value) { return insert_node(get_ptr(pos), forward<T>(value)); }
+
+  iterator erase(const_iterator pos) { return erase_node(get_ptr(pos)); }
 
   bool operator==(const list &rhs) const noexcept {
     if (this == &rhs)
@@ -164,6 +166,7 @@ private:
   node_type *cast(node_base *p) const noexcept { return static_cast<node_type *>(p); }
   node_type *last() const noexcept { return cast(m_end.prev); }
   node_type *first() const noexcept { return cast(m_first); }
+  static node_base *get_ptr(const_iterator pos) noexcept { return const_cast<node_base *>(pos.ptr); }
 
   static void link(node_base *&first, node_base *&second) noexcept {
     first->next = second;
@@ -190,21 +193,21 @@ private:
 
   node_base *insert_node(node_base *pos, value_type &&x) { return insert_node(pos, create_node(forward<value_type>(x))); }
 
-  void erase_node(node_base *p) {
+  node_base *erase_node(node_base *p) {
+    if (p == &m_end)
+      return p;
+
     if (p == m_first) {
-      if (p->next == &m_end) {
-        m_first = nullptr;
-        m_end.prev = nullptr;
-      } else {
-        m_first = p->next;
-      }
+      m_first = p->next;
     } else {
       link(p->prev, p->next);
     }
 
+    auto res = p->next;
     aria::destroy_at(cast(p));
     m_alloc.deallocate(cast(p), 1);
     m_size--;
+    return res;
   }
 
   node_base m_end;

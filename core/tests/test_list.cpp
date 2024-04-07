@@ -65,7 +65,7 @@ TEST(test_list, reverse_iterator) {
   }
 }
 
-TEST(test_list, insert) {
+TEST(test_list, insert_erase) {
   {
     list<int> v = {1, 2, 3}, u;
     auto pos = ++v.begin();
@@ -73,5 +73,14 @@ TEST(test_list, insert) {
     auto it = v.insert(pos, 10);
     EXPECT_EQ(*it, 10);
     EXPECT_EQ(v, list<int>({1, 10, 2, 3}));
+    it = v.erase(it);
+    EXPECT_EQ(*it, 2);
+    EXPECT_EQ(v, list<int>({1, 2, 3}));
+    it = v.erase(it);
+    EXPECT_EQ(*it, 3);
+    EXPECT_EQ(v, list<int>({1, 3}));
+    it = v.erase(it);
+    EXPECT_EQ(it, v.end());
+    EXPECT_EQ(v, list<int>({1}));
   }
 }
