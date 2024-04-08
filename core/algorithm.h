@@ -44,11 +44,30 @@ template <class ForwardIt, class Compare> constexpr ForwardIt max_element(Forwar
 }
 
 template <class ForwardIt> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last) {
-  return max_element(first, last, aria::less<decltype(*first)>());
+  return max_element(first, last, aria::less());
+}
+
+template <class ForwardIt, class Compare> constexpr ForwardIt min_element(ForwardIt first, ForwardIt last, Compare cmp) {
+  if (first == last)
+    return last;
+
+  auto min_it = first;
+  for (; first != last; ++first) {
+    if (cmp(*first, *min_it))
+      min_it = first;
+  }
+  return min_it;
+}
+
+template <class ForwardIt> constexpr ForwardIt min_element(ForwardIt first, ForwardIt last) {
+  return min_element(first, last, aria::less());
 }
 
 template <class T> constexpr const T &max(const T &a, const T &b) { return (a < b) ? b : a; }
 template <class T, class Compare> const T &max(const T &a, const T &b, Compare comp) { return comp(a, b) ? b : a; }
 template <class T> constexpr T max(std::initializer_list<T> ilist) { return *max_element(ilist.begin(), ilist.end()); }
+template <class T> constexpr const T &min(const T &a, const T &b) { return (a < b) ? a : b; }
+template <class T, class Compare> const T &min(const T &a, const T &b, Compare comp) { return comp(a, b) ? a : b; }
+template <class T> constexpr T min(std::initializer_list<T> ilist) { return *min_element(ilist.begin(), ilist.end()); }
 
 } // namespace aria

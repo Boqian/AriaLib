@@ -33,6 +33,17 @@ TEST(test_algorithm, find) {
 
 TEST(test_algorithm, minmax) {
   {
+    vector<int> v = {4, 1, 3, 2};
+    auto x = *min_element(v.begin(), v.end());
+    EXPECT_EQ(x, 1);
+    auto y = *min_element(v.begin(), v.end(), [](int a, int b) { return a > b; });
+    EXPECT_EQ(y, 4);
+  }
+  {
+    EXPECT_EQ(aria::min(1, 5), 1);
+    EXPECT_EQ(aria::min({3, 4, 5}), 3);
+  }
+  {
     vector<int> v = {1, 4, 3, 2};
     auto x = *max_element(v.begin(), v.end());
     EXPECT_EQ(x, 4);

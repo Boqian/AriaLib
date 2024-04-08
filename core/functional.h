@@ -47,8 +47,20 @@ private:
 };
 
 //-----------------------Comparisons-----------------------
-template <class T> struct less {
+template <class T = void> struct less {
   constexpr bool operator()(const T &a, const T &b) const { return a < b; }
+};
+
+template <> struct less<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a < b; }
+};
+
+template <class T = void> struct greater {
+  constexpr bool operator()(const T &a, const T &b) const { return a > b; }
+};
+
+template <> struct greater<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a > b; }
 };
 
 } // namespace aria
