@@ -4,6 +4,57 @@
 
 namespace aria {
 
+//-----------------------Comparisons-----------------------
+template <class T = void> struct less {
+  constexpr bool operator()(const T &a, const T &b) const { return a < b; }
+};
+
+template <> struct less<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a < b; }
+};
+
+template <class T = void> struct greater {
+  constexpr bool operator()(const T &a, const T &b) const { return a > b; }
+};
+
+template <> struct greater<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a > b; }
+};
+
+template <class T = void> struct equal_to {
+  constexpr bool operator()(const T &a, const T &b) const { return a == b; }
+};
+
+template <> struct equal_to<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a == b; }
+};
+
+template <class T = void> struct not_equal_to {
+  constexpr bool operator()(const T &a, const T &b) const { return a != b; }
+};
+
+template <> struct not_equal_to<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a != b; }
+};
+
+template <class T = void> struct greater_equal {
+  constexpr bool operator()(const T &a, const T &b) const { return a >= b; }
+};
+
+template <> struct greater_equal<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a >= b; }
+};
+
+template <class T = void> struct less_equal {
+  constexpr bool operator()(const T &a, const T &b) const { return a <= b; }
+};
+
+template <> struct less_equal<void> {
+  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a <= b; }
+};
+
+//-----------------------aria::function-----------------------
+
 template <typename> class function {};
 
 template <class Ret, class... Args> class function<Ret(Args...)> {
@@ -44,23 +95,6 @@ private:
   };
 
   unique_ptr<ICallable> ptr;
-};
-
-//-----------------------Comparisons-----------------------
-template <class T = void> struct less {
-  constexpr bool operator()(const T &a, const T &b) const { return a < b; }
-};
-
-template <> struct less<void> {
-  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a < b; }
-};
-
-template <class T = void> struct greater {
-  constexpr bool operator()(const T &a, const T &b) const { return a > b; }
-};
-
-template <> struct greater<void> {
-  template <class T> constexpr bool operator()(const T &a, const T &b) const { return a > b; }
 };
 
 } // namespace aria
