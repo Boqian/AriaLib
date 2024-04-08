@@ -75,6 +75,8 @@ private:
   T *ptr = nullptr;
 };
 
+template <class T> constexpr std::reference_wrapper<T> ref(T &t) noexcept { return std::reference_wrapper<T>(t); }
+
 //-----------------------aria::function-----------------------
 
 template <typename> class function {};

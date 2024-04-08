@@ -193,7 +193,7 @@ public:
 
   template <class... Args> void emplace_back(Args &&...args) {
     reserve(new_capacity(1));
-    aria::construct_at(get(m_size), forward<Args>(args)...);
+    aria::construct_at(get(m_size), ::aria::forward<Args>(args)...);
     m_size++;
   }
 
