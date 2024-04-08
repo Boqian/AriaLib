@@ -53,6 +53,28 @@ template <> struct less_equal<void> {
   template <class T> constexpr bool operator()(const T &a, const T &b) const { return a <= b; }
 };
 
+//-----------------------reference wrapper-----------------------
+template <class T> class reference_wrapper {
+public:
+  using type = T;
+
+  template <class U>
+    requires !is_same_v<remove_cvref_t<U>, reference_wrapper>
+             constexpr reference_wrapper(U && x) noexcept {
+    T &ref = static_cast<U &&>(x);
+    ptr = &ref;
+  }
+
+  constexpr reference_wrapper(const reference_wrapper &other) noexcept = default;
+  constexpr reference_wrapper &operator=(const reference_wrapper &rhs) noexcept { ptr = rhs.ptr; }
+
+  constexpr T &get() const noexcept { return *ptr; }
+  constexpr operator T &() const noexcept { return *ptr; }
+
+private:
+  T *ptr = nullptr;
+};
+
 //-----------------------aria::function-----------------------
 
 template <typename> class function {};

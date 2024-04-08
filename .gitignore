@@ -6,6 +6,7 @@
 #directories
 vcpkg_installed/
 Testing/
+core/tests/test_foo.cpp
 
 # User-specific files
 *.rsuser
