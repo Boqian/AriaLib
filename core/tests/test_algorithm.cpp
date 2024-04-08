@@ -5,6 +5,12 @@
 
 using namespace aria;
 
+TEST(test_algorithm, for_each) {
+  vector<int> v = {1, 2, 3};
+  for_each(v.begin(), v.end(), [](int &x) { x *= 2; });
+  EXPECT_EQ(v, vector({2, 4, 6}));
+}
+
 TEST(test_algorithm, all_of) {
   const vector<int> v = {1, 2, 3, 4, 5};
   EXPECT_TRUE(all_of(v.begin(), v.end(), [](int x) { return x <= 5; }));

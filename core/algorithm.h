@@ -6,6 +6,11 @@
 namespace aria {
 
 //---------------------Batch operations---------------------
+template <class InputIt, class UnaryFunc> UnaryFunc for_each(InputIt first, InputIt last, UnaryFunc f) {
+  for (; first != last; ++first)
+    f(*first);
+  return f;
+}
 
 //---------------------Search operations---------------------
 template <class InputIt, class UnaryPred> constexpr bool all_of(InputIt first, InputIt last, UnaryPred p) {
@@ -29,14 +34,6 @@ template <class InputIt, class UnaryPred> constexpr bool none_of(InputIt first, 
 }
 
 template <class ForwardIt1, class ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) { aria::swap(*a, *b); }
-
-template <class Iter> void reverse(Iter first, Iter last) {
-  if (first == last)
-    return;
-  --last;
-  for (; first != last; ++first, --last)
-    iter_swap(first, last);
-}
 
 template <class InputIt, class T> constexpr InputIt find(InputIt first, InputIt last, const T &value) {
   auto it = first;
@@ -110,5 +107,14 @@ template <class T> constexpr T max(std::initializer_list<T> ilist) { return *max
 template <class T> constexpr const T &min(const T &a, const T &b) { return (a < b) ? a : b; }
 template <class T, class Compare> const T &min(const T &a, const T &b, Compare comp) { return comp(a, b) ? a : b; }
 template <class T> constexpr T min(std::initializer_list<T> ilist) { return *min_element(ilist.begin(), ilist.end()); }
+
+//-----------------------Order-changing operations-----------------------
+template <class Iter> void reverse(Iter first, Iter last) {
+  if (first == last)
+    return;
+  --last;
+  for (; first != last; ++first, --last)
+    iter_swap(first, last);
+}
 
 } // namespace aria
