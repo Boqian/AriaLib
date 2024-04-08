@@ -28,7 +28,6 @@ template <class InputIt, class UnaryPred> constexpr bool none_of(InputIt first, 
   return !any_of(first, last, p);
 }
 
-//---------------------Search operations---------------------
 template <class ForwardIt1, class ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) { aria::swap(*a, *b); }
 
 template <class Iter> void reverse(Iter first, Iter last) {
@@ -51,6 +50,24 @@ template <class InputIt, class UnaryPred> constexpr InputIt find_if(InputIt firs
   for (; it != last && !p(*it); ++it) {
   }
   return it;
+}
+
+template <class InputIt, class T> size_t count(InputIt first, InputIt last, const T &x) {
+  size_t cnt = 0;
+  for (; first != last; ++first) {
+    if (*first == x)
+      cnt++;
+  }
+  return cnt;
+}
+
+template <class InputIt, class UnaryPred> size_t count_if(InputIt first, InputIt last, UnaryPred p) {
+  size_t cnt = 0;
+  for (; first != last; ++first) {
+    if (p(*first))
+      cnt++;
+  }
+  return cnt;
 }
 
 //-----------------------Minimum/maximum operations-----------------------

@@ -5,13 +5,20 @@
 
 using namespace aria;
 
-TEST(test_algorithm, search_operations) {
+TEST(test_algorithm, all_of) {
   const vector<int> v = {1, 2, 3, 4, 5};
   EXPECT_TRUE(all_of(v.begin(), v.end(), [](int x) { return x <= 5; }));
   EXPECT_FALSE(all_of(v.begin(), v.end(), [](int x) { return x % 2 == 0; }));
   EXPECT_FALSE(none_of(v.begin(), v.end(), [](int x) { return x % 2 == 0; }));
   EXPECT_TRUE(any_of(v.begin(), v.end(), [](int x) { return x % 2 == 0; }));
   EXPECT_TRUE(none_of(v.begin(), v.end(), [](int x) { return x > 5; }));
+}
+
+TEST(test_algorithm, count) {
+  const vector<int> v = {1, 2, 3, 4, 2, 5, 2};
+  EXPECT_EQ(count(v.begin(), v.end(), 2), 3);
+  EXPECT_EQ(count(v.begin(), v.end(), 1), 1);
+  EXPECT_EQ(count_if(v.begin(), v.end(), [](int x) { return x % 2 == 1; }), 3);
 }
 
 TEST(test_algorithm, reverse) {
