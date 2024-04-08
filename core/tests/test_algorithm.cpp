@@ -5,6 +5,15 @@
 
 using namespace aria;
 
+TEST(test_algorithm, search_operations) {
+  const vector<int> v = {1, 2, 3, 4, 5};
+  EXPECT_TRUE(all_of(v.begin(), v.end(), [](int x) { return x <= 5; }));
+  EXPECT_FALSE(all_of(v.begin(), v.end(), [](int x) { return x % 2 == 0; }));
+  EXPECT_FALSE(none_of(v.begin(), v.end(), [](int x) { return x % 2 == 0; }));
+  EXPECT_TRUE(any_of(v.begin(), v.end(), [](int x) { return x % 2 == 0; }));
+  EXPECT_TRUE(none_of(v.begin(), v.end(), [](int x) { return x > 5; }));
+}
+
 TEST(test_algorithm, reverse) {
   {
     vector<int> v = {1, 2, 3}, u = {3, 2, 1};

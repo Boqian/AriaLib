@@ -5,6 +5,30 @@
 
 namespace aria {
 
+//---------------------Batch operations---------------------
+
+//---------------------Search operations---------------------
+template <class InputIt, class UnaryPred> constexpr bool all_of(InputIt first, InputIt last, UnaryPred p) {
+  for (; first != last; ++first) {
+    if (!p(*first))
+      return false;
+  }
+  return true;
+}
+
+template <class InputIt, class UnaryPred> constexpr bool any_of(InputIt first, InputIt last, UnaryPred p) {
+  for (; first != last; ++first) {
+    if (p(*first))
+      return true;
+  }
+  return false;
+}
+
+template <class InputIt, class UnaryPred> constexpr bool none_of(InputIt first, InputIt last, UnaryPred p) {
+  return !any_of(first, last, p);
+}
+
+//---------------------Search operations---------------------
 template <class ForwardIt1, class ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) { aria::swap(*a, *b); }
 
 template <class Iter> void reverse(Iter first, Iter last) {
