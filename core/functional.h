@@ -46,4 +46,9 @@ private:
   unique_ptr<ICallable> ptr;
 };
 
+//-----------------------Comparisons-----------------------
+template <class T> struct less {
+  constexpr bool operator()(const T &a, const T &b) const { return a < b; }
+};
+
 } // namespace aria

@@ -1,4 +1,5 @@
 #pragma once
+#include "functional.h"
 #include "iterator.h"
 #include "utility.h"
 
@@ -27,5 +28,27 @@ template <class InputIt, class UnaryPred> constexpr InputIt find_if(InputIt firs
   }
   return it;
 }
+
+//-----------------------Minimum/maximum operations-----------------------
+
+template <class ForwardIt, class Compare> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last, Compare cmp) {
+  if (first == last)
+    return last;
+
+  auto max_it = first;
+  for (; first != last; ++first) {
+    if (cmp(*max_it, *first))
+      max_it = first;
+  }
+  return max_it;
+}
+
+template <class ForwardIt> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last) {
+  return max_element(first, last, aria::less<decltype(*first)>());
+}
+
+template <class T> constexpr const T &max(const T &a, const T &b) { return (a < b) ? b : a; }
+template <class T, class Compare> const T &max(const T &a, const T &b, Compare comp) { return comp(a, b) ? b : a; }
+template <class T> constexpr T max(std::initializer_list<T> ilist) { return *max_element(ilist.begin(), ilist.end()); }
 
 } // namespace aria
