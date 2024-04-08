@@ -75,7 +75,10 @@ private:
   T *ptr = nullptr;
 };
 
-template <class T> constexpr std::reference_wrapper<T> ref(T &t) noexcept { return std::reference_wrapper<T>(t); }
+template <class T> constexpr auto ref(T &t) noexcept { return reference_wrapper<T>(t); }
+template <class T> void ref(const T &&) = delete;
+template <class T> constexpr auto cref(const T &t) noexcept { return reference_wrapper<const T>(t); }
+template <class T> void cref(const T &&) = delete;
 
 //-----------------------aria::function-----------------------
 
