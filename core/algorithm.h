@@ -3,6 +3,7 @@
 #include "iterator.h"
 #include "utility.h"
 
+// https://en.cppreference.com/w/cpp/algorithm
 namespace aria {
 
 //---------------------Batch operations---------------------
@@ -65,6 +66,14 @@ template <class InputIt, class UnaryPred> size_t count_if(InputIt first, InputIt
       cnt++;
   }
   return cnt;
+}
+
+template <class InputIt1, class InputIt2> constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
+  for (; first1 != last1; ++first1, ++first2) {
+    if (*first1 != *first2)
+      return false;
+  }
+  return true;
 }
 
 //-----------------------Minimum/maximum operations-----------------------
