@@ -175,3 +175,11 @@ TEST(test_vector, reverse_iterator) {
     EXPECT_EQ(v.rbegin()->first, 11);
   }
 }
+
+TEST(test_vector, 2d_vector) {
+  vector<vector<int>> vv = {{1, 2}, {3, 4}};
+  EXPECT_EQ(vv[0][0], 1);
+  EXPECT_EQ(vv[0][1], 2);
+  EXPECT_EQ(vv[1][0], 3);
+  EXPECT_EQ(vv[1][1], 4);
+}
