@@ -3,15 +3,15 @@
 #include "iterator.h"
 #include "utility.h"
 
-struct node_base {
-  node_base *prev = nullptr;
-  node_base *next = nullptr;
+struct _node_base {
+  _node_base *prev = nullptr;
+  _node_base *next = nullptr;
 };
 
-template <class T> struct node : public node_base {
+template <class T> struct node : public _node_base {
   node() = default;
   node(T &&x) : value(forward<T>(x)) {}
-  node_base base;
+  _node_base base;
   T value;
 };
 
@@ -26,7 +26,7 @@ public:
 
   list_const_iterator() = default;
 
-  list_const_iterator(const node_base *p) : ptr(p) {}
+  list_const_iterator(const _node_base *p) : ptr(p) {}
 
   reference operator*() const noexcept { return value(); }
   pointer operator->() const noexcept { return &value(); }
@@ -54,7 +54,7 @@ public:
 
 private:
   reference value() const noexcept { return static_cast<const node_type *>(ptr)->value; }
-  const node_base *ptr;
+  const _node_base *ptr;
 };
 
 template <class ListType> class list_iterator : public list_const_iterator<ListType> {
@@ -163,12 +163,12 @@ private:
   using node_type = node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
 
-  node_type *cast(node_base *p) const noexcept { return static_cast<node_type *>(p); }
+  node_type *cast(_node_base *p) const noexcept { return static_cast<node_type *>(p); }
   node_type *last() const noexcept { return cast(m_end.prev); }
   node_type *first() const noexcept { return cast(m_first); }
-  static node_base *get_ptr(const_iterator pos) noexcept { return const_cast<node_base *>(pos.ptr); }
+  static _node_base *get_ptr(const_iterator pos) noexcept { return const_cast<_node_base *>(pos.ptr); }
 
-  static void link(node_base *&first, node_base *&second) noexcept {
+  static void link(_node_base *&first, _node_base *&second) noexcept {
     first->next = second;
     second->prev = first;
   }
@@ -179,7 +179,7 @@ private:
     return p;
   }
 
-  node_base *insert_node(node_base *pos, node_base *p) {
+  _node_base *insert_node(_node_base *pos, _node_base *p) {
     auto prev = pos->prev;
     link(p, pos);
     if (prev) {
@@ -191,9 +191,9 @@ private:
     return p;
   }
 
-  node_base *insert_node(node_base *pos, value_type &&x) { return insert_node(pos, create_node(forward<value_type>(x))); }
+  _node_base *insert_node(_node_base *pos, value_type &&x) { return insert_node(pos, create_node(forward<value_type>(x))); }
 
-  node_base *erase_node(node_base *p) {
+  _node_base *erase_node(_node_base *p) {
     if (p == &m_end)
       return p;
 
@@ -210,8 +210,8 @@ private:
     return res;
   }
 
-  node_base m_end;
-  node_base *m_first = &m_end;
+  _node_base m_end;
+  _node_base *m_first = &m_end;
   size_type m_size = 0;
   node_allocator_type m_alloc;
 };

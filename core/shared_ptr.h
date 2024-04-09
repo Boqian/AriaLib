@@ -5,7 +5,7 @@
 
 namespace aria {
 
-namespace details {
+namespace detail {
 
 class shared {
 public:
@@ -21,7 +21,7 @@ public:
   std::atomic<long> m_weaks;
   function<void()> m_deleter;
 };
-} // namespace details
+} // namespace detail
 
 template <class T> class shared_ptr {
 public:
@@ -33,7 +33,7 @@ public:
 
   template <class Y>
     requires convertible_to<Y *, T *>
-  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(details::shared::create(ptr)) {}
+  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(detail::shared::create(ptr)) {}
 
   shared_ptr(shared_ptr &&rhs) {
     swap(rhs);
@@ -96,7 +96,7 @@ public:
 
 private:
   T *m_ptr = nullptr;
-  details::shared *m_shared = nullptr;
+  detail::shared *m_shared = nullptr;
 };
 
 template <class T, class... Args> shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(forward<Args>(args)...)); }
