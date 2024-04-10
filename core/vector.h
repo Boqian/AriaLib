@@ -164,10 +164,7 @@ public:
     }
   }
 
-  vector(vector &&rhs) noexcept {
-    swap(rhs);
-    vector().swap(rhs);
-  }
+  vector(vector &&rhs) noexcept { swap(rhs); }
 
   vector &operator=(const vector &rhs) {
     if (this != &rhs) {
