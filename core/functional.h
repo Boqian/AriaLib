@@ -114,6 +114,14 @@ template <class T> size_t Hash_array_representation(const T *const p, const size
 
 template <class T> struct hash {};
 
+template <> struct hash<float> {
+  size_t operator()(const float x) const noexcept { return Hash_representation(x == 0.0 ? 0.0 : x); }
+};
+
+template <> struct hash<double> {
+  size_t operator()(const double x) const noexcept { return Hash_representation(x == 0.0 ? 0.0 : x); }
+};
+
 //-----------------------aria::function-----------------------
 
 template <typename> class function {};

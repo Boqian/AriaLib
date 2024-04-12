@@ -64,6 +64,27 @@ template <class T> using remove_cv_t = remove_cv<T>::type;
 template <class T> struct is_void : is_same<void, remove_cv_t<T>> {};
 template <class T> inline constexpr bool is_void_v = is_void<T>::value;
 
+template <class T>
+    struct is_integral : bool_constant < requires(T t, T *p, void (*f)(T)) // T* parameter excludes reference types
+{
+  reinterpret_cast<T>(t); // Exclude class types
+  f(0);                   // Exclude enumeration types
+  p + t;                  // Exclude everything not yet excluded but integral types
+} > {};
+template <class T> inline constexpr bool is_integral_v = is_integral<T>::value;
+
+template <class T> struct is_pointer : false_type {};
+template <class T> struct is_pointer<T *> : true_type {};
+template <class T> struct is_pointer<T *const> : true_type {};
+template <class T> struct is_pointer<T *volatile> : true_type {};
+template <class T> struct is_pointer<T *const volatile> : true_type {};
+template <class T> inline constexpr bool is_pointer_v = is_pointer<T>::value;
+
+template <class T> struct is_array : false_type {};
+template <class T> struct is_array<T[]> : true_type {};
+template <class T, size_t N> struct is_array<T[N]> : true_type {};
+template <class T> inline constexpr bool is_array_v = is_array<T>::value;
+
 //----------------- add_lvalue_reference, add_rvalue_reference
 //-----------------------
 namespace detail {
