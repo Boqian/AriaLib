@@ -81,6 +81,39 @@ template <class T> void ref(const T &&) = delete;
 template <class T> constexpr auto cref(const T &t) noexcept { return reference_wrapper<const T>(t); }
 template <class T> void cref(const T &&) = delete;
 
+//-----------------------hash-----------------------
+inline constexpr size_t FNV_offset_basis = 14695981039346656037ULL;
+inline constexpr size_t FNV_prime = 1099511628211ULL;
+
+// accumulate range [p, p + size) into partial FNV-1a hash value
+inline size_t Fnv1a_append_bytes(size_t val, const unsigned char *const p, const size_t size) noexcept {
+  for (size_t i = 0; i < size; ++i) {
+    val ^= static_cast<size_t>(p[i]);
+    val *= FNV_prime;
+  }
+  return val;
+}
+
+template <class T> size_t Fnv1a_append_range(const size_t val, const T *const first, const T *const last) noexcept {
+  // static_assert(is_trivial_v<T>, "Only trivial types can be directly hashed.");
+  const auto firstb = reinterpret_cast<const unsigned char *>(first);
+  const auto lastb = reinterpret_cast<const unsigned char *>(last);
+  return Fnv1a_append_bytes(val, firstb, static_cast<size_t>(lastb - firstb));
+}
+
+template <class T> size_t Fnv1a_append_value(const size_t val, const T &x) noexcept {
+  //  static_assert(is_trivial_v<T>, "Only trivial types can be directly hashed.");
+  return Fnv1a_append_bytes(val, &reinterpret_cast<const unsigned char &>(x), sizeof(T));
+}
+
+template <class T> size_t Hash_representation(const T &x) noexcept { return Fnv1a_append_value(FNV_offset_basis, x); }
+
+template <class T> size_t Hash_array_representation(const T *const p, const size_t size) noexcept {
+  return Fnv1a_append_bytes(FNV_offset_basis, reinterpret_cast<const unsigned char *>(p), size * sizeof(T));
+}
+
+template <class T> struct hash {};
+
 //-----------------------aria::function-----------------------
 
 template <typename> class function {};
