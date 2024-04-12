@@ -72,3 +72,10 @@ TEST(test_reference_wrapper, basic) {
     EXPECT_EQ(v[0], 6);
   }
 }
+
+TEST(test_hash, basic) {
+  {
+    int x = 5, y = 5;
+    EXPECT_EQ(hash<int>{}(x), hash<int>{}(y));
+  }
+}

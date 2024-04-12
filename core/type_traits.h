@@ -41,6 +41,9 @@ template <class T> struct is_same<T, T> : true_type {};
 
 template <class T, class U> inline constexpr bool is_same_v = is_same<T, U>::value;
 
+// is_any_of
+template <class T, class... Args> inline constexpr bool is_any_of_v = (is_same_v<T, Args> || ...);
+
 //----------------- is_convertible -----------------------
 namespace details {
 template <class To> inline void foo(To) {}
@@ -65,13 +68,9 @@ template <class T> struct is_void : is_same<void, remove_cv_t<T>> {};
 template <class T> inline constexpr bool is_void_v = is_void<T>::value;
 
 template <class T>
-    struct is_integral : bool_constant < requires(T t, T *p, void (*f)(T)) // T* parameter excludes reference types
-{
-  reinterpret_cast<T>(t); // Exclude class types
-  f(0);                   // Exclude enumeration types
-  p + t;                  // Exclude everything not yet excluded but integral types
-} > {};
-template <class T> inline constexpr bool is_integral_v = is_integral<T>::value;
+inline constexpr bool is_integral_v = is_any_of_v<remove_cv_t<T>, bool, char, signed char, unsigned char, short, unsigned short, int,
+                                                  unsigned int, long, unsigned long, long long>;
+template <class T> struct is_integral : bool_constant<is_integral_v<T>> {};
 
 template <class T> struct is_pointer : false_type {};
 template <class T> struct is_pointer<T *> : true_type {};

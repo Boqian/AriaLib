@@ -68,4 +68,8 @@ void test_traits() {
   static_assert(!is_destructible_v<void>);
   static_assert(!is_destructible_v<BB>);
   static_assert(is_destructible_v<BB &>);
+
+  static_assert(is_integral_v<int>);
+  static_assert(is_integral_v<char>);
+  static_assert(is_integral_v<long>);
 }
