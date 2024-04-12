@@ -72,4 +72,12 @@ void test_traits() {
   static_assert(is_integral_v<int>);
   static_assert(is_integral_v<char>);
   static_assert(is_integral_v<long>);
+  static_assert(!is_integral_v<double>);
+  static_assert(!is_integral_v<float>);
+
+  static_assert(!is_floating_point_v<int>);
+  static_assert(!is_floating_point_v<char>);
+  static_assert(!is_floating_point_v<long>);
+  static_assert(is_floating_point_v<double>);
+  static_assert(is_floating_point_v<float>);
 }

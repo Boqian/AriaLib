@@ -69,7 +69,7 @@ template <class T> inline constexpr bool is_void_v = is_void<T>::value;
 
 template <class T>
 inline constexpr bool is_integral_v = is_any_of_v<remove_cv_t<T>, bool, char, signed char, unsigned char, short, unsigned short, int,
-                                                  unsigned int, long, unsigned long, long long>;
+                                                  unsigned int, long, unsigned long, long long, unsigned long long>;
 template <class T> struct is_integral : bool_constant<is_integral_v<T>> {};
 
 template <class T> struct is_pointer : false_type {};
@@ -84,9 +84,8 @@ template <class T> struct is_array<T[]> : true_type {};
 template <class T, size_t N> struct is_array<T[N]> : true_type {};
 template <class T> inline constexpr bool is_array_v = is_array<T>::value;
 
-template <class T>
-struct is_floating_point : integral_constant<bool, is_same_v<float, remove_cv_t<T>> || is_same_v<double, remove_cv_t<T>>> {};
-template <class T> inline constexpr bool is_floating_point_v = is_floating_point<T>::value;
+template <class T> inline constexpr bool is_floating_point_v = is_any_of_v<remove_cv_t<T>, float, double, long double>;
+template <class T> struct is_floating_point : bool_constant<is_floating_point_v<T>> {};
 
 //----------------- add_lvalue_reference, add_rvalue_reference
 //-----------------------
