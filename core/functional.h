@@ -114,12 +114,23 @@ template <class T> size_t Hash_array_representation(const T *const p, const size
 
 template <class T> struct hash {};
 
-template <> struct hash<float> {
-  size_t operator()(const float x) const noexcept { return Hash_representation(x == 0.0 ? 0.0 : x); }
+template <class T>
+  requires is_integral_v<T> || is_pointer_v<T>
+struct hash<T> {
+  size_t operator()(const T x) const noexcept { return Hash_representation(x); }
 };
 
-template <> struct hash<double> {
-  size_t operator()(const double x) const noexcept { return Hash_representation(x == 0.0 ? 0.0 : x); }
+template <class T>
+  requires is_floating_point_v<T>
+struct hash<T> {
+  size_t operator()(const T x) const noexcept { return Hash_representation(x == 0.0 ? 0.0 : x); }
+};
+
+template <> struct hash<nullptr_t> {
+  size_t operator()(nullptr_t) const noexcept {
+    void *p{};
+    return Hash_representation(p);
+  }
 };
 
 //-----------------------aria::function-----------------------
