@@ -87,6 +87,9 @@ template <class T> inline constexpr bool is_array_v = is_array<T>::value;
 template <class T> inline constexpr bool is_floating_point_v = is_any_of_v<remove_cv_t<T>, float, double, long double>;
 template <class T> struct is_floating_point : bool_constant<is_floating_point_v<T>> {};
 
+template <class T> inline constexpr bool is_arithmetic_v = is_integral_v<T> || is_floating_point_v<T>;
+template <class T> struct is_arithmetic : bool_constant<is_arithmetic_v<T>> {};
+
 //----------------- add_lvalue_reference, add_rvalue_reference
 //-----------------------
 namespace detail {
