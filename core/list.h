@@ -24,8 +24,7 @@ public:
   using node_type = node<value_type>;
   friend ListType;
 
-  list_const_iterator() = default;
-
+  list_const_iterator() : ptr(nullptr) {}
   list_const_iterator(const _node_base *p) : ptr(p) {}
 
   reference operator*() const noexcept { return value(); }
@@ -51,6 +50,8 @@ public:
   }
 
   bool operator==(const list_const_iterator &rhs) const noexcept { return ptr == rhs.ptr; }
+
+  operator bool() const noexcept { return ptr; }
 
 private:
   reference value() const noexcept { return static_cast<const node_type *>(ptr)->value; }
@@ -90,7 +91,7 @@ public:
   }
 };
 
-template <class T, class Allocator = allocator<T>> class list {
+template <class T, class Allocator = aria::allocator<T>> class list {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
