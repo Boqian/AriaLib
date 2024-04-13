@@ -12,4 +12,7 @@ TEST(test_unordered_map, basic) {
   EXPECT_EQ(m[3], 4);
   auto it = m.find(3);
   EXPECT_TRUE(it != m.end());
+  m[5] = 10;
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_EQ(m[5], 10);
 }

@@ -16,15 +16,18 @@ public:
   using const_reference = const value_type &;
   using hasher = Hash;
   using key_equal = KeyEqual;
-  using iterator = list<value_type>::iterator;
-  using const_iterator = list<value_type>::const_iterator;
+  using iterator = typename Base::iterator;
+  using const_iterator = typename Base::const_iterator;
 
   T &operator[](const Key &key) {
     auto it = Base::find(key);
-    return it->second;
+    if (it != Base::end())
+      return it->second;
+    else
+      return Base::insert(value_type(key, T{})).first->second;
   }
 
-  template <class M> std::pair<iterator, bool> insert_or_assign(const Key &k, M &&obj) {}
+  template <class M> std::pair<iterator, bool> insert_or_assign(const Key &k, M &&obj) { auto res = insert(k, obj); }
 
 private:
 };
