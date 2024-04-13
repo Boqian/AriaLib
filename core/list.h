@@ -142,8 +142,7 @@ public:
   auto rbegin() noexcept { return reverse_iterator(end()); }
   auto rend() noexcept { return reverse_iterator(begin()); }
 
-  iterator insert(const_iterator pos, T &&value) { return insert_node(get_ptr(pos), forward<T>(value)); }
-
+  iterator insert(const_iterator pos, value_type value) { return insert_node(get_ptr(pos), aria::move(value)); }
   iterator erase(const_iterator pos) { return erase_node(get_ptr(pos)); }
 
   bool operator==(const list &rhs) const noexcept {
@@ -193,6 +192,7 @@ private:
   }
 
   _node_base *insert_node(_node_base *pos, value_type &&x) { return insert_node(pos, create_node(forward<value_type>(x))); }
+  _node_base *insert_node(_node_base *pos, const value_type &x) { return insert_node(pos, create_node(forward<value_type>(x))); }
 
   _node_base *erase_node(_node_base *p) {
     if (p == &m_end)
