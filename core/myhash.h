@@ -6,33 +6,30 @@
 #include "vector.h"
 #include <algorithm.h>
 #include <cassert>
-// #include <list>
 
 namespace aria {
 
-template <class Key, class T> struct _KeyVal {
-  using value_type = pair<const Key, T>;
-
-  template <class... Args> _KeyVal(Args &&...args) : data(forward<Args>(args)...) {}
-
-  const Key &key() const noexcept { return data.first; }
-  T &value() const noexcept { return data.second; }
-  value_type data;
+namespace ns_myhash {
+template <class Key, class T> struct KeyVal {
+  using type = pair<const Key, T>;
 };
 
-template <class Key> struct _KeyVal<Key, void> {
-  using value_type = const Key;
-  _KeyVal() = default;
-  _KeyVal(const value_type &a) : data(a) {}
-  _KeyVal(value_type &&a) : data(aria::move(a)) {}
-  const Key &key() const noexcept { return data; }
-  value_type data;
+template <class Key> struct KeyVal<Key, void> {
+  using type = const Key;
 };
+
+template <class T> const auto &get_key(const T &x) {
+  if constexpr (is_pair_v<T>) {
+    return x.first;
+  } else
+    return x;
+}
+} // namespace ns_myhash
 
 template <class Key, class T, class Hash = aria::hash<Key>, class KeyEqual = aria::equal_to<Key>> class my_hash {
 public:
   using key_type = Key;
-  using value_type = typename _KeyVal<Key, T>;
+  using value_type = typename ns_myhash::KeyVal<Key, T>::type;
   using mapped_type = T;
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -71,9 +68,9 @@ public:
   pair<iterator, bool> insert(const_reference value) {
     resize_if_needed(1);
 
-    auto &bucket = get_bucket(value.key());
+    auto &bucket = get_bucket(ns_myhash::get_key(value));
 
-    if (auto it = find(bucket, value.key()); it != m_list.end())
+    if (auto it = find(bucket, ns_myhash::get_key(value)); it != m_list.end())
       return {it, false};
 
     auto insert_pos = m_list.insert(bucket ? bucket.first : m_list.end(), value);
@@ -97,7 +94,7 @@ public:
     if (pos == m_list.end())
       return pos;
 
-    auto &bucket = get_bucket(pos->key());
+    auto &bucket = get_bucket(ns_myhash::get_key(*pos));
     iterator res;
     if (bucket.first == pos) {
       res = bucket.first = m_list.erase(pos);
@@ -135,8 +132,7 @@ protected:
   iterator find(const bucket_type &bucket, const key_type &key) const {
     auto it = bucket.first;
     for (int j = 0; j < bucket.size; j++, it++) {
-      assert(m_hasher(key) % bucket_count() == m_hasher(it->key()) % bucket_count());
-      if (m_key_equal(it->key(), key))
+      if (m_key_equal(ns_myhash::get_key(*it), key))
         return it;
     }
     return m_list.end();

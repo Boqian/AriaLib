@@ -73,6 +73,10 @@ template <class T1, class T2> constexpr pair<T1, T2> make_pair(const T1 &&a, con
 
 template <class T1, class T2> void swap(pair<T1, T2> &a, pair<T1, T2> &b) { a.swap(b); }
 
+template <class T> struct is_pair : false_type {};
+template <class T1, class T2> struct is_pair<pair<T1, T2>> : true_type {};
+template <class T> inline constexpr bool is_pair_v = is_pair<T>::value;
+
 //------------------------- tuple -------------------------//
 template <class... Args> class tuple {};
 template <> class tuple<> {

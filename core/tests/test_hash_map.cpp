@@ -4,11 +4,11 @@
 using namespace aria;
 
 TEST(test_hash_map, _KeyVal) {
-  _KeyVal<int, int> kv = pair(1, 2);
-  EXPECT_EQ(kv.key(), 1);
+  auto kv = pair(1, 2);
+  EXPECT_EQ(ns_myhash::get_key(kv), 1);
 }
 
-TEST(test_hash_map, base) {
+TEST(test_hash_map, basic) {
   my_hash<int, int> m;
   EXPECT_TRUE(m.empty());
 
