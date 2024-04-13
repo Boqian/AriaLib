@@ -12,9 +12,9 @@ namespace aria {
 
 template <class Key, class T> struct _KeyVal {
   using value_type = pair<const Key, T>;
-  _KeyVal() = default;
-  _KeyVal(const value_type &a) : data(a) {}
-  _KeyVal(value_type &&a) : data(aria::move(a)) {}
+
+  template <class... Args> _KeyVal(Args &&...args) : data(forward<Args>(args)...) {}
+
   const Key &key() const noexcept { return data.first; }
   T &value() const noexcept { return data.second; }
   value_type data;

@@ -54,6 +54,7 @@ public:
   constexpr pair &operator=(pair &&) noexcept = default;
 
   template <class U1, class U2> constexpr pair(U1 &&x, U2 &&y) : first{forward<U1>(x)}, second{forward<U2>(y)} {}
+  template <class U1, class U2> constexpr pair(const pair<U1, U2> &p) : first(p.first), second(p.second) {}
 
   constexpr void swap(pair &rhs) noexcept {
     ::aria::swap(first, rhs.first);

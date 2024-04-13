@@ -63,6 +63,10 @@ TEST(test_pair, basic) {
     EXPECT_EQ(x, 1);
     EXPECT_DOUBLE_EQ(y, 2.5);
   }
+  {
+    using ptype = pair<const int, int>;
+    ptype p = pair(1, 2);
+  }
 }
 
 TEST(test_tuple, basic) {

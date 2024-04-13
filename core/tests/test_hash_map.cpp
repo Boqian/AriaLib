@@ -4,7 +4,7 @@
 using namespace aria;
 
 TEST(test_hash_map, _KeyVal) {
-  _KeyVal<int, int> kv = {pair<const int, int>(1, 2)};
+  _KeyVal<int, int> kv = pair(1, 2);
   EXPECT_EQ(kv.key(), 1);
 }
 
@@ -14,7 +14,7 @@ TEST(test_hash_map, base) {
 
   const int n = 7;
   for (int i = 0; i < n; i++) {
-    auto [it, flag] = m.insert(pair<const int, int>(i * 2, i * 4));
+    auto [it, flag] = m.insert(pair(i * 2, i * 4));
     EXPECT_TRUE(flag) << i;
   }
 
