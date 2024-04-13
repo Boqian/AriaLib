@@ -40,8 +40,8 @@ public:
   using const_reference = const value_type &;
   using hasher = Hash;
   using key_equal = KeyEqual;
-  using list_iter = list<value_type>::iterator;
-
+  using iterator = list<value_type>::iterator;
+  using const_iterator = list<value_type>::const_iterator;
   my_hash() = default;
 
   size_type size() const noexcept { return m_list.size(); }
@@ -53,17 +53,13 @@ public:
   void reserve(size_type n) {
     if (n <= bucket_count())
       return;
-
     m_table = vector<bucket_type>(n);
-    for (auto it = m_list.begin(); it != m_list.end(); ++it) {
-      auto &bucket = get_bucket(it->key());
-      if (!bucket)
-        bucket.first = it;
-      bucket.size++;
-    }
+    auto input = move(m_list);
+    for (auto &val : input)
+      insert(val);
   }
 
-  pair<list_iter, bool> insert(const_reference value) {
+  pair<iterator, bool> insert(const_reference value) {
     resize_if_needed(1);
 
     auto &bucket = get_bucket(value.key());
@@ -76,17 +72,19 @@ public:
     return {insert_pos, true};
   }
 
-  list_iter find(const key_type &key) const {
+  const_iterator find(const key_type &key) const {
     const auto &bucket = m_table[bucket_index(key)];
     return find(bucket, key);
   }
 
-  list_iter erase(list_iter pos) {
+  bool contains(const key_type &key) const { return find(key) != m_list.end(); }
+
+  iterator erase(iterator pos) {
     if (pos == m_list.end())
       return pos;
 
     const auto &bucket = get_bucket(pos->key());
-    list_iter res;
+    iterator res;
     if (bucket.first == pos) {
       bucket.first = res = m_list.erase(pos);
     } else {
@@ -99,24 +97,22 @@ public:
 protected:
   struct bucket_type {
     bucket_type() = default;
-    void add(list_iter it) {
+    void add(iterator it) {
       first = it;
       size++;
     }
-
-    bucket_type(list_iter it) : first(it), size(1) {}
-    operator bool() const noexcept { return size == 0; }
-    list_iter first{};
+    operator bool() const noexcept { return size > 0; }
+    iterator first{};
     size_t size{};
   };
 
   size_type bucket_index(const key_type &key) const noexcept { return m_hasher(key) % bucket_count(); }
   bucket_type &get_bucket(const key_type &key) noexcept { return m_table[bucket_index(key)]; }
 
-  list_iter find(const bucket_type &bucket, const key_type &key) {
+  const_iterator find(const bucket_type &bucket, const key_type &key) const {
     auto it = bucket.first;
     for (int j = 0; j < bucket.size; j++, it++) {
-      assert(m_hasher(key) == m_hasher(it->key()));
+      assert(m_hasher(key) % bucket_count() == m_hasher(it->key()) % bucket_count());
       if (m_key_equal(it->key(), key))
         return it;
     }
@@ -130,7 +126,7 @@ protected:
       reserve(num_bucket_needed * 2);
   }
 
-  const size_type min_num_bucket = 2;
+  const size_type min_num_bucket = 10;
   float m_max_load_factor = 1.0;
   list<value_type> m_list;
   vector<bucket_type> m_table;

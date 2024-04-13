@@ -68,6 +68,7 @@ public:
   using difference_type = std::ptrdiff_t;
   using Base::Base;
 
+  list_iterator(Base base) : Base(base) {}
   reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
   pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
 
@@ -115,6 +116,27 @@ public:
     }
   }
 
+  list(const list &rhs) {
+    for (auto &x : rhs)
+      push_back(x);
+  }
+
+  list &operator=(const list &rhs) {
+    if (this != &rhs) {
+      auto temp = rhs;
+      swap(temp);
+    }
+    return *this;
+  }
+
+  list(list &&rhs) noexcept { swap(rhs); }
+
+  list &operator=(list &&rhs) noexcept {
+    auto temp = aria::move(rhs);
+    swap(temp);
+    return *this;
+  }
+
   void push_back(value_type value) { insert_node(&m_end, aria::move(value)); }
   void push_front(value_type value) { insert_node(m_first, aria::move(value)); }
   void pop_back() noexcept { erase_node(last()); }
@@ -159,6 +181,18 @@ public:
     return true;
   }
 
+  void swap(list &rhs) noexcept {
+    auto lhs_last = m_end.prev;
+    auto rhs_last = rhs.m_end.prev;
+    if (lhs_last)
+      link(*lhs_last, rhs.m_end);
+    if (rhs_last)
+      link(*rhs_last, m_end);
+    aria::swap(m_first, rhs.m_first);
+    aria::swap(m_size, rhs.m_size);
+    aria::swap(m_alloc, rhs.m_alloc);
+  }
+
 private:
   using node_type = node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
@@ -168,9 +202,9 @@ private:
   node_type *first() const noexcept { return cast(m_first); }
   static _node_base *get_ptr(const_iterator pos) noexcept { return const_cast<_node_base *>(pos.ptr); }
 
-  static void link(_node_base *&first, _node_base *&second) noexcept {
-    first->next = second;
-    second->prev = first;
+  static void link(_node_base &first, _node_base &second) noexcept {
+    first.next = &second;
+    second.prev = &first;
   }
 
   node_type *create_node(value_type &&x) {
@@ -181,9 +215,9 @@ private:
 
   _node_base *insert_node(_node_base *pos, _node_base *p) {
     auto prev = pos->prev;
-    link(p, pos);
+    link(*p, *pos);
     if (prev) {
-      link(prev, p);
+      link(*prev, *p);
     } else {
       m_first = p;
     }
@@ -201,7 +235,7 @@ private:
     if (p == m_first) {
       m_first = p->next;
     } else {
-      link(p->prev, p->next);
+      link(*p->prev, *p->next);
     }
 
     auto res = p->next;

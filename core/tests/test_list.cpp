@@ -84,3 +84,28 @@ TEST(test_list, insert_erase) {
     EXPECT_EQ(v, list<int>({1}));
   }
 }
+
+TEST(test_list, construct) {
+  {
+    list<int> v = {1, 2, 3};
+    auto u = v;
+    EXPECT_EQ(u, list<int>({1, 2, 3}));
+  }
+  {
+    list<int> v = {1, 2, 3}, u = {4, 5};
+    u = v;
+    EXPECT_EQ(u, list<int>({1, 2, 3}));
+  }
+  {
+    list<int> v = {1, 2, 3};
+    auto u = aria::move(v);
+    EXPECT_EQ(u, list<int>({1, 2, 3}));
+    EXPECT_TRUE(v.empty());
+  }
+  {
+    list<int> v = {1, 2, 3}, u = {4, 5};
+    u = move(v);
+    EXPECT_EQ(u, list<int>({1, 2, 3}));
+    EXPECT_TRUE(v.empty());
+  }
+}
