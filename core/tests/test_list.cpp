@@ -97,6 +97,21 @@ TEST(test_list, insert_erase) {
   }
 }
 
+void test_iterate(const list<int> &v) {
+  int count = 0, sum = 0;
+  for (auto x : v) {
+    count++;
+    sum += x;
+  }
+  EXPECT_EQ(count, v.size());
+  count = 0;
+  for (auto it = v.rbegin(); it != v.rend(); ++it) {
+    count++;
+    sum += *it;
+  }
+  EXPECT_EQ(count, v.size());
+}
+
 TEST(test_list, construct) {
   {
     list<int> v = {1, 2, 3};
@@ -123,7 +138,13 @@ TEST(test_list, construct) {
   {
     list<int> v;
     auto u = move(v);
-    for (auto x : u)
-      EXPECT_EQ(x, 1);
+    test_iterate(v);
+    test_iterate(u);
+  }
+  {
+    list<int> v = {1, 2, 3};
+    auto u = move(v);
+    test_iterate(v);
+    test_iterate(u);
   }
 }
