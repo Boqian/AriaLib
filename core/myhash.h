@@ -4,6 +4,9 @@
 #include "list.h"
 #include "utility.h"
 #include "vector.h"
+#include <algorithm.h>
+#include <cassert>
+// #include <list>
 
 namespace aria {
 
@@ -53,35 +56,36 @@ public:
 
     m_table = vector<bucket_type>(n);
     for (auto it = m_list.begin(); it != m_list.end(); ++it) {
-      auto &bucket = m_table[bucket_index(it->key())];
-      bucket.size++;
-      if (!bucket.first)
+      auto &bucket = get_bucket(it->key());
+      if (!bucket)
         bucket.first = it;
+      bucket.size++;
     }
   }
 
-  list_iter insert(const_reference value) {
-    if (bucket_count() == 0)
-      reserve(10);
+  pair<list_iter, bool> insert(const_reference value) {
+    resize_if_needed(1);
 
-    auto &bucket = m_table[bucket_index(value.key())];
-    if (find(value.key(), bucket))
-      return {};
+    auto &bucket = get_bucket(value.key());
 
-    auto inserted_pos = m_list.insert(bucket.first ? bucket.first : m_list.end(), value);
-    bucket.add(inserted_pos);
+    if (auto it = find(bucket, value.key()); it != m_list.end())
+      return {it, false};
+
+    auto insert_pos = m_list.insert(bucket ? bucket.first : m_list.end(), value);
+    bucket.add(insert_pos);
+    return {insert_pos, true};
   }
 
   list_iter find(const key_type &key) const {
     const auto &bucket = m_table[bucket_index(key)];
-    return find(key, bucket);
+    return find(bucket, key);
   }
 
   list_iter erase(list_iter pos) {
     if (pos == m_list.end())
       return pos;
 
-    const auto &bucket = m_table[bucket_index(pos->key())];
+    const auto &bucket = get_bucket(pos->key());
     list_iter res;
     if (bucket.first == pos) {
       bucket.first = res = m_list.erase(pos);
@@ -107,19 +111,28 @@ protected:
   };
 
   size_type bucket_index(const key_type &key) const noexcept { return m_hasher(key) % bucket_count(); }
+  bucket_type &get_bucket(const key_type &key) noexcept { return m_table[bucket_index(key)]; }
 
-  list_iter find(const key_type &key, const bucket_type &bucket) const {
+  list_iter find(const bucket_type &bucket, const key_type &key) {
     auto it = bucket.first;
     for (int j = 0; j < bucket.size; j++, it++) {
+      assert(m_hasher(key) == m_hasher(it->key()));
       if (m_key_equal(it->key(), key))
         return it;
     }
-    return {};
+    return m_list.end();
   }
 
+  void resize_if_needed(size_type added_size) {
+    const size_type new_size = size() + added_size;
+    const size_type num_bucket_needed = ceil(m_max_load_factor * new_size);
+    if (bucket_count() < num_bucket_needed)
+      reserve(num_bucket_needed * 2);
+  }
+
+  const size_type min_num_bucket = 2;
   float m_max_load_factor = 1.0;
   list<value_type> m_list;
-
   vector<bucket_type> m_table;
   hasher m_hasher;
   key_equal m_key_equal;
