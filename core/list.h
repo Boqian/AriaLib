@@ -250,8 +250,10 @@ private:
   }
 
   void adjust_on_empty() noexcept {
-    if (m_size == 0)
+    if (m_size == 0) {
+      m_end.prev = nullptr;
       m_first = &m_end;
+    }
   }
 
   _node_base m_end;

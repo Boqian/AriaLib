@@ -22,5 +22,6 @@ TEST(test_hash_map, base) {
 
   for (int i = 0; i < n; i++) {
     EXPECT_TRUE(m.contains(i * 2));
+    EXPECT_FALSE(m.contains(i * 2 + 1));
   }
 }
