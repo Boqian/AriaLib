@@ -188,9 +188,13 @@ public:
       link(*lhs_last, rhs.m_end);
     if (rhs_last)
       link(*rhs_last, m_end);
+
     aria::swap(m_first, rhs.m_first);
     aria::swap(m_size, rhs.m_size);
     aria::swap(m_alloc, rhs.m_alloc);
+
+    adjust_on_empty();
+    rhs.adjust_on_empty();
   }
 
 private:
@@ -243,6 +247,11 @@ private:
     m_alloc.deallocate(cast(p), 1);
     m_size--;
     return res;
+  }
+
+  void adjust_on_empty() noexcept {
+    if (m_size == 0)
+      m_first = &m_end;
   }
 
   _node_base m_end;

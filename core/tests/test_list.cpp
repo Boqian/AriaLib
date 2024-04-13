@@ -46,6 +46,18 @@ TEST(test_list, init) {
   EXPECT_EQ(li, list<int>());
 }
 
+TEST(test_list, iterator) {
+  {
+    list<int> v;
+    for (auto it = v.begin(); it != v.end(); ++it) {
+      EXPECT_EQ(*it, 12345);
+    }
+    for (auto x : v) {
+      EXPECT_EQ(x, 12345);
+    }
+  }
+}
+
 TEST(test_list, reverse_iterator) {
   {
     list<int> v = {1, 2, 3}, u;
@@ -107,5 +119,11 @@ TEST(test_list, construct) {
     u = move(v);
     EXPECT_EQ(u, list<int>({1, 2, 3}));
     EXPECT_TRUE(v.empty());
+  }
+  {
+    list<int> v;
+    auto u = move(v);
+    for (auto x : u)
+      EXPECT_EQ(x, 1);
   }
 }
