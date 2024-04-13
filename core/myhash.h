@@ -50,6 +50,15 @@ public:
   float load_factor() const { return empty() ? 1.0 : float(size()) / bucket_count(); }
   float max_load_factor() const noexcept { return m_max_load_factor; }
 
+  auto begin() const noexcept { return m_list.begin(); }
+  auto end() const noexcept { return m_list.end(); }
+  auto begin() noexcept { return m_list.begin(); }
+  auto end() noexcept { return m_list.end(); }
+  auto rbegin() const noexcept { return m_list.rbegin(); }
+  auto rend() const noexcept { return m_list.rend(); }
+  auto rbegin() noexcept { return m_list.rbegin(); }
+  auto rend() noexcept { return m_list.rend(); }
+
   void reserve(size_type n) {
     if (n <= bucket_count())
       return;
@@ -72,6 +81,11 @@ public:
     return {insert_pos, true};
   }
 
+  iterator find(const key_type &key) {
+    const auto &bucket = m_table[bucket_index(key)];
+    return find(bucket, key);
+  }
+
   const_iterator find(const key_type &key) const {
     const auto &bucket = m_table[bucket_index(key)];
     return find(bucket, key);
@@ -79,19 +93,28 @@ public:
 
   bool contains(const key_type &key) const { return find(key) != m_list.end(); }
 
-  iterator erase(iterator pos) {
+  iterator erase(const_iterator pos) {
     if (pos == m_list.end())
       return pos;
 
-    const auto &bucket = get_bucket(pos->key());
+    auto &bucket = get_bucket(pos->key());
     iterator res;
     if (bucket.first == pos) {
-      bucket.first = res = m_list.erase(pos);
+      res = bucket.first = m_list.erase(pos);
     } else {
       res = m_list.erase(pos);
     }
     bucket.size--;
     return res;
+  }
+
+  size_type erase(const key_type &key) {
+    auto it = find(key);
+    if (it != end()) {
+      erase(it);
+      return 1;
+    }
+    return 0;
   }
 
 protected:
@@ -109,7 +132,7 @@ protected:
   size_type bucket_index(const key_type &key) const noexcept { return m_hasher(key) % bucket_count(); }
   bucket_type &get_bucket(const key_type &key) noexcept { return m_table[bucket_index(key)]; }
 
-  const_iterator find(const bucket_type &bucket, const key_type &key) const {
+  iterator find(const bucket_type &bucket, const key_type &key) const {
     auto it = bucket.first;
     for (int j = 0; j < bucket.size; j++, it++) {
       assert(m_hasher(key) % bucket_count() == m_hasher(it->key()) % bucket_count());
@@ -126,7 +149,6 @@ protected:
       reserve(num_bucket_needed * 2);
   }
 
-  const size_type min_num_bucket = 10;
   float m_max_load_factor = 1.0;
   list<value_type> m_list;
   vector<bucket_type> m_table;

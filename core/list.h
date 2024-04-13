@@ -25,7 +25,7 @@ public:
   friend ListType;
 
   list_const_iterator() : ptr(nullptr) {}
-  list_const_iterator(const _node_base *p) : ptr(p) {}
+  explicit list_const_iterator(const _node_base *p) : ptr(p) {}
 
   reference operator*() const noexcept { return value(); }
   pointer operator->() const noexcept { return &value(); }
@@ -71,6 +71,7 @@ public:
   list_iterator(Base base) : Base(base) {}
   reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
   pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
+  operator Base() const noexcept { return *this; }
 
   list_iterator &operator++() noexcept {
     Base::operator++();
@@ -164,8 +165,8 @@ public:
   auto rbegin() noexcept { return reverse_iterator(end()); }
   auto rend() noexcept { return reverse_iterator(begin()); }
 
-  iterator insert(const_iterator pos, value_type value) { return insert_node(get_ptr(pos), aria::move(value)); }
-  iterator erase(const_iterator pos) { return erase_node(get_ptr(pos)); }
+  iterator insert(const_iterator pos, value_type value) { return iterator(insert_node(get_ptr(pos), aria::move(value))); }
+  iterator erase(const_iterator pos) { return iterator(erase_node(get_ptr(pos))); }
 
   bool operator==(const list &rhs) const noexcept {
     if (this == &rhs)
