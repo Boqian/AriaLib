@@ -15,4 +15,9 @@ TEST(test_unordered_map, basic) {
   m[5] = 10;
   EXPECT_EQ(m.size(), 2);
   EXPECT_EQ(m[5], 10);
+  m.erase(3);
+  EXPECT_EQ(m.size(), 1);
+  auto it5 = m.find(5);
+  m.erase(it5);
+  EXPECT_EQ(m.size(), 0);
 }
