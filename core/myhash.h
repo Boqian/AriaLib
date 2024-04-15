@@ -39,6 +39,7 @@ public:
   using key_equal = KeyEqual;
   using iterator = list<value_type>::iterator;
   using const_iterator = list<value_type>::const_iterator;
+
   my_hash() = default;
 
   size_type size() const noexcept { return m_list.size(); }

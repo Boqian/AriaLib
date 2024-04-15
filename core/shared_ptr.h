@@ -1,5 +1,5 @@
 #pragma once
-#include "functional.h"
+#include "unique_ptr.h"
 #include "utility.h"
 #include <atomic>
 
@@ -7,19 +7,29 @@ namespace aria {
 
 namespace detail {
 
+struct IDeleter {
+  IDeleter() = default;
+  virtual ~IDeleter() = default;
+  virtual void operator()(void *) const = 0;
+};
+
+template <class T> struct DefaultDeleter : IDeleter {
+  void operator()(void *ptr) const override { delete static_cast<T *>(ptr); }
+};
+
+template <class F, class T> struct CustomDeleter : IDeleter {
+  CustomDeleter(F &&af) : f(aria::forward<F>(af)) {}
+  void operator()(void *ptr) const override { f(static_cast<T *>(ptr)); }
+  F f;
+};
+
 class shared {
 public:
-  template <class Deleter> shared(Deleter &&deleter) : m_deleter(forward<Deleter>(deleter)), m_uses(1), m_weaks(0) {}
-
-  ~shared() { m_deleter(); }
-
-  template <class Y> static shared *create(Y *ptr) {
-    return new shared([ptr]() { delete ptr; });
-  }
-
-  std::atomic<long> m_uses;
-  std::atomic<long> m_weaks;
-  function<void()> m_deleter;
+  shared(unique_ptr<IDeleter> deleter) : m_deleter(move(deleter)) {}
+  template <class T> static shared *create() { return new shared(make_unique<DefaultDeleter<T>>()); }
+  std::atomic<long> m_uses = 1;
+  std::atomic<long> m_weaks = 1;
+  unique_ptr<IDeleter> m_deleter;
 };
 } // namespace detail
 
@@ -33,7 +43,7 @@ public:
 
   template <class Y>
     requires convertible_to<Y *, T *>
-  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(detail::shared::create(ptr)) {}
+  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(detail::shared::create<Y>()) {}
 
   shared_ptr(shared_ptr &&rhs) {
     swap(rhs);
@@ -82,6 +92,7 @@ public:
   void reset() noexcept {
     if (m_shared) {
       if (--m_shared->m_uses == 0) {
+        m_shared->m_deleter->operator()(m_ptr);
         delete m_shared;
       }
       m_shared = nullptr;
@@ -95,8 +106,8 @@ public:
   }
 
 private:
-  T *m_ptr = nullptr;
-  detail::shared *m_shared = nullptr;
+  T *m_ptr{};
+  detail::shared *m_shared{};
 };
 
 template <class T, class... Args> shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(forward<Args>(args)...)); }
