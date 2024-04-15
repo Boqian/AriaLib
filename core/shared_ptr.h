@@ -39,16 +39,20 @@ public:
 
   shared_ptr() noexcept {}
   shared_ptr(std::nullptr_t) noexcept {}
-  ~shared_ptr() { reset(); }
+  ~shared_ptr() {
+    if (m_shared) {
+      if (--m_shared->m_uses == 0) {
+        m_shared->m_deleter->operator()(m_ptr);
+        delete m_shared;
+      }
+    }
+  }
 
   template <class Y>
     requires convertible_to<Y *, T *>
   explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(detail::shared::create<Y>()) {}
 
-  shared_ptr(shared_ptr &&rhs) {
-    swap(rhs);
-    shared_ptr().swap(rhs);
-  }
+  shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }
 
   shared_ptr(const shared_ptr &rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) {
     if (m_shared)
@@ -58,19 +62,13 @@ public:
   shared_ptr &operator=(const shared_ptr &rhs) noexcept {
     if (this == &rhs)
       return *this;
-    reset();
-    m_ptr = rhs.m_ptr;
-    m_shared = rhs.m_shared;
-    if (m_shared)
-      m_shared->m_uses++;
-    return *this;
+    auto tmp = rhs;
+    swap(tmp);
   }
 
   shared_ptr &operator=(shared_ptr &&rhs) noexcept {
-    if (this == &rhs)
-      return *this;
-    swap(rhs);
-    shared_ptr().swap(rhs);
+    auto tmp = move(rhs);
+    swap(tmp);
     return *this;
   }
 
@@ -89,16 +87,7 @@ public:
   long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
   bool unique() const noexcept { return use_count() == 1; }
 
-  void reset() noexcept {
-    if (m_shared) {
-      if (--m_shared->m_uses == 0) {
-        m_shared->m_deleter->operator()(m_ptr);
-        delete m_shared;
-      }
-      m_shared = nullptr;
-      m_ptr = nullptr;
-    }
-  }
+  void reset() noexcept { shared_ptr().swap(*this); }
 
   void swap(shared_ptr &rhs) noexcept {
     aria::swap(m_shared, rhs.m_shared);
@@ -109,6 +98,8 @@ private:
   T *m_ptr{};
   detail::shared *m_shared{};
 };
+
+template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) { a.swap(b); }
 
 template <class T, class... Args> shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(forward<Args>(args)...)); }
 
