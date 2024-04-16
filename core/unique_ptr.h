@@ -28,37 +28,30 @@ public:
 
   unique_ptr(T *ptr, Deleter &&deleter) : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
 
-  unique_ptr(unique_ptr &&rhs) noexcept {
-    swap(rhs);
-    rhs.reset();
-  }
-
   template <class U, class E>
     requires convertible_to<U *, T *>
   unique_ptr(unique_ptr<U, E> &&rhs) : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
 
-  ~unique_ptr() { reset(); }
-
-  unique_ptr(const unique_ptr &) = delete;
-  unique_ptr &operator=(const unique_ptr &) noexcept = delete;
-
-  unique_ptr &operator=(nullptr_t) noexcept {
-    reset();
-    return *this;
-  }
-
-  unique_ptr &operator=(unique_ptr &&rhs) noexcept {
-    swap(rhs);
-    rhs.reset();
-    return *this;
-  }
-
-  void reset() noexcept {
+  ~unique_ptr() {
     if (m_ptr) {
       m_deleter(m_ptr);
       m_ptr = nullptr;
     }
   }
+
+  unique_ptr(const unique_ptr &) = delete;
+  unique_ptr &operator=(const unique_ptr &) noexcept = delete;
+  unique_ptr &operator=(nullptr_t) noexcept {
+    reset();
+    return *this;
+  }
+  unique_ptr(unique_ptr &&rhs) noexcept { swap(rhs); }
+  unique_ptr &operator=(unique_ptr &&rhs) noexcept {
+    unique_ptr(move(rhs)).swap(*this);
+    return *this;
+  }
+
+  void reset() noexcept { unique_ptr().swap(*this); }
 
   T *get() const noexcept { return m_ptr; }
 
@@ -88,6 +81,8 @@ private:
   T *m_ptr = nullptr;
   Deleter m_deleter;
 };
+
+template <class T, class D> void swap(unique_ptr<T, D> &a, unique_ptr<T, D> &b) { a.swap(b); }
 
 template <class T, class... Args> unique_ptr<T> make_unique(Args &&...args) { return unique_ptr<T>(new T(forward<Args>(args)...)); }
 
