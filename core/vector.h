@@ -292,4 +292,6 @@ private:
   }
 };
 
+template <class T, class A> void swap(vector<T, A> &a, vector<T, A> &b) { a.swap(b); }
+
 } // namespace aria

@@ -2,7 +2,7 @@
 #include "allocator.h"
 #include "iterator.h"
 #include "utility.h"
-
+namespace aria {
 struct _node_base {
   _node_base *prev = nullptr;
   _node_base *next = nullptr;
@@ -93,7 +93,7 @@ public:
   }
 };
 
-template <class T, class Allocator = aria::allocator<T>> class list {
+template <class T, class Allocator = allocator<T>> class list {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -105,13 +105,13 @@ public:
   using const_pointer = typename allocator_type::const_pointer;
   using iterator = list_iterator<list<T, Allocator>>;
   using const_iterator = list_const_iterator<list<T, Allocator>>;
-  using reverse_iterator = aria::reverse_iterator<iterator>;
-  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+  using reverse_iterator = reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<iterator>;
 
   list() noexcept = default;
   ~list() noexcept { clear(); }
 
-  list(aria::initializer_list<value_type> init) {
+  list(initializer_list<value_type> init) {
     for (auto &value : init) {
       push_back(value);
     }
@@ -133,13 +133,13 @@ public:
   list(list &&rhs) noexcept { swap(rhs); }
 
   list &operator=(list &&rhs) noexcept {
-    auto temp = aria::move(rhs);
+    auto temp = move(rhs);
     swap(temp);
     return *this;
   }
 
-  void push_back(value_type value) { insert_node(&m_end, aria::move(value)); }
-  void push_front(value_type value) { insert_node(m_first, aria::move(value)); }
+  void push_back(value_type value) { insert_node(&m_end, move(value)); }
+  void push_front(value_type value) { insert_node(m_first, move(value)); }
   void pop_back() noexcept { erase_node(last()); }
   void pop_front() noexcept { erase_node(m_first); }
 
@@ -165,7 +165,7 @@ public:
   auto rbegin() noexcept { return reverse_iterator(end()); }
   auto rend() noexcept { return reverse_iterator(begin()); }
 
-  iterator insert(const_iterator pos, value_type value) { return iterator(insert_node(get_ptr(pos), aria::move(value))); }
+  iterator insert(const_iterator pos, value_type value) { return iterator(insert_node(get_ptr(pos), move(value))); }
   iterator erase(const_iterator pos) { return iterator(erase_node(get_ptr(pos))); }
 
   bool operator==(const list &rhs) const noexcept {
@@ -214,7 +214,7 @@ private:
 
   node_type *create_node(value_type &&x) {
     auto p = m_alloc.allocate(1);
-    aria::construct_at(p, forward<value_type>(x));
+    construct_at(p, forward<value_type>(x));
     return p;
   }
 
@@ -244,7 +244,7 @@ private:
     }
 
     auto res = p->next;
-    aria::destroy_at(cast(p));
+    destroy_at(cast(p));
     m_alloc.deallocate(cast(p), 1);
     m_size--;
     return res;
@@ -262,3 +262,5 @@ private:
   size_type m_size = 0;
   node_allocator_type m_alloc;
 };
+
+} // namespace aria
