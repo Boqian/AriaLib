@@ -1,5 +1,4 @@
 #pragma once
-#include "unique_ptr.h"
 #include "utility.h"
 #include <atomic>
 
@@ -7,29 +6,15 @@ namespace aria {
 
 namespace detail {
 
-struct IDeleter {
-  IDeleter() = default;
-  virtual ~IDeleter() = default;
-  virtual void operator()(void *) const = 0;
-};
-
-template <class T> struct DefaultDeleter : IDeleter {
-  void operator()(void *ptr) const override { delete static_cast<T *>(ptr); }
-};
-
-template <class F, class T> struct CustomDeleter : IDeleter {
-  CustomDeleter(F &&af) : f(aria::forward<F>(af)) {}
-  void operator()(void *ptr) const override { f(static_cast<T *>(ptr)); }
-  F f;
-};
-
-class shared {
-public:
-  shared(unique_ptr<IDeleter> deleter) : m_deleter(move(deleter)) {}
-  template <class T> static shared *create() { return new shared(make_unique<DefaultDeleter<T>>()); }
+struct shared_base {
+  virtual ~shared_base() = default;
+  virtual void del(void *ptr) const = 0;
   std::atomic<long> m_uses = 1;
   std::atomic<long> m_weaks = 1;
-  unique_ptr<IDeleter> m_deleter;
+};
+
+template <class T> struct default_shared : shared_base {
+  void del(void *ptr) const override { delete static_cast<T *>(ptr); }
 };
 } // namespace detail
 
@@ -42,7 +27,7 @@ public:
   ~shared_ptr() {
     if (m_shared) {
       if (--m_shared->m_uses == 0) {
-        m_shared->m_deleter->operator()(m_ptr);
+        m_shared->del(m_ptr);
         delete m_shared;
       }
     }
@@ -50,7 +35,7 @@ public:
 
   template <class Y>
     requires convertible_to<Y *, T *>
-  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(detail::shared::create<Y>()) {}
+  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new detail::default_shared<Y>()) {}
 
   shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }
 
@@ -96,7 +81,7 @@ public:
 
 private:
   T *m_ptr{};
-  detail::shared *m_shared{};
+  detail::shared_base *m_shared{};
 };
 
 template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) { a.swap(b); }
