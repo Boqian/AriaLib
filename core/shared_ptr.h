@@ -45,10 +45,11 @@ public:
   }
 
   shared_ptr &operator=(const shared_ptr &rhs) noexcept {
-    if (this == &rhs)
-      return *this;
-    auto tmp = rhs;
-    swap(tmp);
+    if (this != &rhs) {
+      auto tmp = rhs;
+      swap(tmp);
+    }
+    return *this;
   }
 
   shared_ptr &operator=(shared_ptr &&rhs) noexcept {
