@@ -12,22 +12,22 @@ public:
   spsc_queue(size_t capacity) : m_max_size(capacity + 1), m_buffer(std::make_unique<T[]>(capacity + 1)) {}
 
   bool push(const T &x) {
-    const auto r = m_read_pos.load();
-    const auto w = m_write_pos.load(), next_w = increment(w);
+    const auto r = m_read_pos.load(std::memory_order_acquire);
+    const auto w = m_write_pos.load(std::memory_order_relaxed), next_w = increment(w);
     if (next_w == r)
       return false; // full
     (*m_buffer)[w] = x;
-    m_write_pos.store(next_w);
+    m_write_pos.store(next_w, std::memory_order_release);
     return true;
   }
 
   bool pop(T &item) {
-    const auto r = m_read_pos.load();
-    const auto w = m_write_pos.load();
+    const auto r = m_read_pos.load(std::memory_order_relaxed);
+    const auto w = m_write_pos.load(std::memory_order_acquire);
     if (r == w)
       return false; // empty;
     item = (*m_buffer)[r];
-    m_read_pos.store(increment(r));
+    m_read_pos.store(increment(r), std::memory_order_release);
     return true;
   }
 
