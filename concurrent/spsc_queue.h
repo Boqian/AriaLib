@@ -9,45 +9,45 @@ template <class T> class spsc_queue {
 public:
   using size_t = std::size_t;
 
-  spsc_queue(size_t capacity) : m_maxsize(capacity + 1), m_buffer(std::make_unique<T[]>(capacity + 1)) {}
+  spsc_queue(size_t capacity) : m_max_size(capacity + 1), m_buffer(std::make_unique<T[]>(capacity + 1)) {}
 
   bool push(const T &x) {
-    const auto head = m_head.load();
-    const auto tail = m_tail.load(), tail_next = increment(tail);
-    if (tail_next == head)
+    const auto r = m_read_pos.load();
+    const auto w = m_write_pos.load(), next_w = increment(w);
+    if (next_w == r)
       return false; // full
-    (*m_buffer)[tail] = x;
-    m_tail.store(tail_next);
+    (*m_buffer)[w] = x;
+    m_write_pos.store(next_w);
     return true;
   }
 
   bool pop(T &item) {
-    const auto head = m_head.load();
-    const auto tail = m_tail.load();
-    if (head == tail)
+    const auto r = m_read_pos.load();
+    const auto w = m_write_pos.load();
+    if (r == w)
       return false; // empty;
-    item = (*m_buffer)[head];
-    m_head.store(increment(head));
+    item = (*m_buffer)[r];
+    m_read_pos.store(increment(r));
     return true;
   }
 
-  bool empty() const { return m_head.load() == m_tail.load(); }
+  bool empty() const { return m_read_pos.load() == m_write_pos.load(); }
 
-  bool full() const { return (m_head.load() + 1) % m_maxsize == m_tail.load(); }
+  bool full() const { return increment(m_write_pos.load()) == m_read_pos.load(); }
 
-  const T &front() const { return (*m_buffer)[m_head.load()]; }
+  const T &front() const { return (*m_buffer)[m_read_pos.load()]; }
 
 private:
   size_t increment(size_t pos) {
-    if (++pos == m_maxsize)
+    if (++pos == m_max_size)
       pos = 0;
     return pos;
   }
 
-  alignas(64) std::atomic<size_t> m_head{};
-  alignas(64) std::atomic<size_t> m_tail{};
+  alignas(64) std::atomic<size_t> m_read_pos{};
+  alignas(64) std::atomic<size_t> m_write_pos{};
   alignas(64) const std::unique_ptr<T[]> m_buffer;
-  const std::size_t m_maxsize;
+  const std::size_t m_max_size;
 };
 
 } // namespace aria
