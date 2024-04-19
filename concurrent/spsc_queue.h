@@ -22,8 +22,8 @@ public:
   }
 
   bool pop(T &item) {
-    const auto r = m_read_pos.load(std::memory_order_relaxed);
     const auto w = m_write_pos.load(std::memory_order_acquire);
+    const auto r = m_read_pos.load(std::memory_order_relaxed);
     if (r == w)
       return false; // empty;
     item = (*m_buffer)[r];
