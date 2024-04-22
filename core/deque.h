@@ -26,18 +26,21 @@ public:
   }
 
   ~deque() {
-    if (buckets_size() == 0)
-      return;
-
-    if (buckets_size() == 1) {
-      destroy_bucket(get_bucket(0), m_start, m_end);
-    } else {
-      destroy_bucket(get_bucket(0), m_start);
-      destroy_bucket(m_buckets.back(), 0, m_end);
-      for (int i = 1; i < buckets_size() - 1; i++) {
-        destroy_bucket(get_bucket(i));
-      }
+    for (int i = 0; i < size(); i++)
+      destroy_at(get(i));
+    for (auto p : m_buckets) {
+      m_alloc.deallocate(p, s_bucket_size);
     }
+  }
+
+  deque(const deque &rhs)
+      : m_buckets(rhs.m_buckets.size()), m_start(rhs.start), m_end(rhs.m_end), m_bucket_start_index(rhs.m_bucket_start_index),
+        m_alloc(rhs.m_alloc) {
+    for (int i = m_bucket_start_index; i < m_buckets.size(); i++) {
+      m_buckets[i] = create_bucket();
+    }
+    for (int i = 0; i < rhs.size(); i++)
+      construc_at(get(i), rhs[i]);
   }
 
   void push_back(const_reference val) {
@@ -50,9 +53,11 @@ public:
   }
 
   void pop_back() {
-    destroy_at(m_buckets.back()[m_end - 1]);
+    destroy_at(m_buckets.back() + m_end - 1);
     if (--m_end == 0) {
+      deallocate_bucket(m_buckets.size() - 1);
       m_buckets.pop_back();
+      m_end = s_bucket_size;
     }
   }
 
@@ -69,9 +74,11 @@ public:
   }
 
   void pop_front() {
-    destroy_at(m_buckets[m_bucket_start_index][m_start]);
+    destroy_at(m_buckets[m_bucket_start_index] + m_start);
     if (++m_start == s_bucket_size) {
-      m_buckets[++m_bucket_start_index] = nullptr;
+      deallocate_bucket(m_bucket_start_index);
+      ++m_bucket_start_index;
+      m_start = 0;
     }
   }
 
@@ -82,15 +89,8 @@ public:
     return (m_buckets.size() - m_bucket_start_index - 1) * s_bucket_size + m_end - m_start;
   }
 
-  const_reference operator[](size_type i) const {
-    if (i < s_bucket_size - m_start)
-      return m_buckets[m_bucket_start_index][i + m_start];
-    i -= s_bucket_size - m_start;
-    auto bucket_index = 1 + (i / s_bucket_size), index = i % s_bucket_size;
-    return m_buckets[bucket_index + m_bucket_start_index][index];
-  }
-
-  reference operator[](size_type i) { return const_cast<reference>(add_const(*this).operator[](i)); }
+  const_reference operator[](size_type i) const { return *get(i); }
+  reference operator[](size_type i) { return const_cast<reference>(*get(i)); }
 
   reference back() noexcept { return m_buckets.back()[m_end - 1]; }
   const_reference back() const noexcept { return m_buckets.back()[m_end - 1]; }
@@ -112,10 +112,17 @@ private:
 
   pointer create_bucket() { return m_alloc.allocate(s_bucket_size); }
 
-  void destroy_bucket(pointer p, size_type start = 0, size_type end = s_bucket_size) {
-    for (auto i = start; i < end; i++)
-      destroy_at(p + i);
-    m_alloc.deallocate(p, s_bucket_size);
+  void deallocate_bucket(size_type i) {
+    m_alloc.deallocate(m_buckets[i], s_bucket_size);
+    m_buckets[i] = nullptr;
+  }
+
+  pointer get(size_type i) const {
+    if (m_start + i < s_bucket_size)
+      return m_buckets[m_bucket_start_index] + m_start + i;
+    i -= s_bucket_size - m_start;
+    auto bucket_index = 1 + (i / s_bucket_size), index = i % s_bucket_size;
+    return m_buckets[bucket_index + m_bucket_start_index] + index;
   }
 
   pointer get_bucket(size_type i) const { return m_buckets[i + m_bucket_start_index]; }

@@ -26,6 +26,11 @@ TEST(test_deque, basic) {
     for (int i = 0; i < n; i++) {
       EXPECT_EQ(deq[i], i * 10);
     }
+    for (int i = n - 1; i >= 0; i--) {
+      EXPECT_EQ(deq.back(), i * 10);
+      deq.pop_back();
+      EXPECT_EQ(deq.size(), i);
+    }
   }
   {
     deque<int> deq;
@@ -37,6 +42,11 @@ TEST(test_deque, basic) {
     }
     for (int i = 0; i < n; i++) {
       EXPECT_EQ(deq[i], (n - i - 1) * 10);
+    }
+    for (int i = n - 1; i >= 0; i--) {
+      EXPECT_EQ(deq.front(), i * 10);
+      deq.pop_front();
+      EXPECT_EQ(deq.size(), i);
     }
   }
   {
