@@ -70,7 +70,33 @@ TEST(test_deque, basic) {
   }
 }
 
-TEST(test_deque, construct) {
+TEST(test_deque, big5) {
+  const deque<int> a = {1, 2, 3};
+  {
+    auto b = a;
+    EXPECT_EQ(a, b);
+  }
+  {
+    deque<int> b = {2, 3, 4};
+    b = a;
+    EXPECT_EQ(a, b);
+  }
+  {
+    deque<int> b = {1, 2, 3};
+    auto c = move(b);
+    EXPECT_EQ(c, deque<int>({1, 2, 3}));
+    EXPECT_TRUE(b.empty());
+  }
+  {
+    deque<int> b = {1, 2, 3};
+    deque<int> c = {2, 3, 4};
+    c = move(b);
+    EXPECT_EQ(c, deque<int>({1, 2, 3}));
+    EXPECT_TRUE(b.empty());
+  }
+}
+
+TEST(test_deque, desctuct) {
   A a;
   A::reset();
   const int n = 1000;

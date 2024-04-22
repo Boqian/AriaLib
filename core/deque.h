@@ -34,13 +34,31 @@ public:
   }
 
   deque(const deque &rhs)
-      : m_buckets(rhs.m_buckets.size()), m_start(rhs.start), m_end(rhs.m_end), m_bucket_start_index(rhs.m_bucket_start_index),
+      : m_buckets(rhs.m_buckets.size()), m_start(rhs.m_start), m_end(rhs.m_end), m_bucket_start_index(rhs.m_bucket_start_index),
         m_alloc(rhs.m_alloc) {
     for (int i = m_bucket_start_index; i < m_buckets.size(); i++) {
       m_buckets[i] = create_bucket();
     }
     for (int i = 0; i < rhs.size(); i++)
-      construc_at(get(i), rhs[i]);
+      construct_at(get(i), rhs[i]);
+  }
+
+  deque &operator=(const deque &rhs) {
+    if (&rhs != this) {
+      auto temp = rhs;
+      swap(temp);
+    }
+    return *this;
+  }
+
+  deque(deque &&rhs) noexcept { swap(rhs); }
+
+  deque &operator=(deque &&rhs) noexcept {
+    if (&rhs != this) {
+      auto temp = move(rhs);
+      swap(temp);
+    }
+    return *this;
   }
 
   void push_back(const_reference val) {
@@ -103,6 +121,18 @@ public:
     aria::swap(m_end, rhs.m_end);
     aria::swap(m_bucket_start_index, rhs.m_bucket_start_index);
     aria::swap(m_alloc, rhs.m_alloc);
+  }
+
+  bool operator==(const deque &rhs) const noexcept {
+    if (this == &rhs)
+      return true;
+    if (size() != rhs.size())
+      return false;
+    for (size_type i = 0; i < size(); i++) {
+      if ((*this)[i] != rhs[i])
+        return false;
+    }
+    return true;
   }
 
 private:
