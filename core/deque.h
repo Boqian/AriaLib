@@ -7,6 +7,60 @@
 
 namespace aria {
 
+template <class DequeType> class deque_const_iterator {
+public:
+  using value_type = typename DequeType::value_type;
+  using pointer = typename DequeType::const_pointer;
+  using reference = const value_type &;
+  using difference_type = std::ptrdiff_t;
+  using bucket_pointer = typename DequeType::pointer *;
+
+  deque_const_iterator() = default;
+  deque_const_iterator(bucket_pointer ap1, pointer ap2) : p1(ap1), p2(ap2) {}
+
+  reference operator*() const noexcept { return *p2; }
+  pointer operator->() const noexcept { return p2; }
+
+  deque_const_iterator operator++() noexcept {
+    ++p2;
+    if (pos() == DequeType::s_bucket_size) {
+      ++p1;
+      p2 = *p1;
+    }
+    return *this;
+  }
+
+  deque_const_iterator operator++(int) noexcept {
+    auto temp = *this;
+    operator++();
+    return temp;
+  }
+
+  deque_const_iterator operator--() noexcept {
+    if (pos() == 0) {
+      --p1;
+      p2 = *p1 + DequeType::s_bucket_size - 1;
+    } else {
+      --p2;
+    }
+    return *this;
+  }
+
+  deque_const_iterator operator--(int) noexcept {
+    auto temp = *this;
+    operator--();
+    return temp;
+  }
+
+  auto operator<=>(const deque_const_iterator &) const noexcept = default;
+
+private:
+  int pos() { return p2 - *p1; }
+
+  bucket_pointer p1{};
+  pointer p2{};
+};
+
 template <class T, class Allocator = allocator<T>> class deque {
 public:
   using size_type = size_t;
@@ -17,6 +71,11 @@ public:
   using allocator_type = Allocator;
   using pointer = typename allocator_type::pointer;
   using const_pointer = typename allocator_type::const_pointer;
+  // using iterator = deque_iterator<deque<T, Allocator>>;
+  using const_iterator = deque_const_iterator<deque<T, Allocator>>;
+  //  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+  inline static constexpr size_type s_bucket_size = max<size_type>(64 / sizeof(T), 16);
 
   deque() noexcept = default;
 
@@ -115,6 +174,9 @@ public:
   reference front() noexcept { return m_buckets[m_bucket_start_index][m_start]; }
   const_reference front() const noexcept { m_buckets[m_bucket_start_index][m_start]; }
 
+  const_iterator begin() noexcept { return const_iterator(&m_buckets[m_bucket_start_index], get(0)); }
+  const_iterator end() noexcept { return const_iterator(&m_buckets.back(), get(size() - 1)); }
+
   void swap(deque &rhs) noexcept {
     aria::swap(m_buckets, rhs.m_buckets);
     aria::swap(m_start, rhs.m_start);
@@ -136,7 +198,6 @@ public:
   }
 
 private:
-  inline static constexpr size_type s_bucket_size = max<size_type>(64 / sizeof(T), 16);
   inline static constexpr size_type s_init_num_buckets = 2;
   inline static constexpr size_type s_init_bucket_start_index = s_init_num_buckets - 1;
 

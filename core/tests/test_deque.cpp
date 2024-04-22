@@ -134,3 +134,16 @@ TEST(test_deque, desctuct) {
     EXPECT_EQ(A::n_dtor, n);
   }
 }
+
+TEST(test_deque, iterator) {
+  {
+    deque<int> deq;
+    const int n = 1000;
+    for (int i = 0; i < n; i++)
+      deq.push_back(i);
+    int i = 0;
+    for (auto it = deq.begin(); it != deq.end(); ++it, ++i) {
+      EXPECT_EQ(*it, i);
+    }
+  }
+}
