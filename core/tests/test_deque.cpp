@@ -23,4 +23,12 @@ TEST(test_deque, basic) {
       EXPECT_EQ(deq[i], i * 10);
     }
   }
+  {
+    deque<int> deq;
+    for (int i = 0; i < 200; i++) {
+      deq.push_front(i * 10);
+      EXPECT_EQ(deq.size(), i + 1);
+      EXPECT_EQ(deq[0], i * 10);
+    }
+  }
 }

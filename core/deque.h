@@ -51,6 +51,25 @@ public:
     }
   }
 
+  void push_front(const_reference val) {
+    if (m_start == 0) {
+      if (m_bucket_start_index == 0) {
+        expand_buckets(1);
+      }
+      m_buckets[--m_bucket_start_index] = create_bucket();
+      m_start = s_bucket_size;
+    }
+    --m_start;
+    construct_at(&(m_buckets[m_bucket_start_index][m_start]), val);
+  }
+
+  void pop_front() {
+    destroy_at(m_buckets[m_bucket_start_index][m_start]);
+    if (++m_start == s_bucket_size) {
+      m_buckets[++m_bucket_start_index] = nullptr;
+    }
+  }
+
   bool empty() const noexcept { return size() == 0; }
   size_type size() const noexcept {
     if (m_buckets.empty())
@@ -69,7 +88,7 @@ public:
   reference operator[](size_type i) { return const_cast<reference>(add_const(*this).operator[](i)); }
 
 private:
-  inline static constexpr size_type s_bucket_size = max<size_type>(sizeof(T), 256) * 16;
+  inline static constexpr size_type s_bucket_size = max<size_type>(256 / sizeof(T), 16);
   inline static constexpr size_type s_init_num_buckets = 2;
   inline static constexpr size_type s_init_bucket_start_index = s_init_num_buckets - 1;
 
