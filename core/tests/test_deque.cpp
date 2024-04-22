@@ -17,18 +17,32 @@ TEST(test_deque, basic) {
   }
   {
     deque<int> deq;
-    for (int i = 0; i < 500; i++) {
+    const int n = 1000;
+    for (int i = 0; i < n; i++) {
       deq.push_back(i * 10);
       EXPECT_EQ(deq.size(), i + 1);
+      EXPECT_EQ(deq[i], i * 10);
+    }
+    for (int i = 0; i < n; i++) {
       EXPECT_EQ(deq[i], i * 10);
     }
   }
   {
     deque<int> deq;
-    for (int i = 0; i < 200; i++) {
+    const int n = 1000;
+    for (int i = 0; i < n; i++) {
       deq.push_front(i * 10);
       EXPECT_EQ(deq.size(), i + 1);
       EXPECT_EQ(deq[0], i * 10);
     }
+    for (int i = 0; i < n; i++) {
+      EXPECT_EQ(deq[i], (n - i - 1) * 10);
+    }
+  }
+  {
+    deque<int> deq = {1, 2, 3, 4, 5};
+    EXPECT_EQ(deq.size(), 5);
+    EXPECT_EQ(deq.front(), 1);
+    EXPECT_EQ(deq.back(), 5);
   }
 }

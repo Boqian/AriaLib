@@ -20,6 +20,11 @@ public:
 
   deque() noexcept = default;
 
+  deque(initializer_list<T> init) {
+    for (const auto &x : init)
+      push_back(x);
+  }
+
   ~deque() {
     if (buckets_size() == 0)
       return;
@@ -87,8 +92,21 @@ public:
 
   reference operator[](size_type i) { return const_cast<reference>(add_const(*this).operator[](i)); }
 
+  reference back() noexcept { return m_buckets.back()[m_end - 1]; }
+  const_reference back() const noexcept { return m_buckets.back()[m_end - 1]; }
+  reference front() noexcept { return m_buckets[m_bucket_start_index][m_start]; }
+  const_reference front() const noexcept { m_buckets[m_bucket_start_index][m_start]; }
+
+  void swap(deque &rhs) noexcept {
+    aria::swap(m_buckets, rhs.m_buckets);
+    aria::swap(m_start, rhs.m_start);
+    aria::swap(m_end, rhs.m_end);
+    aria::swap(m_bucket_start_index, rhs.m_bucket_start_index);
+    aria::swap(m_alloc, rhs.m_alloc);
+  }
+
 private:
-  inline static constexpr size_type s_bucket_size = max<size_type>(256 / sizeof(T), 16);
+  inline static constexpr size_type s_bucket_size = max<size_type>(64 / sizeof(T), 16);
   inline static constexpr size_type s_init_num_buckets = 2;
   inline static constexpr size_type s_init_bucket_start_index = s_init_num_buckets - 1;
 
