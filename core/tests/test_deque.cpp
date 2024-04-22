@@ -3,6 +3,19 @@
 
 using namespace aria;
 
+struct A {
+  static inline int n_ctor = 0;
+  static inline int n_dtor = 0;
+  static void reset() {
+    n_ctor = 0;
+    n_dtor = 0;
+  }
+  A() { n_ctor++; }
+  A(const A &) { n_ctor++; }
+  A(A &&) = default;
+  ~A() { n_dtor++; }
+};
+
 TEST(test_deque, basic) {
   {
     deque<int> deq;
@@ -54,5 +67,44 @@ TEST(test_deque, basic) {
     EXPECT_EQ(deq.size(), 5);
     EXPECT_EQ(deq.front(), 1);
     EXPECT_EQ(deq.back(), 5);
+  }
+}
+
+TEST(test_deque, construct) {
+  A a;
+  A::reset();
+  const int n = 1000;
+  {
+    deque<A> deq;
+    for (int i = 0; i < n; i++)
+      deq.push_back(a);
+    EXPECT_EQ(A::n_ctor, n);
+    EXPECT_EQ(A::n_dtor, 0);
+  }
+  EXPECT_EQ(A::n_ctor, n);
+  EXPECT_EQ(A::n_dtor, n);
+  A::reset();
+  {
+    deque<A> deq;
+    for (int i = 0; i < n; i++)
+      deq.push_back(a);
+    for (int i = 0; i < n; i++) {
+      EXPECT_EQ(A::n_ctor, n);
+      EXPECT_EQ(A::n_dtor, i);
+      deq.pop_back();
+    }
+    EXPECT_EQ(A::n_dtor, n);
+  }
+  A::reset();
+  {
+    deque<A> deq;
+    for (int i = 0; i < n; i++)
+      deq.push_back(a);
+    for (int i = 0; i < n; i++) {
+      EXPECT_EQ(A::n_ctor, n);
+      EXPECT_EQ(A::n_dtor, i);
+      deq.pop_front();
+    }
+    EXPECT_EQ(A::n_dtor, n);
   }
 }
