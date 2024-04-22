@@ -16,7 +16,7 @@ struct A {
   ~A() { n_dtor++; }
 };
 
-TEST(test_vector, base) {
+TEST(test_vector, basic) {
   vector<int> v(2, 100);
   EXPECT_EQ(v.size(), 2);
   EXPECT_EQ(v[0], 100);

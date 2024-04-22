@@ -12,6 +12,7 @@
 initializer_list
 size_t, ptrdiff_t, nullptr_t
 move, forward //in type_traits.h
+as_const
 swap
 pair, make_pair
 tuple, tupe_element, get(), tupe_size
@@ -32,6 +33,10 @@ template <typename T> constexpr T &&forward(remove_reference_t<T> &&t) noexcept 
   static_assert(!is_lvalue_reference_v<T>);
   return static_cast<T &&>(t);
 }
+
+//----------------- as_const ------------------
+template <class T> const T &add_const(T &t) noexcept { return t; }
+template <class T> const T &add_const(T &&) = delete;
 
 //----------------- swap ------------------
 template <class T> constexpr void swap(T &a, T &b) noexcept {
@@ -85,6 +90,7 @@ public:
   constexpr auto operator<=>(const tuple &) const = default;
   void swap(tuple &rhs) noexcept {}
 };
+
 template <class T, class... Args> class tuple<T, Args...> {
 public:
   constexpr tuple() = default;
