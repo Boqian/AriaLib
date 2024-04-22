@@ -37,11 +37,11 @@ public:
 
   void push_back(const_reference val) {
     if (m_end == s_bucket_size) {
-      auto p = create_bucket();
-      m_buckets.push_back(p);
-      construct_at(p, val);
-      m_end = 1;
+      m_buckets.push_back(create_bucket());
+      m_end = 0;
     }
+    construct_at(&(m_buckets.back()[m_end]), val);
+    m_end++;
   }
 
   void pop_back() {
