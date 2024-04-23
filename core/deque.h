@@ -322,4 +322,6 @@ private:
   Allocator m_alloc;
 };
 
+template <class T, class Allocator> void swap(deque<T, Allocator> &a, deque<T, Allocator> &b) { a.swap(b); }
+
 } // namespace aria
