@@ -12,20 +12,19 @@ public:
   using value_type = typename DequeType::value_type;
   using pointer = typename DequeType::const_pointer;
   using reference = const value_type &;
-  using difference_type = std::ptrdiff_t;
-  using bucket_pointer = typename DequeType::pointer *;
+  using difference_type = ptrdiff_t;
+  using bucket_pointer = pointer const *;
 
   deque_const_iterator() = default;
-  deque_const_iterator(bucket_pointer ap1, pointer ap2) : p1(ap1), p2(ap2) {}
+  deque_const_iterator(bucket_pointer p, difference_type aindex) : ptr(p), index(aindex) {}
 
-  reference operator*() const noexcept { return *p2; }
-  pointer operator->() const noexcept { return p2; }
+  reference operator*() const noexcept { return *(*ptr + index); }
+  pointer operator->() const noexcept { return *ptr + index; }
 
   deque_const_iterator operator++() noexcept {
-    ++p2;
-    if (pos() == DequeType::s_bucket_size) {
-      ++p1;
-      p2 = *p1;
+    if (++index == DequeType::s_bucket_size) {
+      ++ptr;
+      index = 0;
     }
     return *this;
   }
@@ -37,11 +36,9 @@ public:
   }
 
   deque_const_iterator operator--() noexcept {
-    if (pos() == 0) {
-      --p1;
-      p2 = *p1 + DequeType::s_bucket_size - 1;
-    } else {
-      --p2;
+    if (--index < 0) {
+      --ptr;
+      index = DequeType::s_bucket_size - 1;
     }
     return *this;
   }
@@ -52,13 +49,96 @@ public:
     return temp;
   }
 
+  deque_const_iterator &operator+=(const difference_type d) noexcept {
+    ptr += (index + d) / DequeType::s_bucket_size;
+    index = (index + d) % DequeType::s_bucket_size;
+    return *this;
+  }
+
+  deque_const_iterator &operator-=(const difference_type d) noexcept {
+    ptr += (index - d) / DequeType::s_bucket_size;
+    index = (index - d) % DequeType::s_bucket_size;
+    if (index < 0) {
+      ptr--;
+      index += DequeType::s_bucket_size;
+    }
+    return *this;
+  }
+
+  deque_const_iterator operator+(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  deque_const_iterator operator-(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
+
   auto operator<=>(const deque_const_iterator &) const noexcept = default;
 
 private:
-  int pos() { return p2 - *p1; }
+  bucket_pointer ptr{};
+  difference_type index{};
+};
 
-  bucket_pointer p1{};
-  pointer p2{};
+template <class DequeType> class deque_iterator : public deque_const_iterator<DequeType> {
+  using Base = deque_const_iterator<DequeType>;
+
+public:
+  using value_type = typename DequeType::value_type;
+  using pointer = typename DequeType::pointer;
+  using reference = value_type &;
+  using difference_type = typename Base::difference_type;
+  using Base::Base;
+
+  deque_iterator(pointer *p, difference_type index) : Base(const_cast<Base::bucket_pointer>(p), index) {}
+
+  reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
+  pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
+
+  deque_iterator &operator++() noexcept {
+    Base::operator++();
+    return *this;
+  }
+  deque_iterator operator++(int) noexcept {
+    auto temp = *this;
+    Base::operator++();
+    return temp;
+  }
+  deque_iterator &operator--() noexcept {
+    Base::operator--();
+    return *this;
+  }
+  deque_iterator operator--(int) noexcept {
+    auto temp = *this;
+    Base::operator--();
+    return temp;
+  }
+
+  deque_iterator &operator+=(const difference_type d) {
+    Base::operator+=(d);
+    return *this;
+  }
+
+  deque_iterator &operator-=(const difference_type d) {
+    Base::operator-=(d);
+    return *this;
+  }
+
+  deque_iterator operator+(const difference_type d) const {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  deque_iterator operator-(const difference_type d) const {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
 };
 
 template <class T, class Allocator = allocator<T>> class deque {
@@ -71,11 +151,11 @@ public:
   using allocator_type = Allocator;
   using pointer = typename allocator_type::pointer;
   using const_pointer = typename allocator_type::const_pointer;
-  // using iterator = deque_iterator<deque<T, Allocator>>;
+  using iterator = deque_iterator<deque<T, Allocator>>;
   using const_iterator = deque_const_iterator<deque<T, Allocator>>;
-  //  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
-  inline static constexpr size_type s_bucket_size = max<size_type>(64 / sizeof(T), 16);
+  inline static constexpr int s_bucket_size = max<size_type>(64 / sizeof(T), 16);
 
   deque() noexcept = default;
 
@@ -174,8 +254,14 @@ public:
   reference front() noexcept { return m_buckets[m_bucket_start_index][m_start]; }
   const_reference front() const noexcept { m_buckets[m_bucket_start_index][m_start]; }
 
-  const_iterator begin() noexcept { return const_iterator(&m_buckets[m_bucket_start_index], get(0)); }
-  const_iterator end() noexcept { return const_iterator(&m_buckets.back(), get(size() - 1)); }
+  const_iterator begin() const noexcept { return const_iterator(&m_buckets[m_bucket_start_index], m_start); }
+  const_iterator end() const noexcept { return const_iterator(&m_buckets.back(), m_end); }
+  iterator begin() noexcept { return iterator(&m_buckets[m_bucket_start_index], m_start); }
+  iterator end() noexcept { return iterator(&m_buckets.back(), m_end); }
+  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
+  auto rend() const noexcept { return const_reverse_iterator(begin()); }
+  auto rbegin() noexcept { return reverse_iterator(end()); }
+  auto rend() noexcept { return reverse_iterator(begin()); }
 
   void swap(deque &rhs) noexcept {
     aria::swap(m_buckets, rhs.m_buckets);

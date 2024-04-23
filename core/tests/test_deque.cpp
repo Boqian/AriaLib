@@ -136,14 +136,41 @@ TEST(test_deque, desctuct) {
 }
 
 TEST(test_deque, iterator) {
+
+  deque<int> deq;
+  const int n = 4567;
+  for (int i = 0; i < n; i++)
+    deq.push_back(i);
   {
-    deque<int> deq;
-    const int n = 1000;
-    for (int i = 0; i < n; i++)
-      deq.push_back(i);
     int i = 0;
-    for (auto it = deq.begin(); it != deq.end(); ++it, ++i) {
+    for (auto it = deq.begin(); it < deq.end(); ++it, ++i) {
       EXPECT_EQ(*it, i);
     }
+    for (auto it = deq.rbegin(); it < deq.rend(); --it, --i) {
+      EXPECT_EQ(*it, i);
+    }
+  }
+  {
+    int i = 0, step = 313;
+    for (auto it = deq.begin(); it < deq.end(); it += step, i += step) {
+      EXPECT_EQ(*it, i);
+    }
+  }
+  {
+    int i = deq.back(), step = 123;
+    for (auto it = deq.end() - 1; it >= deq.begin(); it -= step, i -= step) {
+      EXPECT_EQ(*it, i);
+    }
+  }
+}
+
+TEST(test_deque, const_iterator) {
+  const deque<int> deq = {1, 2, 3, 4, 5};
+  int i = 1;
+  for (auto it = deq.begin(); it < deq.end(); ++it, ++i) {
+    EXPECT_EQ(*it, i);
+  }
+  for (auto it = deq.rbegin(); it < deq.rend(); --it, --i) {
+    EXPECT_EQ(*it, i);
   }
 }
