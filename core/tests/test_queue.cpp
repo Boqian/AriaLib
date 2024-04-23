@@ -1,4 +1,5 @@
 #include "queue.h"
+#include "stack.h"
 #include "gtest/gtest.h"
 
 using namespace aria;
@@ -23,4 +24,22 @@ TEST(test_queue, basic) {
   EXPECT_EQ(q.front(), 3);
   q.pop();
   EXPECT_EQ(q.size(), 0);
+}
+
+TEST(test_stack, basic) {
+  stack<int> st;
+  EXPECT_TRUE(st.empty());
+  EXPECT_EQ(st.size(), 0);
+  const int n = 100;
+  for (int i = 0; i < n; i++) {
+    st.push(i);
+    EXPECT_EQ(st.size(), i + 1);
+    EXPECT_EQ(st.top(), i);
+  }
+  for (int i = n - 1; i >= 0; i--) {
+    EXPECT_EQ(st.size(), i + 1);
+    EXPECT_EQ(st.top(), i);
+    st.pop();
+  }
+  EXPECT_TRUE(st.empty());
 }
