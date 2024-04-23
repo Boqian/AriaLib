@@ -1,9 +1,9 @@
 #pragma once
 
+#include "optional.h"
+#include "queue.h"
 #include <condition_variable>
 #include <mutex>
-#include <optional>
-#include <queue>
 
 namespace aria {
 
@@ -31,10 +31,10 @@ public:
     return res;
   }
 
-  std::optional<T> try_pop() {
+  aria::optional<T> try_pop() {
     std::unique_lock lk(m_mut);
     if (!m_queue.empty()) {
-      auto res = std::optional<T>(std::move(m_queue.front()));
+      auto res = aria::optional<T>(std::move(m_queue.front()));
       m_queue.pop();
       m_cond.notify_one();
       return res;
@@ -53,7 +53,7 @@ public:
   }
 
 private:
-  std::queue<T> m_queue;
+  aria::queue<T> m_queue;
   std::condition_variable m_cond;
   mutable std::mutex m_mut;
 };
