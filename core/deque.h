@@ -284,9 +284,6 @@ public:
   }
 
 private:
-  inline static constexpr size_type s_init_num_buckets = 2;
-  inline static constexpr size_type s_init_bucket_start_index = s_init_num_buckets - 1;
-
   pointer create_bucket() { return m_alloc.allocate(s_bucket_size); }
 
   void deallocate_bucket(size_type i) {
@@ -295,11 +292,9 @@ private:
   }
 
   pointer get(size_type i) const {
-    if (m_start + i < s_bucket_size)
-      return m_buckets[m_bucket_start_index] + m_start + i;
-    i -= s_bucket_size - m_start;
-    auto bucket_index = 1 + (i / s_bucket_size), index = i % s_bucket_size;
-    return m_buckets[bucket_index + m_bucket_start_index] + index;
+    auto index = (m_start + i) % s_bucket_size;
+    auto bucket_index = m_bucket_start_index + (m_start + i) / s_bucket_size;
+    return m_buckets[bucket_index] + index;
   }
 
   pointer get_bucket(size_type i) const { return m_buckets[i + m_bucket_start_index]; }
@@ -309,7 +304,7 @@ private:
     auto new_size = buckets_size() + n;
     vector<pointer> new_buckets(new_size, nullptr);
     new_buckets.reserve(new_size * 3);
-    for (int i = 0; i < m_buckets.size(); i++)
+    for (int i = 0; i < buckets_size(); i++)
       new_buckets.push_back(get_bucket(i));
     m_buckets = new_buckets;
     m_bucket_start_index = new_size;
