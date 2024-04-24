@@ -4,9 +4,16 @@
 
 namespace aria {
 
-// todo incomplete
 template <class I>
-concept random_access_iterator = requires(I i, I j, ptrdiff_t n) {
+concept bidirectional_iterator = requires(I i) {
+  { i++ } -> same_as<I>;
+  { i-- } -> same_as<I>;
+  { ++i } -> same_as<I &>;
+  { --i } -> same_as<I &>;
+};
+
+template <class I>
+concept random_access_iterator = bidirectional_iterator<I> && requires(I i, I j, ptrdiff_t n) {
   { i += n } -> same_as<I &>;
   { i -= n } -> same_as<I &>;
   { i + n } -> same_as<I>;

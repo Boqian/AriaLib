@@ -76,6 +76,13 @@ template <class InputIt1, class InputIt2> constexpr bool equal(InputIt1 first1, 
   return true;
 }
 
+template <class InputIt1, class InputIt2> constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) {
+  if (distance(first1, last1) != distance(first2, last2))
+    return false;
+
+  return equal(first1, last1, first2);
+}
+
 //-----------------------Minimum/maximum operations-----------------------
 
 template <class ForwardIt, class Compare> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last, Compare cmp) {

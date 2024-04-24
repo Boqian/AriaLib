@@ -1,7 +1,9 @@
 #pragma once
+#include "algorithm.h"
 #include "allocator.h"
 #include "iterator.h"
 #include "utility.h"
+
 namespace aria {
 struct _node_base {
   _node_base *prev = nullptr;
@@ -168,19 +170,7 @@ public:
   iterator insert(const_iterator pos, value_type value) { return iterator(insert_node(get_ptr(pos), move(value))); }
   iterator erase(const_iterator pos) { return iterator(erase_node(get_ptr(pos))); }
 
-  bool operator==(const list &rhs) const noexcept {
-    if (this == &rhs)
-      return true;
-    if (size() != rhs.size())
-      return false;
-    if (size() == 0)
-      return true;
-    for (auto p = m_first, q = rhs.m_first; p != &m_end; p = p->next, q = q->next) {
-      if (cast(p)->value != cast(q)->value)
-        return false;
-    }
-    return true;
-  }
+  bool operator==(const list &rhs) const noexcept { return this == &rhs || equal(begin(), end(), rhs.begin(), rhs.end()); }
 
   void swap(list &rhs) noexcept {
     auto lhs_last = m_end.prev;

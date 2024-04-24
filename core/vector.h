@@ -1,5 +1,6 @@
 #pragma once
 
+#include "algorithm.h"
 #include "allocator.h"
 #include "exception.h"
 #include "iterator.h"
@@ -243,17 +244,7 @@ public:
     aria::swap(m_alloc, rhs.m_alloc);
   }
 
-  bool operator==(const vector &rhs) const noexcept {
-    if (this == &rhs)
-      return true;
-    if (size() != rhs.size())
-      return false;
-    for (size_type i = 0; i < size(); i++) {
-      if ((*this)[i] != rhs[i])
-        return false;
-    }
-    return true;
-  }
+  bool operator==(const vector &rhs) const noexcept { return this == &rhs || equal(begin(), end(), rhs.begin(), rhs.end()); }
 
   auto begin() const noexcept { return const_iterator(get(0)); }
   auto end() const noexcept { return const_iterator(get(m_size)); }
