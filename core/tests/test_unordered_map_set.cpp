@@ -21,3 +21,21 @@ TEST(test_unordered_map, basic) {
   m.erase(it5);
   EXPECT_EQ(m.size(), 0);
 }
+
+TEST(test_unordered_map, ctor) {
+  {
+    unordered_map<int, int> m = {{1, 2}, {4, 6}};
+    EXPECT_EQ(m.size(), 2);
+    EXPECT_TRUE(m.contains(1));
+    EXPECT_TRUE(m.contains(4));
+    EXPECT_TRUE(m[1] = 2);
+    EXPECT_TRUE(m[4] = 6);
+  }
+  {
+    vector<pair<int, int>> v = {{1, 2}, {4, 6}};
+    unordered_map<int, int> m(v.begin(), v.end());
+    EXPECT_EQ(m.size(), 2);
+    EXPECT_TRUE(m[1] = 2);
+    EXPECT_TRUE(m[4] = 6);
+  }
+}

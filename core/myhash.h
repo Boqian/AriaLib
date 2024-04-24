@@ -42,6 +42,18 @@ public:
   my_hash() = default;
   ~my_hash() = default;
 
+  explicit my_hash(size_type bucket_count) : m_table(bucket_count) {}
+
+  my_hash(initializer_list<value_type> ilist) : m_table(ilist.size()) {
+    for (auto &x : ilist)
+      insert(x);
+  }
+
+  template <class InputIt> my_hash(InputIt first, InputIt last) : m_table(16) {
+    for (; first != last; ++first)
+      insert(*first);
+  }
+
   my_hash(const my_hash &rhs)
       : m_max_load_factor(rhs.m_max_load_factor), m_list(rhs.m_list), m_table(rhs.m_table), m_hasher(rhs.m_hasher),
         m_key_equal(rhs.m_key_equal) {}

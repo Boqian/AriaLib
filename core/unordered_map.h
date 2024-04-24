@@ -19,6 +19,8 @@ public:
   using iterator = typename Base::iterator;
   using const_iterator = typename Base::const_iterator;
 
+  using Base::Base;
+
   T &operator[](const Key &key) {
     auto it = Base::find(key);
     if (it != Base::end())
