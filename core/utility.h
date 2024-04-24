@@ -35,8 +35,8 @@ template <typename T> constexpr T &&forward(remove_reference_t<T> &&t) noexcept 
 }
 
 //----------------- as_const ------------------
-template <class T> const T &add_const(T &t) noexcept { return t; }
-template <class T> const T &add_const(T &&) = delete;
+template <class T> const T &as_const(T &t) noexcept { return t; }
+template <class T> const T &as_const(T &&) = delete;
 
 //----------------- swap ------------------
 template <class T> constexpr void swap(T &a, T &b) noexcept {

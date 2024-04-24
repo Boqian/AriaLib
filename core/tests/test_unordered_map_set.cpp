@@ -39,3 +39,12 @@ TEST(test_unordered_map, ctor) {
     EXPECT_TRUE(m[4] = 6);
   }
 }
+
+TEST(test_unordered_map, more) {
+  {
+    unordered_map<int, int> a = {{1, 2}, {4, 6}};
+    const auto b = a;
+    EXPECT_EQ(a.at(1), 2);
+    EXPECT_EQ(b.at(4), 6);
+  }
+}

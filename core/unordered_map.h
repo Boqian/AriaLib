@@ -29,6 +29,16 @@ public:
       return Base::insert(value_type(key, T{})).first->second;
   }
 
+  const T &at(const Key &key) const {
+    auto it = Base::find(key);
+    if (it == Base::end())
+      throw std::out_of_range("unordered_map::at() key is not found");
+    else
+      return it->second;
+  }
+
+  T &at(const Key &key) { return const_cast<T &>(as_const(*this).at(key)); }
+
   template <class M> std::pair<iterator, bool> insert_or_assign(const Key &k, M &&obj) { auto res = insert(k, obj); }
 
 private:
