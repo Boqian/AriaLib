@@ -3,6 +3,9 @@
 
 using namespace aria;
 
+static_assert(bidirectional_iterator<list<int>::iterator>);
+static_assert(bidirectional_iterator<list<int>::const_iterator>);
+
 TEST(test_list, base) {
   list<int> li;
   EXPECT_EQ(li.size(), 0);
@@ -34,17 +37,17 @@ TEST(test_list, base) {
   EXPECT_TRUE(li.empty());
 }
 
- TEST(test_list, init) {
-   list<int> li = {1, 2, 3};
-   EXPECT_EQ(li.size(), 3);
-   EXPECT_EQ(li.front(), 1);
-   EXPECT_EQ(li.back(), 3);
-   li.front() = 5;
-   li.back() = 4;
-   EXPECT_EQ(li, list<int>({5, 2, 4}));
-   li.clear();
-   EXPECT_EQ(li, list<int>());
- }
+TEST(test_list, init) {
+  list<int> li = {1, 2, 3};
+  EXPECT_EQ(li.size(), 3);
+  EXPECT_EQ(li.front(), 1);
+  EXPECT_EQ(li.back(), 3);
+  li.front() = 5;
+  li.back() = 4;
+  EXPECT_EQ(li, list<int>({5, 2, 4}));
+  li.clear();
+  EXPECT_EQ(li, list<int>());
+}
 
 TEST(test_list, iterator) {
   {

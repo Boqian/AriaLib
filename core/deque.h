@@ -21,7 +21,7 @@ public:
   reference operator*() const noexcept { return *(*ptr + index); }
   pointer operator->() const noexcept { return *ptr + index; }
 
-  deque_const_iterator operator++() noexcept {
+  deque_const_iterator &operator++() noexcept {
     if (++index == DequeType::s_bucket_size) {
       ++ptr;
       index = 0;
@@ -35,7 +35,7 @@ public:
     return temp;
   }
 
-  deque_const_iterator operator--() noexcept {
+  deque_const_iterator &operator--() noexcept {
     if (--index < 0) {
       --ptr;
       index = DequeType::s_bucket_size - 1;
@@ -75,6 +75,10 @@ public:
     auto temp = *this;
     temp -= d;
     return temp;
+  }
+
+  difference_type operator-(const deque_const_iterator rhs) const noexcept {
+    return (ptr - rhs.ptr) * DequeType::s_bucket_size + index - rhs.index;
   }
 
   auto operator<=>(const deque_const_iterator &) const noexcept = default;
@@ -133,6 +137,8 @@ public:
     temp += d;
     return temp;
   }
+
+  using Base::operator-;
 
   deque_iterator operator-(const difference_type d) const {
     auto temp = *this;

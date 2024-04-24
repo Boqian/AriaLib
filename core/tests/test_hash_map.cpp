@@ -3,6 +3,9 @@
 
 using namespace aria;
 
+static_assert(bidirectional_iterator<my_hash<int, int>::iterator>);
+static_assert(bidirectional_iterator<my_hash<int, int>::const_iterator>);
+
 TEST(test_hash_map, _KeyVal) {
   auto kv = pair(1, 2);
   EXPECT_EQ(ns_myhash::get_key(kv), 1);

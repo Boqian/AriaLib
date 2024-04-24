@@ -3,6 +3,9 @@
 
 using namespace aria;
 
+static_assert(random_access_iterator<deque<int>::iterator>);
+static_assert(random_access_iterator<deque<int>::const_iterator>);
+
 struct A {
   static inline int n_ctor = 0;
   static inline int n_dtor = 0;
@@ -161,6 +164,11 @@ TEST(test_deque, iterator) {
     for (auto it = deq.end() - 1; it >= deq.begin(); it -= step, i -= step) {
       EXPECT_EQ(*it, i);
     }
+  }
+  {
+    deque<int> deq = {1, 2, 3, 4, 5};
+    EXPECT_EQ(deq.end() - deq.begin(), 5);
+    EXPECT_EQ(distance(deq.end(), deq.begin()), -5);
   }
 }
 
