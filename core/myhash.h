@@ -5,7 +5,6 @@
 #include "utility.h"
 #include "vector.h"
 #include <algorithm.h>
-#include <cassert>
 
 namespace aria {
 
@@ -41,6 +40,29 @@ public:
   using const_iterator = list<value_type>::const_iterator;
 
   my_hash() = default;
+  ~my_hash() = default;
+
+  my_hash(const my_hash &rhs)
+      : m_max_load_factor(rhs.m_max_load_factor), m_list(rhs.m_list), m_table(rhs.m_table), m_hasher(rhs.m_hasher),
+        m_key_equal(rhs.m_key_equal) {}
+
+  my_hash(my_hash &&rhs) noexcept { swap(rhs); }
+
+  my_hash &operator=(const my_hash &rhs) {
+    if (&rhs != this) {
+      auto temp = rhs;
+      swap(temp);
+    }
+    return *this;
+  }
+
+  my_hash &operator=(my_hash &&rhs) noexcept {
+    if (&rhs != this) {
+      auto temp = aria::move(rhs);
+      swap(temp);
+    }
+    return *this;
+  }
 
   size_type size() const noexcept { return m_list.size(); }
   bool empty() const noexcept { return m_list.empty(); }
@@ -113,6 +135,15 @@ public:
       return 1;
     }
     return 0;
+  }
+
+  void swap(my_hash &rhs) noexcept {
+    using aria::swap;
+    swap(m_max_load_factor, rhs.m_max_load_factor);
+    swap(m_list, rhs.m_list);
+    swap(m_table, rhs.m_table);
+    swap(m_hasher, rhs.m_hasher);
+    swap(m_key_equal, rhs.m_key_equal);
   }
 
 protected:
