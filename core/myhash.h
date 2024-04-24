@@ -149,6 +149,8 @@ public:
     return 0;
   }
 
+  void clear() noexcept { my_hash().swap(*this); }
+
   void swap(my_hash &rhs) noexcept {
     using aria::swap;
     swap(m_max_load_factor, rhs.m_max_load_factor);

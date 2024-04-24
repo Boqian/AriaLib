@@ -41,3 +41,10 @@ TEST(test_hash_map, basic) {
 
   EXPECT_TRUE(m.empty());
 }
+
+TEST(test_hash_map, more_test) {
+  my_hash<int, int> m = {{1, 2}, {3, 4}};
+  EXPECT_EQ(m.size(), 2);
+  m.clear();
+  EXPECT_EQ(m.size(), 0);
+}
