@@ -46,5 +46,7 @@ TEST(test_unordered_map, more) {
     const auto b = a;
     EXPECT_EQ(a.at(1), 2);
     EXPECT_EQ(b.at(4), 6);
+    a.clear();
+    EXPECT_TRUE(a.empty());
   }
 }
