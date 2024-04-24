@@ -34,8 +34,6 @@ template <class InputIt, class UnaryPred> constexpr bool none_of(InputIt first, 
   return !any_of(first, last, p);
 }
 
-template <class ForwardIt1, class ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) { aria::swap(*a, *b); }
-
 template <class InputIt, class T> constexpr InputIt find(InputIt first, InputIt last, const T &value) {
   auto it = first;
   for (; it != last && *it != value; ++it) {
@@ -125,6 +123,11 @@ template <class T, class Compare> const T &min(const T &a, const T &b, Compare c
 template <class T> constexpr T min(std::initializer_list<T> ilist) { return *min_element(ilist.begin(), ilist.end()); }
 
 //-----------------------Order-changing operations-----------------------
+template <class ForwardIt1, class ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) {
+  using aria::swap;
+  swap(*a, *b);
+}
+
 template <class Iter> void reverse(Iter first, Iter last) {
   if (first == last)
     return;
