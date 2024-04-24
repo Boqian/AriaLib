@@ -3,6 +3,9 @@
 
 using namespace aria;
 
+static_assert(random_access_iterator<vector<int>::iterator>);
+static_assert(random_access_iterator<vector<int>::const_iterator>);
+
 struct A {
   static inline int n_ctor = 0;
   static inline int n_dtor = 0;
@@ -154,6 +157,13 @@ TEST(test_vector, iterator) {
     EXPECT_DOUBLE_EQ(v.begin()->second, 1.5);
     *v.begin() = pair(6, 1.0);
     EXPECT_EQ(v[0].first, 6);
+  }
+  {
+    vector<int> v = {1, 2, 3, 4};
+    EXPECT_EQ(v.begin() + 4, v.end());
+    EXPECT_EQ(v.begin() += 4, v.end());
+    EXPECT_EQ(v.end() - 4, v.begin());
+    EXPECT_EQ(v.end() -= 4, v.begin());
   }
 }
 

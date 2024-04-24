@@ -3,10 +3,8 @@
 #include "concepts.h"
 #include "type_traits.h"
 #include <compare>
-#include <cstddef>
 #include <cstring> //memcpy
 #include <initializer_list>
-#include <stdexcept>
 
 /*
 initializer_list
@@ -19,8 +17,8 @@ tuple, tupe_element, get(), tupe_size
 */
 
 namespace aria {
-using std::ptrdiff_t;
-using std::size_t;
+using ptrdiff_t = long long;
+using size_t = unsigned long long;
 using nullptr_t = decltype(nullptr);
 using std::initializer_list;
 

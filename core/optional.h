@@ -1,4 +1,5 @@
 #pragma once
+#include "exception.h"
 #include "utility.h"
 
 namespace aria {

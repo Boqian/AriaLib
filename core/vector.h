@@ -1,6 +1,7 @@
 #pragma once
 
 #include "allocator.h"
+#include "exception.h"
 #include "iterator.h"
 #include "utility.h"
 
@@ -60,6 +61,8 @@ public:
     return temp;
   }
 
+  difference_type operator-(vec_const_iterator rhs) const noexcept { return ptr - rhs.ptr; }
+
   auto operator<=>(const vec_const_iterator &) const noexcept = default;
 
 private:
@@ -113,6 +116,8 @@ public:
     temp += d;
     return temp;
   }
+
+  using Base::operator-;
 
   vec_iterator operator-(const difference_type d) const {
     auto temp = *this;

@@ -1,9 +1,29 @@
 #pragma once
 
-#include "concepts.h"
-#include <compare>
+#include "utility.h"
 
 namespace aria {
+
+// todo incomplete
+template <class I>
+concept random_access_iterator = requires(I i, I j, ptrdiff_t n) {
+  { i += n } -> same_as<I &>;
+  { i -= n } -> same_as<I &>;
+  { i + n } -> same_as<I>;
+  { i - n } -> same_as<I>;
+  { i - j } -> same_as<ptrdiff_t>;
+};
+
+template <class InputIt> ptrdiff_t distance(InputIt first, InputIt last) {
+  if constexpr (random_access_iterator<InputIt>) {
+    return last - first;
+  } else {
+    ptrdiff_t d = 0;
+    for (; first != last; ++first, ++d)
+      ;
+    return d;
+  }
+}
 
 template <class Iter> class reverse_iterator {
 public:
