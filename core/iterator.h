@@ -5,10 +5,14 @@
 namespace aria {
 
 template <class I>
-concept bidirectional_iterator = requires(I i) {
+concept forward_iterator = requires(I i) {
   { i++ } -> same_as<I>;
-  { i-- } -> same_as<I>;
   { ++i } -> same_as<I &>;
+};
+
+template <class I>
+concept bidirectional_iterator = forward_iterator<I> && requires(I i) {
+  { i-- } -> same_as<I>;
   { --i } -> same_as<I &>;
 };
 
@@ -29,6 +33,21 @@ template <class InputIt> ptrdiff_t distance(InputIt first, InputIt last) {
     for (; first != last; ++first, ++d)
       ;
     return d;
+  }
+}
+
+template <class InputIt> InputIt advance(InputIt i, ptrdiff_t n) {
+  if constexpr (random_access_iterator<InputIt>) {
+    return i + n;
+  } else {
+    if (n > 0) {
+      while (n--)
+        ++i;
+    } else {
+      while (n++)
+        --i;
+    }
+    return i;
   }
 }
 
