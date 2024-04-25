@@ -234,10 +234,10 @@ public:
     return *get(i);
   }
 
-  pointer data() noexcept { return m_ptr; }
-  const_pointer data() const noexcept { return m_ptr; }
+  constexpr pointer data() noexcept { return m_ptr; }
+  constexpr const_pointer data() const noexcept { return m_ptr; }
 
-  void swap(vector &rhs) noexcept {
+  constexpr void swap(vector &rhs) noexcept {
     aria::swap(m_size, rhs.m_size);
     aria::swap(m_capacity, rhs.m_capacity);
     aria::swap(m_ptr, rhs.m_ptr);

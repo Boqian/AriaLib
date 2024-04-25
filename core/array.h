@@ -46,10 +46,15 @@ public:
   constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   constexpr auto rend() noexcept { return reverse_iterator(begin()); }
 
-  void swap(array &rhs) noexcept {
+  constexpr void swap(array &rhs) noexcept {
     using aria::swap;
     for (int i = 0; i < N; i++)
       swap(arr[i], rhs[i]);
+  }
+
+  constexpr void fill(const T &value) {
+    for (int i = 0; i < N; i++)
+      arr[i] = value;
   }
 
   T arr[N];

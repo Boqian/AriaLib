@@ -17,6 +17,14 @@ TEST(test_array, basic) {
   EXPECT_EQ(v.back(), v[2]);
 }
 
+TEST(test_array, assign) {
+  array<int, 2> a = {1, 2}, b = {5, 6};
+  a = b;
+  EXPECT_EQ(a, b);
+  a[0] = 1;
+  EXPECT_NE(a, b);
+}
+
 TEST(test_array, compare) {
   array<int, 2> a = {1, 2}, b = {1, 3}, c = {1, 2};
   EXPECT_EQ(a, c);
