@@ -122,6 +122,7 @@ template <class... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
 template <typename> struct tuple_size;
 template <class... Args> struct tuple_size<tuple<Args...>> : integral_constant<size_t, sizeof...(Args)> {};
 template <class T> inline constexpr size_t tuple_size_v = tuple_size<remove_cv_t<T>>::value;
+template <class K, class V> struct tuple_size<pair<K, V>> : integral_constant<size_t, 2> {};
 
 template <size_t I, class... Types> constexpr const auto &get(const tuple<Types...> &t) noexcept {
   if constexpr (I == 0)

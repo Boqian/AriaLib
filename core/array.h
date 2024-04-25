@@ -70,4 +70,6 @@ template <class T, size_t N> [[nodiscard]] constexpr auto operator<=>(const arra
 
 template <class T, size_t N> void swap(array<T, N> &a, array<T, N> &b) { a.swap(b); }
 
+template <class T, size_t N> struct tuple_size<array<T, N>> : integral_constant<size_t, N> {};
+
 } // namespace aria

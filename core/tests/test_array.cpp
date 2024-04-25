@@ -5,6 +5,7 @@ using namespace aria;
 
 static_assert(random_access_iterator<array<int, 10>::iterator>);
 static_assert(random_access_iterator<array<int, 7>::const_iterator>);
+static_assert(tuple_size_v<array<int, 7>> == 7);
 
 TEST(test_array, basic) {
   array<int, 3> v = {1, 2, 3};

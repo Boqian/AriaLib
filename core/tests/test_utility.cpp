@@ -12,6 +12,9 @@ struct C {
   C &operator=(C &&) = delete;
 };
 
+static_assert(tuple_size_v<pair<int, double>> == 2);
+static_assert(tuple_size_v<tuple<A, B, C>> == 3);
+
 TEST(test_pair, basic) {
   {
     pair<int, int> p(5, 6);
