@@ -25,7 +25,7 @@ concept random_access_iterator = bidirectional_iterator<I> && requires(I i, I j,
   { i - j } -> same_as<ptrdiff_t>;
 };
 
-template <class InputIt> ptrdiff_t distance(InputIt first, InputIt last) {
+template <class InputIt> constexpr ptrdiff_t distance(InputIt first, InputIt last) {
   if constexpr (random_access_iterator<InputIt>) {
     return last - first;
   } else {
@@ -36,7 +36,7 @@ template <class InputIt> ptrdiff_t distance(InputIt first, InputIt last) {
   }
 }
 
-template <class InputIt> InputIt advance(InputIt i, ptrdiff_t n) {
+template <class InputIt> constexpr InputIt advance(InputIt i, ptrdiff_t n) {
   if constexpr (random_access_iterator<InputIt>) {
     return i + n;
   } else {
@@ -50,6 +50,22 @@ template <class InputIt> InputIt advance(InputIt i, ptrdiff_t n) {
     return i;
   }
 }
+
+template <class InputIt> constexpr InputIt next(InputIt it, ptrdiff_t n = 1) { return advance(it, n); }
+template <class InputIt> constexpr InputIt prev(InputIt it, ptrdiff_t n = 1) { return advance(it, -n); }
+
+template <class Container> auto begin(Container &cont) { return cont.begin(); }
+template <class Container> auto begin(const Container &cont) { return cont.begin(); }
+template <class Container> auto cbegin(const Container &cont) { return cont.begin(); }
+template <class Container> auto end(Container &cont) { return cont.end(); }
+template <class Container> auto end(const Container &cont) { return cont.end(); }
+template <class Container> auto cend(const Container &cont) { return cont.end(); }
+template <class Container> auto rbegin(Container &cont) { return cont.rbegin(); }
+template <class Container> auto rbegin(const Container &cont) { return cont.rbegin(); }
+template <class Container> auto crbegin(const Container &cont) { return cont.rbegin(); }
+template <class Container> auto rend(Container &cont) { return cont.rend(); }
+template <class Container> auto rend(const Container &cont) { return cont.rend(); }
+template <class Container> auto crend(const Container &cont) { return cont.rend(); }
 
 template <class Iter> class reverse_iterator {
 public:
