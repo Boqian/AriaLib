@@ -72,4 +72,18 @@ template <class T, size_t N> void swap(array<T, N> &a, array<T, N> &b) { a.swap(
 
 template <class T, size_t N> struct tuple_size<array<T, N>> : integral_constant<size_t, N> {};
 
+template <class T, size_t N> constexpr array<remove_cv_t<T>, N> to_array(T (&v)[N]) {
+  array<remove_cv_t<T>, N> res;
+  for (int i = 0; i < N; i++)
+    res[i] = v[i];
+  return res;
+}
+
+template <class T, size_t N> constexpr array<remove_cv_t<T>, N> to_array(T (&&v)[N]) {
+  array<remove_cv_t<T>, N> res;
+  for (int i = 0; i < N; i++)
+    res[i] = move(v[i]);
+  return res;
+}
+
 } // namespace aria

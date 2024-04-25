@@ -64,3 +64,10 @@ TEST(test_array, iterator) {
     EXPECT_EQ(v, u);
   }
 }
+
+TEST(test_array, to_array) {
+  int a[3] = {1, 2, 3};
+  auto v = to_array(a);
+  array ans({1, 2, 3});
+  EXPECT_EQ(v, ans);
+}
