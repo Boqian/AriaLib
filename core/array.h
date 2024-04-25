@@ -68,4 +68,6 @@ template <class T, size_t N> [[nodiscard]] constexpr auto operator<=>(const arra
   return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
 }
 
+template <class T, size_t N> void swap(array<T, N> &a, array<T, N> &b) { a.swap(b); }
+
 } // namespace aria

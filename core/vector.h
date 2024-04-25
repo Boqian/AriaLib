@@ -244,8 +244,6 @@ public:
     aria::swap(m_alloc, rhs.m_alloc);
   }
 
-  bool operator==(const vector &rhs) const noexcept { return this == &rhs || equal(begin(), end(), rhs.begin(), rhs.end()); }
-
   auto begin() const noexcept { return const_iterator(get(0)); }
   auto end() const noexcept { return const_iterator(get(m_size)); }
   auto begin() noexcept { return iterator(get(0)); }
@@ -287,6 +285,14 @@ private:
     return new_capacity;
   }
 };
+
+template <class T, class Alloc> [[nodiscard]] constexpr bool operator==(const vector<T, Alloc> &a, const vector<T, Alloc> &b) {
+  return equal(a.begin(), a.end(), b.begin(), b.end());
+}
+
+template <class T, class Alloc> [[nodiscard]] constexpr auto operator<=>(const vector<T, Alloc> &a, const vector<T, Alloc> &b) {
+  return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+}
 
 template <class T, class A> void swap(vector<T, A> &a, vector<T, A> &b) { a.swap(b); }
 
