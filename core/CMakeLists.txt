@@ -5,4 +5,6 @@ file(GLOB SOURCES "*.cpp" "*.h")
 add_library(core ${SOURCES})  # Change SHARED to STATIC for a static library
 #target_include_directories(memory PRIVATE  ${CMAKE_SOURCE_DIR}/meta)
 
+set_target_properties(core PROPERTIES LINKER_LANGUAGE CXX)
+
 add_subdirectory(tests)
