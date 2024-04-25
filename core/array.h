@@ -46,7 +46,11 @@ public:
   constexpr auto rbegin() noexcept { return reverse_iterator(end()); }
   constexpr auto rend() noexcept { return reverse_iterator(begin()); }
 
-  void swap(array &rhs) noexcept { aria::swap(arr, rhs.arr); }
+  void swap(array &rhs) noexcept {
+    using aria::swap;
+    for (int i = 0; i < N; i++)
+      swap(arr[i], rhs[i]);
+  }
 
   T arr[N];
 };
@@ -56,7 +60,7 @@ template <class T, size_t N> [[nodiscard]] constexpr bool operator==(const array
 }
 
 template <class T, size_t N> [[nodiscard]] constexpr auto operator<=>(const array<T, N> &a, const array<T, N> &b) {
-  return std::lexicographical_compare_three_way(a.arr, a.arr + N, b.arr, b.arr + N);
+  return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
 }
 
 } // namespace aria

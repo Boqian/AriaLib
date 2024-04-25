@@ -19,8 +19,15 @@ TEST(test_array, basic) {
 
 TEST(test_array, compare) {
   array<int, 2> a = {1, 2}, b = {1, 3}, c = {1, 2};
-  EXPECT_TRUE(a == c);
+  EXPECT_EQ(a, c);
   EXPECT_TRUE(a < b);
+}
+
+TEST(test_array, swap) {
+  array<int, 2> a = {1, 2}, b = {5, 6}, a1 = a, b1 = b;
+  swap(a, b);
+  EXPECT_EQ(a, b1);
+  EXPECT_EQ(b, a1);
 }
 
 TEST(test_array, iterator) {
