@@ -1,4 +1,5 @@
 #include "unordered_map.h"
+#include "unordered_set.h"
 #include "gtest/gtest.h"
 
 using namespace aria;
@@ -48,5 +49,34 @@ TEST(test_unordered_map, more) {
     EXPECT_EQ(b.at(4), 6);
     a.clear();
     EXPECT_TRUE(a.empty());
+  }
+}
+
+TEST(test_unordered_set, basic) {
+  {
+    unordered_set<int> st;
+    EXPECT_TRUE(st.empty());
+    auto [it, flag] = st.insert(3);
+    EXPECT_TRUE(flag);
+    EXPECT_EQ(*it, 3);
+    EXPECT_EQ(st.size(), 1);
+    auto it2 = st.find(3);
+    EXPECT_TRUE(it2 != st.end());
+    EXPECT_EQ(*it2, 3);
+    EXPECT_EQ(it2, it);
+    auto [it3, flag2] = st.insert(3);
+    EXPECT_FALSE(flag2);
+  }
+  {
+    const int n = 100;
+    unordered_set<int> st;
+    for (int i = 0; i < n; i++) {
+      if (i % 2 == 0)
+        st.insert(i);
+    }
+    EXPECT_EQ(st.size(), n / 2);
+    for (int i = 0; i < n; i++) {
+      EXPECT_EQ(st.contains(i), (i % 2 == 0)) << i;
+    }
   }
 }

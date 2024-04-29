@@ -14,7 +14,7 @@ template <class Key, class T> struct KeyVal {
 };
 
 template <class Key> struct KeyVal<Key, void> {
-  using type = const Key;
+  using type = Key;
 };
 
 template <class T> const auto &get_key(const T &x) {
