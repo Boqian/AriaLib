@@ -3,6 +3,10 @@
 
 namespace aria {
 
+//---------------------Factor operations---------------------
+
+//---------------------Numeric operations---------------------
+
 template <class InputIt, class T> constexpr T accumulate(InputIt first, InputIt last, T init) {
   for (; first != last; ++first)
     init = move(init) + *first;

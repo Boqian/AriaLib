@@ -80,4 +80,9 @@ void test_traits() {
   static_assert(!is_floating_point_v<long>);
   static_assert(is_floating_point_v<double>);
   static_assert(is_floating_point_v<float>);
+
+  static_assert(is_same_v<void, common_type_t<void>>);
+  static_assert(is_same_v<int, common_type_t<int, short>>);
+  static_assert(is_same_v<int, common_type_t<int, short, char>>);
+  static_assert(is_same_v<long long, common_type_t<int, short, char, long long>>);
 }

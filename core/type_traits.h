@@ -134,7 +134,7 @@ template <class T> inline constexpr bool is_rvalue_reference_v = is_rvalue_refer
 //----------------- declval -----------------------
 template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
 
-//----------------- is_default_constructible -----------------------
+//----------------- is_constructible -----------------------
 namespace details {
 template <class T>
 concept default_construct = requires {
@@ -164,6 +164,15 @@ concept destructible = is_lvalue_reference_v<T> || requires { declval<T>().~T();
 template <class T> struct is_destructible : bool_constant<details::destructible<T>> {};
 template <class T> inline constexpr bool is_destructible_v = is_destructible<T>::value;
 
-//----------------- is_constructible -----------------------
+//----------------- common_type -----------------------
+template <class... Ts> struct common_type {};
+template <class... Ts> using common_type_t = common_type<Ts...>::type;
+template <class T> struct common_type<T> : type_identity<T> {};
+
+template <class T, class U> struct common_type<T, U> {
+  using type = decltype(false ? declval<T>() : declval<U>());
+};
+
+template <class T, class U, class... R> struct common_type<T, U, R...> : common_type<common_type_t<T, U>, R...> {};
 
 } // namespace aria
