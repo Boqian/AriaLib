@@ -79,4 +79,12 @@ TEST(test_unordered_set, basic) {
       EXPECT_EQ(st.contains(i), (i % 2 == 0)) << i;
     }
   }
+  {
+    unordered_set<int> st = {1, 2, 3};
+    EXPECT_EQ(st.size(), 3);
+    int sum = 0;
+    for (auto x : st)
+      sum += x;
+    EXPECT_EQ(sum, 6);
+  }
 }

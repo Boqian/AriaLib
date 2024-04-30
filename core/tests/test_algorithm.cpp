@@ -1,5 +1,6 @@
 #include "algorithm.h"
 #include "list.h"
+#include "numeric.h"
 #include "vector.h"
 #include "gtest/gtest.h"
 
@@ -75,5 +76,18 @@ TEST(test_algorithm, minmax) {
   {
     EXPECT_EQ(aria::max(1, 5), 5);
     EXPECT_EQ(aria::max({3, 4, 5}), 5);
+  }
+}
+
+TEST(test_algorithm, numeric) {
+
+  {
+    vector<int> v = {4, 1, 3, 2};
+    EXPECT_EQ(accumulate(v.begin(), v.end(), 0), 10);
+    EXPECT_EQ(reduce(v.begin(), v.end(), 0), 10);
+    EXPECT_EQ(reduce(v.begin(), v.end()), 10);
+    auto op = [](int a, int b) { return a * b; };
+    EXPECT_EQ(accumulate(v.begin(), v.end(), 1, op), 24);
+    EXPECT_EQ(reduce(v.begin(), v.end(), 1, op), 24);
   }
 }
