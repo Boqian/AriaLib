@@ -80,7 +80,11 @@ TEST(test_algorithm, minmax) {
 }
 
 TEST(test_algorithm, numeric) {
-
+  {
+    static_assert(gcd(16, 24) == 8);
+    static_assert(lcm(16, 24) == 48);
+    static_assert(gcd(-16, 24) == 8);
+  }
   {
     vector<int> v = {4, 1, 3, 2};
     EXPECT_EQ(accumulate(v.begin(), v.end(), 0), 10);
