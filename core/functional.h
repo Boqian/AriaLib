@@ -8,7 +8,6 @@ namespace aria {
 template <class T = void> struct less {
   constexpr bool operator()(const T &a, const T &b) const { return a < b; }
 };
-
 template <> struct less<void> {
   template <class T> constexpr bool operator()(const T &a, const T &b) const { return a < b; }
 };
@@ -16,7 +15,6 @@ template <> struct less<void> {
 template <class T = void> struct greater {
   constexpr bool operator()(const T &a, const T &b) const { return a > b; }
 };
-
 template <> struct greater<void> {
   template <class T> constexpr bool operator()(const T &a, const T &b) const { return a > b; }
 };
@@ -24,7 +22,6 @@ template <> struct greater<void> {
 template <class T = void> struct equal_to {
   constexpr bool operator()(const T &a, const T &b) const { return a == b; }
 };
-
 template <> struct equal_to<void> {
   template <class T> constexpr bool operator()(const T &a, const T &b) const { return a == b; }
 };
@@ -32,7 +29,6 @@ template <> struct equal_to<void> {
 template <class T = void> struct not_equal_to {
   constexpr bool operator()(const T &a, const T &b) const { return a != b; }
 };
-
 template <> struct not_equal_to<void> {
   template <class T> constexpr bool operator()(const T &a, const T &b) const { return a != b; }
 };
@@ -40,7 +36,6 @@ template <> struct not_equal_to<void> {
 template <class T = void> struct greater_equal {
   constexpr bool operator()(const T &a, const T &b) const { return a >= b; }
 };
-
 template <> struct greater_equal<void> {
   template <class T> constexpr bool operator()(const T &a, const T &b) const { return a >= b; }
 };
@@ -48,9 +43,52 @@ template <> struct greater_equal<void> {
 template <class T = void> struct less_equal {
   constexpr bool operator()(const T &a, const T &b) const { return a <= b; }
 };
-
 template <> struct less_equal<void> {
   template <class T> constexpr bool operator()(const T &a, const T &b) const { return a <= b; }
+};
+
+//-----------------------Arithmetic operations-----------------------
+
+template <class T = void> struct plus {
+  constexpr T operator()(const T &a, const T &b) const { return a + b; }
+};
+template <> struct plus<void> {
+  template <class T> constexpr T operator()(const T &a, const T &b) const { return a + b; }
+};
+
+template <class T = void> struct minus {
+  constexpr T operator()(const T &a, const T &b) const { return a - b; }
+};
+template <> struct minus<void> {
+  template <class T> constexpr T operator()(const T &a, const T &b) const { return a - b; }
+};
+
+template <class T = void> struct multiplies {
+  constexpr T operator()(const T &a, const T &b) const { return a * b; }
+};
+template <> struct multiplies<void> {
+  template <class T> constexpr T operator()(const T &a, const T &b) const { return a * b; }
+};
+
+template <class T = void> struct divides {
+  constexpr T operator()(const T &a, const T &b) const { return a / b; }
+};
+template <> struct divides<void> {
+  template <class T> constexpr T operator()(const T &a, const T &b) const { return a / b; }
+};
+
+template <class T = void> struct modulus {
+  constexpr T operator()(const T &a, const T &b) const { return a % b; }
+};
+template <> struct modulus<void> {
+  template <class T> constexpr T operator()(const T &a, const T &b) const { return a % b; }
+};
+
+template <class T = void> struct negate {
+  constexpr T operator()(const T &a) const { return -a; }
+};
+template <> struct negate<void> {
+  template <class T> constexpr T operator()(const T &a) const { return -a; }
 };
 
 //-----------------------reference_wrapper, cref, cref-----------------------

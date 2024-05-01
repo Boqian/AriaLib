@@ -79,3 +79,17 @@ TEST(test_hash, basic) {
     EXPECT_EQ(hash<int>{}(x), hash<int>{}(y));
   }
 }
+
+TEST(test_functional, functor) {
+  EXPECT_TRUE(less()(1, 2));
+  EXPECT_TRUE(greater()(2, 1));
+  EXPECT_TRUE(equal_to()(2, 2));
+  EXPECT_TRUE(not_equal_to()(2, 1));
+
+  EXPECT_EQ(plus()(1, 2), 3);
+  EXPECT_EQ(minus()(1, 2), -1);
+  EXPECT_EQ(multiplies()(3, 2), 6);
+  EXPECT_EQ(divides()(15, 3), 5);
+  EXPECT_EQ(modulus()(17, 5), 2);
+  EXPECT_EQ(negate()(8), -8);
+}
