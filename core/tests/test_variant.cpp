@@ -3,6 +3,9 @@
 
 using namespace aria;
 
+static_assert(is_same_v<int, best_overload_match<char, float, int, long, double>>);
+static_assert(is_same_v<double, best_overload_match<float, int, double, bool>>);
+
 TEST(test_variant, variant_storage) {
   using var = _variant_storage<int, double, char>;
   constexpr var x(integral_constant<size_t, 0>(), 1);

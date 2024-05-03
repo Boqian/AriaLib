@@ -14,6 +14,3 @@ static_assert(tuple_size_v<mylist> == 8);
 static_assert(first_match_index<double, mylist>() == 3);
 static_assert(num_match<double, mylist>() == 1);
 static_assert(num_match<bool, type_list<int, char, A, B>, is_convertible>() == 2);
-
-static_assert(is_same_v<int, best_overload_match<char, float, int, long, double>>);
-static_assert(is_same_v<double, best_overload_match<float, int, double, bool>>);

@@ -67,6 +67,29 @@ template <class Storage, class Func> decltype(auto) visit_with_index(Func &func,
   }
 }
 
+//------------- overload match detector. to be used for variant generic assignment
+
+template <size_t N, class A> struct overload_frag {
+  using type = A;
+  using arr1 = A[1];
+  template <class T>
+    requires requires { arr1{std::declval<T>()}; }
+  auto operator()(A, T &&) -> overload_frag<N, A>;
+};
+
+template <class Seq, class... Args> struct make_overload;
+
+template <size_t... Idx, class... Args> struct make_overload<index_sequence<Idx...>, Args...> : overload_frag<Idx, Args>... {
+  using overload_frag<Idx, Args>::operator()...;
+};
+
+template <class T, class... Ts>
+using best_overload_match =
+    typename decltype(make_overload<make_index_sequence<sizeof...(Ts)>, Ts...>{}(std::declval<T>(), std::declval<T>()))::type;
+
+template <class T, class... Ts>
+concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts...>; };
+
 template <class... Ts> class variant : _variant_storage<Ts...> {
 public:
   using Storage = _variant_storage<Ts...>;
