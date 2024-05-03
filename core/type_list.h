@@ -8,7 +8,7 @@ template <class... Ts> struct type_list;
 
 template <class T, class... Ts> struct type_list<T, Ts...> {
   using head = T;
-  using rest = type_list<Ts...>;
+  using tail = type_list<Ts...>;
 };
 
 template <class... Ts> struct tuple_size<type_list<Ts...>> : integral_constant<size_t, sizeof...(Ts)> {};
@@ -21,7 +21,7 @@ template <class U, class Tlist, template <class, class> class Trait = is_same> c
   } else if constexpr (Trait<typename Tlist::head, U>::value) {
     return 0;
   } else {
-    return 1 + first_match_index<U, typename Tlist::rest, Trait>();
+    return 1 + first_match_index<U, typename Tlist::tail, Trait>();
   }
 }
 
@@ -29,7 +29,7 @@ template <class U, class Tlist, template <class, class> class Trait = is_same> c
   if constexpr (tuple_size_v<Tlist> == 0) {
     return 0;
   } else {
-    return Trait<typename Tlist::head, U>::value + num_match<U, typename Tlist::rest, Trait>();
+    return Trait<typename Tlist::head, U>::value + num_match<U, typename Tlist::tail, Trait>();
   }
 }
 
