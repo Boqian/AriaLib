@@ -97,7 +97,7 @@ public:
   using Storage = _variant_storage<Ts...>;
   constexpr variant() noexcept = default;
 
-  ~variant() {}
+  constexpr ~variant() {}
 
   template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M>()>
     requires has_non_ambiguous_match<T, Ts...>

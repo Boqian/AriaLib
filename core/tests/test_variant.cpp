@@ -17,21 +17,30 @@ TEST(test_variant, variant_storage) {
 TEST(test_variant, basic) {
   using var = variant<int, double, char>;
   {
-    var v(123);
+    constexpr var v(123);
+    static_assert(v.index() == 0);
+    static_assert(holds_alternative<int>(v));
     EXPECT_EQ(v.index(), 0);
     EXPECT_TRUE(holds_alternative<int>(v));
   }
   {
-    var v(123.0);
+    constexpr var v(123.0);
+    static_assert(v.index() == 1);
+    static_assert(holds_alternative<double>(v));
     EXPECT_EQ(v.index(), 1);
     EXPECT_TRUE(holds_alternative<double>(v));
   }
   {
-    var v('e');
+    constexpr var v('e');
+    static_assert(v.index() == 2);
+    static_assert(holds_alternative<char>(v));
     EXPECT_EQ(v.index(), 2);
     EXPECT_TRUE(holds_alternative<char>(v));
   }
-  { constexpr var; }
+  {
+    constexpr var v;
+    static_assert(v.index() == variant_npos);
+  }
   static_assert(is_same_v<variant_alternative_t<0, var>, int>);
   static_assert(is_same_v<variant_alternative_t<1, var>, double>);
   static_assert(is_same_v<variant_alternative_t<2, var>, char>);
