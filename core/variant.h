@@ -92,7 +92,7 @@ concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts.
 
 //------------------------- variant -------------------------
 
-template <class... Ts> class variant : _variant_storage<Ts...> {
+template <class... Ts> class variant : public _variant_storage<Ts...> {
 public:
   using Storage = _variant_storage<Ts...>;
   constexpr variant() noexcept = default;
@@ -128,5 +128,8 @@ template <class T, class... Ts> constexpr bool holds_alternative(const variant<T
   static_assert(exact_one_match<T, type_list<Ts...>>());
   return first_match_index<T, type_list<Ts...>>() == v.index();
 }
+
+template <std::size_t I, class... Ts> constexpr auto &get(variant<Ts...> &v) { return _variant_raw_get<I>(v); }
+template <std::size_t I, class... Ts> constexpr const auto &get(const variant<Ts...> &v) { return _variant_raw_get<I>(v); }
 
 } // namespace aria

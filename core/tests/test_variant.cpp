@@ -20,6 +20,7 @@ TEST(test_variant, basic) {
     constexpr var v(123);
     static_assert(v.index() == 0);
     static_assert(holds_alternative<int>(v));
+    static_assert(get<0>(v) == 123);
     EXPECT_EQ(v.index(), 0);
     EXPECT_TRUE(holds_alternative<int>(v));
   }
