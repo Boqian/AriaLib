@@ -13,6 +13,17 @@ template <class T, class... Ts> struct type_list<T, Ts...> {
 
 template <class... Ts> struct tuple_size<type_list<Ts...>> : integral_constant<size_t, sizeof...(Ts)> {};
 
+template <size_t I, class Tlist> consteval auto type_list_type() {
+  if constexpr (I == 0) {
+    return declval<typename Tlist::head>();
+  } else {
+    return type_list_type<I - 1, typename Tlist::tail>();
+  }
+}
+
+template <size_t I, class Tlist> using nth_type = decltype(type_list_type<I, Tlist>());
+// template <size_t I, class... Ts> using nth_type = decltype(type_list_type<I, Tlist<Ts...>>());
+
 inline constexpr size_t type_list_npos = -1;
 
 template <class U, class Tlist, template <class, class> class Trait = is_same> consteval size_t first_match_index() {
@@ -33,7 +44,7 @@ template <class U, class Tlist, template <class, class> class Trait = is_same> c
   }
 }
 
-template <class U, class Tlist, template <class, class> class Trait = is_same> consteval bool exact_one_math() {
+template <class U, class Tlist, template <class, class> class Trait = is_same> consteval bool exact_one_match() {
   return num_match<U, Tlist, Trait>() == 1;
 }
 

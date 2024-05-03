@@ -30,10 +30,10 @@ template <class First, class... Rest> struct _variant_storage<First, Rest...> {
 
   constexpr _variant_storage() noexcept {}
   constexpr ~_variant_storage() noexcept {}
-  _variant_storage(_variant_storage &&) = default;
-  _variant_storage(const _variant_storage &) = default;
-  _variant_storage &operator=(_variant_storage &&) = default;
-  _variant_storage &operator=(const _variant_storage &) = default;
+  constexpr _variant_storage(_variant_storage &&) = default;
+  constexpr _variant_storage(const _variant_storage &) = default;
+  constexpr _variant_storage &operator=(_variant_storage &&) = default;
+  constexpr _variant_storage &operator=(const _variant_storage &) = default;
 
   constexpr First &get() & noexcept { return head; }
   constexpr const First &get() const & noexcept { return head; }
@@ -67,7 +67,7 @@ template <class Storage, class Func> decltype(auto) visit_with_index(Func &func,
   }
 }
 
-//------------- overload match detector. to be used for variant generic assignment
+//------------------------- overload match detector -------------------------
 
 template <size_t N, class A> struct overload_frag {
   using type = A;
@@ -90,14 +90,20 @@ using best_overload_match =
 template <class T, class... Ts>
 concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts...>; };
 
+//------------------------- variant -------------------------
+
 template <class... Ts> class variant : _variant_storage<Ts...> {
 public:
   using Storage = _variant_storage<Ts...>;
   constexpr variant() noexcept = default;
 
-  template <class T> constexpr variant(T &&t) {}
-
   ~variant() {}
+
+  template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M>()>
+    requires has_non_ambiguous_match<T, Ts...>
+  constexpr variant(T &&t) : Storage(integral_constant<size_t, Idx>(), forward<T &&>(t)), current(Idx) {}
+
+  template <class T> static constexpr size_t index_of() { return first_match_index<T, type_list<Ts...>>(); }
 
   constexpr size_t index() const noexcept { return current; }
 
@@ -108,4 +114,19 @@ private:
 
   size_t current = variant_npos;
 };
+
+template <size_t, class> struct variant_alternative;
+template <size_t I, class... Ts> struct variant_alternative<I, variant<Ts...>> {
+  using type = nth_type<I, type_list<Ts...>>;
+};
+template <size_t I, class... Ts> struct variant_alternative<I, const variant<Ts...>> {
+  using type = const nth_type<I, type_list<Ts...>>;
+};
+template <size_t I, class T> using variant_alternative_t = typename variant_alternative<I, T>::type;
+
+template <class T, class... Ts> constexpr bool holds_alternative(const variant<Ts...> &v) noexcept {
+  static_assert(exact_one_match<T, type_list<Ts...>>());
+  return first_match_index<T, type_list<Ts...>>() == v.index();
+}
+
 } // namespace aria
