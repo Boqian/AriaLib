@@ -13,6 +13,7 @@ move, forward //in type_traits.h
 as_const
 declval
 swap
+integer_sequence
 pair, make_pair
 tuple, tupe_element, get(), tupe_size
 */
@@ -160,5 +161,28 @@ template <size_t I, class... Args> struct tuple_element<I, tuple<Args...>> {
 template <class... Args> tuple<Args...> make_tuple(Args &&...args) { return tuple<Args...>(forward<Args>(args)...); }
 
 template <class... Args> void swap(tuple<Args...> &a, tuple<Args...> &b) { a.swap(b); }
+
+//------------------------- integer_sequence -------------------------//
+template <class T, T... Ints> struct integer_sequence {
+  static constexpr std::size_t size() noexcept { return sizeof...(Ints); }
+};
+
+template <size_t... Ints> using index_sequence = integer_sequence<std::size_t, Ints...>;
+
+template <class T, T a, T... Ints> constexpr auto _append_integer_sequence(integer_sequence<T, Ints...> seq) {
+  return integer_sequence<T, Ints..., a>();
+}
+
+template <class T, T N> constexpr auto _integer_sequence_maker() {
+  if constexpr (N == 0) {
+    return integer_sequence<T>();
+  } else {
+    return _append_integer_sequence<T, N - 1>(_integer_sequence_maker<T, N - 1>());
+  }
+}
+
+template <class T, T N> using make_integer_sequence = decltype(_integer_sequence_maker<T, N>());
+
+template <size_t N> using make_index_sequence = make_integer_sequence<std::size_t, N>;
 
 } // namespace aria

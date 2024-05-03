@@ -1,6 +1,7 @@
 #pragma once
 #include "allocator.h"
 #include "exception.h"
+#include "type_list.h"
 #include "utility.h"
 
 namespace aria {
@@ -70,6 +71,8 @@ template <class... Ts> class variant : _variant_storage<Ts...> {
 public:
   using Storage = _variant_storage<Ts...>;
   constexpr variant() noexcept = default;
+
+  template <class T> constexpr variant(T &&t) {}
 
   ~variant() {}
 

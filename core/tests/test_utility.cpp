@@ -15,6 +15,12 @@ struct C {
 static_assert(tuple_size_v<pair<int, double>> == 2);
 static_assert(tuple_size_v<tuple<A, B, C>> == 3);
 
+TEST(test_integer_sequence, basic) {
+  using seq = index_sequence<0, 1, 2, 3, 4, 5, 6>;
+  using seq1 = make_index_sequence<7>;
+  static_assert(is_same_v<seq, seq1>);
+}
+
 TEST(test_pair, basic) {
   {
     pair<int, int> p(5, 6);
