@@ -42,7 +42,7 @@ TEST(test_variant, basic) {
   }
   {
     constexpr var v;
-    static_assert(v.index() == variant_npos);
+    static_assert(v.index() == 0);
   }
   static_assert(is_same_v<variant_alternative_t<0, var>, int>);
   static_assert(is_same_v<variant_alternative_t<1, var>, double>);

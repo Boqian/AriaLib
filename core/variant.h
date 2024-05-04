@@ -6,13 +6,13 @@
 
 namespace aria {
 
+inline constexpr size_t variant_npos = -1;
+
 class bad_variant_access : public std::exception {
 public:
   bad_variant_access() noexcept = default;
   const char *what() const noexcept override { return "bad variant access"; }
 };
-
-inline constexpr size_t variant_npos = -1;
 
 template <class... Ts> struct _variant_storage {};
 template <class First, class... Rest> struct _variant_storage<First, Rest...> {
@@ -94,24 +94,25 @@ concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts.
 template <class... Ts> class variant : public _variant_storage<Ts...> {
 public:
   using Storage = _variant_storage<Ts...>;
-  constexpr variant() noexcept = default;
+  constexpr variant() : Storage(integral_constant<size_t, 0>()), which(0) {}
 
   constexpr ~variant() {}
 
   template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M>()>
     requires has_non_ambiguous_match<T, Ts...>
-  constexpr variant(T &&t) : Storage(integral_constant<size_t, Idx>(), forward<T &&>(t)), current(Idx) {}
+  constexpr variant(T &&t) : Storage(integral_constant<size_t, Idx>(), forward<T &&>(t)), which(Idx) {}
 
   template <class T> static constexpr size_t index_of() { return first_match_index<T, type_list<Ts...>>(); }
 
-  constexpr size_t index() const noexcept { return current; }
+  constexpr size_t index() const noexcept { return which; }
+  constexpr bool valueless_by_exception() const noexcept { return which == variant_npos; }
 
 private:
   template <size_t I> void destroy() { destroy_at(&_variant_raw_get<I>(*this)); }
 
   void destory() {}
 
-  size_t current = variant_npos;
+  size_t which = variant_npos;
 };
 
 //------------------------- free function -------------------------
