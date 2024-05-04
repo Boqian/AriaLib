@@ -73,7 +73,7 @@ template <size_t N, class A> struct overload_frag {
   using type = A;
   using arr1 = A[1];
   template <class T>
-    requires requires { arr1{std::declval<T>()}; }
+    requires requires { arr1{declval<T>()}; }
   auto operator()(A, T &&) -> overload_frag<N, A>;
 };
 
@@ -84,8 +84,7 @@ template <size_t... Idx, class... Args> struct make_overload<index_sequence<Idx.
 };
 
 template <class T, class... Ts>
-using best_overload_match =
-    typename decltype(make_overload<make_index_sequence<sizeof...(Ts)>, Ts...>{}(std::declval<T>(), std::declval<T>()))::type;
+using best_overload_match = typename decltype(make_overload<make_index_sequence<sizeof...(Ts)>, Ts...>{}(declval<T>(), declval<T>()))::type;
 
 template <class T, class... Ts>
 concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts...>; };
@@ -115,6 +114,8 @@ private:
   size_t current = variant_npos;
 };
 
+//------------------------- free function -------------------------
+
 template <size_t, class> struct variant_alternative;
 template <size_t I, class... Ts> struct variant_alternative<I, variant<Ts...>> {
   using type = nth_type<I, type_list<Ts...>>;
@@ -129,7 +130,31 @@ template <class T, class... Ts> constexpr bool holds_alternative(const variant<T
   return first_match_index<T, type_list<Ts...>>() == v.index();
 }
 
-template <std::size_t I, class... Ts> constexpr auto &get(variant<Ts...> &v) { return _variant_raw_get<I>(v); }
-template <std::size_t I, class... Ts> constexpr const auto &get(const variant<Ts...> &v) { return _variant_raw_get<I>(v); }
+template <size_t I, class... Ts> constexpr auto &get(variant<Ts...> &v) {
+  if (I != v.index())
+    throw bad_variant_access{};
+  return _variant_raw_get<I>(v);
+}
+template <size_t I, class... Ts> constexpr const auto &get(const variant<Ts...> &v) {
+  if (I != v.index())
+    throw bad_variant_access{};
+  return _variant_raw_get<I>(v);
+}
+template <size_t I, class... Ts> constexpr auto &&get(variant<Ts...> &&v) {
+  if (I != v.index())
+    throw bad_variant_access{};
+  return _variant_raw_get<I>(move(v));
+}
+template <size_t I, class... Ts> constexpr const auto &&get(const variant<Ts...> &&v) {
+  if (I != v.index())
+    throw bad_variant_access{};
+  return _variant_raw_get<I>(move(v));
+}
+template <class T, class... Ts> constexpr T &get(variant<Ts...> &v) { return get<first_match_index<T, type_list<Ts...>>()>(v); }
+template <class T, class... Ts> constexpr const T &get(const variant<Ts...> &v) { return get<first_match_index<T, type_list<Ts...>>()>(v); }
+template <class T, class... Ts> constexpr T &&get(variant<Ts...> &&v) { return get<first_match_index<T, type_list<Ts...>>()>(move(v)); }
+template <class T, class... Ts> constexpr const T &&get(const variant<Ts...> &&v) {
+  return get<first_match_index<T, type_list<Ts...>>()>(move(v));
+}
 
 } // namespace aria

@@ -21,6 +21,7 @@ TEST(test_variant, basic) {
     static_assert(v.index() == 0);
     static_assert(holds_alternative<int>(v));
     static_assert(get<0>(v) == 123);
+    static_assert(get<int>(v) == 123);
     EXPECT_EQ(v.index(), 0);
     EXPECT_TRUE(holds_alternative<int>(v));
   }
@@ -35,6 +36,7 @@ TEST(test_variant, basic) {
     constexpr var v('e');
     static_assert(v.index() == 2);
     static_assert(holds_alternative<char>(v));
+    static_assert(get<char>(v) == 'e');
     EXPECT_EQ(v.index(), 2);
     EXPECT_TRUE(holds_alternative<char>(v));
   }
