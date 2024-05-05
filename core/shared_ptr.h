@@ -8,13 +8,13 @@ namespace detail {
 
 struct shared_base {
   virtual ~shared_base() = default;
-  virtual void del(void *ptr) const = 0;
+  virtual void destory(void *ptr) const = 0;
   std::atomic<long> m_uses = 1;
   std::atomic<long> m_weaks = 0;
 
   template <class U> void decrease_use(U *ptr) noexcept {
     if (--m_uses == 0) {
-      del(ptr);
+      destory(ptr);
       if (m_weaks == 0)
         delete this;
     }
@@ -27,7 +27,7 @@ struct shared_base {
 };
 
 template <class T> struct default_shared : shared_base {
-  void del(void *ptr) const override { delete static_cast<T *>(ptr); }
+  void destory(void *ptr) const override { delete static_cast<T *>(ptr); }
 };
 } // namespace detail
 
