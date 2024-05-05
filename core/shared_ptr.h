@@ -11,6 +11,19 @@ struct shared_base {
   virtual void del(void *ptr) const = 0;
   std::atomic<long> m_uses = 1;
   std::atomic<long> m_weaks = 0;
+
+  void decrease_use(void *ptr) noexcept {
+    if (--m_uses == 0) {
+      del(ptr);
+      if (m_weaks == 0)
+        delete this;
+    }
+  }
+
+  void decrease_weak() noexcept {
+    if (m_uses == 0 && --m_weaks == 0)
+      delete this;
+  }
 };
 
 template <class T> struct default_shared : shared_base {
@@ -27,14 +40,8 @@ public:
   shared_ptr() noexcept {}
   shared_ptr(std::nullptr_t) noexcept {}
   ~shared_ptr() {
-    if (m_shared) {
-      if (--m_shared->m_uses == 0) {
-        m_shared->del(m_ptr);
-        if (m_shared->m_weaks == 0) {
-          delete m_shared;
-        }
-      }
-    }
+    if (m_shared)
+      m_shared->decrease_use(m_ptr);
   }
 
   template <class Y>
@@ -96,11 +103,8 @@ public:
   weak_ptr() noexcept = default;
 
   ~weak_ptr() noexcept {
-    if (m_shared) {
-      m_shared->m_weaks--;
-      if (m_shared->m_uses == 0 && m_shared->m_weaks == 0)
-        delete m_shared;
-    }
+    if (m_shared)
+      m_shared->decrease_weak();
   }
 
   weak_ptr(const weak_ptr &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
