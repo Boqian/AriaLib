@@ -10,7 +10,7 @@ struct shared_base {
   virtual ~shared_base() = default;
   virtual void del(void *ptr) const = 0;
   std::atomic<long> m_uses = 1;
-  std::atomic<long> m_weaks = 1;
+  std::atomic<long> m_weaks = 0;
 };
 
 template <class T> struct default_shared : shared_base {
@@ -28,7 +28,9 @@ public:
     if (m_shared) {
       if (--m_shared->m_uses == 0) {
         m_shared->del(m_ptr);
-        delete m_shared;
+        if (m_shared->m_weaks == 0) {
+          delete m_shared;
+        }
       }
     }
   }
@@ -76,6 +78,55 @@ public:
   void reset() noexcept { shared_ptr().swap(*this); }
 
   void swap(shared_ptr &rhs) noexcept {
+    aria::swap(m_shared, rhs.m_shared);
+    aria::swap(m_ptr, rhs.m_ptr);
+  }
+
+private:
+  T *m_ptr{};
+  detail::shared_base *m_shared{};
+};
+
+template <class T> class weak_ptr {
+public:
+  weak_ptr() noexcept = default;
+
+  ~weak_ptr() noexcept {
+    if (m_shared) {
+      m_shared->m_weaks--;
+      if (m_shared->m_uses == 0 && m_shared->m_weaks == 0)
+        delete m_shared;
+    }
+  }
+
+  weak_ptr(const weak_ptr &r) noexcept : m_ptr(r->m_ptr), m_shared(r->m_shared) {
+    if (m_shared) {
+      m_shared->m_weaks++;
+    }
+  }
+
+  template <class U>
+    requires(convertible_to<U *, T *> and !is_same_v<U, T>)
+  weak_ptr(const weak_ptr<U> &r) noexcept : m_ptr(r->m_ptr), m_shared(r->m_shared) {
+    if (m_shared) {
+      m_shared->m_weaks++;
+    }
+  }
+
+  template <class U>
+    requires convertible_to<U *, T *>
+  weak_ptr(shared_ptr<U> &r) noexcept : m_ptr(r->m_ptr), m_shared(r->m_shared) {
+    if (m_shared) {
+      m_shared->m_weaks++;
+    }
+  }
+
+  long use_count() const noexcept { return m_shared ? m_shared->m_uses : 0; }
+  bool expired() const noexcept { return use_count() == 0; }
+
+  // std::shared_ptr<T> lock() const noexcept { return expired() ? shared_ptr<T>() : shared_ptr<T>(*this); }
+
+  void swap(weak_ptr &rhs) noexcept {
     aria::swap(m_shared, rhs.m_shared);
     aria::swap(m_ptr, rhs.m_ptr);
   }
