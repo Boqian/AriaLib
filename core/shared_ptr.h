@@ -78,12 +78,12 @@ public:
   const T *get() const { return m_ptr; }
 
   const add_lvalue_reference_t<T> operator*() const
-    requires !is_void_v<T>
+    requires(!is_void_v<T>)
   {
     return *m_ptr;
   }
   add_lvalue_reference_t<T> operator*()
-    requires !is_void_v<T>
+    requires(!is_void_v<T>)
   {
     return *m_ptr;
   }
