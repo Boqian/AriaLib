@@ -4,22 +4,26 @@
 using namespace aria;
 
 struct Counter {
-  static inline int n1 = 0;
-  static inline int n2 = 0;
+  static inline int n_bdtor = 0;
+  static inline int n_ddtor = 0;
+  static inline int n_bctor = 0;
+  static inline int n_dctor = 0;
   static void init() {
-    n1 = 0;
-    n2 = 0;
+    n_bdtor = 0;
+    n_ddtor = 0;
+    n_bctor = 0;
+    n_dctor = 0;
   }
 };
 
 struct Base {
-  Base() = default;
-  ~Base() { Counter::n1++; } // intend not virtual
+  Base() { Counter::n_bctor++; }
+  ~Base() { Counter::n_bdtor++; } // intend not virtual
 };
 
 struct Derived : Base {
-  Derived() = default;
-  ~Derived() { Counter::n2++; }
+  Derived() { Counter::n_dctor++; }
+  ~Derived() { Counter::n_ddtor++; }
 };
 
 TEST(test_shared_ptr, empty) {
@@ -118,29 +122,29 @@ TEST(test_shared_ptr, destructor) {
   {
     Counter::init();
     auto p = make_shared<Base>();
-    EXPECT_EQ(Counter::n1, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
   }
-  EXPECT_EQ(Counter::n1, 1);
+  EXPECT_EQ(Counter::n_bdtor, 1);
   {
     Counter::init();
     auto p = make_shared<Base>();
-    EXPECT_EQ(Counter::n1, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
     p.reset();
-    EXPECT_EQ(Counter::n1, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
   }
-  EXPECT_EQ(Counter::n1, 1);
+  EXPECT_EQ(Counter::n_bdtor, 1);
   {
     Counter::init();
     auto p = make_shared<Base>();
     auto q = p;
     auto r = q;
-    EXPECT_EQ(Counter::n1, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
     r.reset();
-    EXPECT_EQ(Counter::n1, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
     p.reset();
-    EXPECT_EQ(Counter::n1, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
     q.reset();
-    EXPECT_EQ(Counter::n1, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
   }
 }
 
@@ -148,11 +152,11 @@ TEST(test_shared_ptr, inheritance) {
   {
     Counter::init();
     shared_ptr<Base> p(new Derived());
-    EXPECT_EQ(Counter::n1, 0);
-    EXPECT_EQ(Counter::n2, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
+    EXPECT_EQ(Counter::n_ddtor, 0);
     p.reset();
-    EXPECT_EQ(Counter::n1, 1);
-    EXPECT_EQ(Counter::n2, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
+    EXPECT_EQ(Counter::n_ddtor, 1);
   }
 }
 
@@ -160,19 +164,41 @@ TEST(test_shared_ptr, type_erase) {
   {
     Counter::init();
     shared_ptr<void> p(new Derived());
-    EXPECT_EQ(Counter::n1, 0);
-    EXPECT_EQ(Counter::n2, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
+    EXPECT_EQ(Counter::n_ddtor, 0);
     p.reset();
-    EXPECT_EQ(Counter::n1, 1);
-    EXPECT_EQ(Counter::n2, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
+    EXPECT_EQ(Counter::n_ddtor, 1);
   }
   {
     Counter::init();
     shared_ptr<Base> p(new Derived());
-    EXPECT_EQ(Counter::n1, 0);
-    EXPECT_EQ(Counter::n2, 0);
+    EXPECT_EQ(Counter::n_bdtor, 0);
+    EXPECT_EQ(Counter::n_ddtor, 0);
     p.reset();
-    EXPECT_EQ(Counter::n1, 1);
-    EXPECT_EQ(Counter::n2, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
+    EXPECT_EQ(Counter::n_ddtor, 1);
+  }
+}
+
+TEST(test_weak_ptr, basic) {
+  {
+    Counter::init();
+    auto s = make_shared<Base>();
+    weak_ptr<Base> w(s);
+    EXPECT_FALSE(w.expired());
+    EXPECT_EQ(w.use_count(), 1);
+    EXPECT_EQ(Counter::n_bctor, 1);
+    EXPECT_EQ(Counter::n_bdtor, 0);
+    s.reset();
+    EXPECT_EQ(Counter::n_bctor, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
+    EXPECT_TRUE(w.expired());
+    EXPECT_EQ(w.use_count(), 0);
+    auto locked = w.lock();
+    EXPECT_FALSE(locked);
+    w.reset();
+    EXPECT_EQ(Counter::n_bctor, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
   }
 }

@@ -18,6 +18,8 @@ template <class T> struct default_shared : shared_base {
 };
 } // namespace detail
 
+template <class T> class weak_ptr;
+
 template <class T> class shared_ptr {
 public:
   using element_type = T;
@@ -83,6 +85,8 @@ public:
   }
 
 private:
+  friend weak_ptr<T>;
+
   T *m_ptr{};
   detail::shared_base *m_shared{};
 };
@@ -99,7 +103,7 @@ public:
     }
   }
 
-  weak_ptr(const weak_ptr &r) noexcept : m_ptr(r->m_ptr), m_shared(r->m_shared) {
+  weak_ptr(const weak_ptr &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
     if (m_shared) {
       m_shared->m_weaks++;
     }
@@ -107,24 +111,52 @@ public:
 
   template <class U>
     requires(convertible_to<U *, T *> and !is_same_v<U, T>)
-  weak_ptr(const weak_ptr<U> &r) noexcept : m_ptr(r->m_ptr), m_shared(r->m_shared) {
+  weak_ptr(const weak_ptr<U> &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
     if (m_shared) {
       m_shared->m_weaks++;
     }
+  }
+
+  weak_ptr &operator=(const weak_ptr &rhs) noexcept {
+    auto tmp = rhs;
+    swap(tmp);
+    return *this;
+  }
+
+  weak_ptr(weak_ptr &&rhs) noexcept { swap(rhs); }
+  weak_ptr &operator=(weak_ptr &&rhs) {
+    auto tmp = move(this);
+    swap(tmp);
+    return *this;
   }
 
   template <class U>
     requires convertible_to<U *, T *>
-  weak_ptr(shared_ptr<U> &r) noexcept : m_ptr(r->m_ptr), m_shared(r->m_shared) {
+  weak_ptr(const shared_ptr<U> &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
     if (m_shared) {
       m_shared->m_weaks++;
     }
   }
 
-  long use_count() const noexcept { return m_shared ? m_shared->m_uses : 0; }
+  long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
   bool expired() const noexcept { return use_count() == 0; }
 
-  // std::shared_ptr<T> lock() const noexcept { return expired() ? shared_ptr<T>() : shared_ptr<T>(*this); }
+  shared_ptr<T> lock() const noexcept {
+    if (!m_shared)
+      return {};
+
+    for (auto use_count = m_shared->m_uses.load(); use_count != 0; use_count = m_shared->m_uses.load()) {
+      if (m_shared->m_uses.compare_exchange_strong(use_count, use_count + 1)) {
+        shared_ptr<T> p;
+        p.m_ptr = m_ptr;
+        p.m_shared = m_shared;
+        return p;
+      }
+    }
+    return {};
+  }
+
+  void reset() noexcept { weak_ptr().swap(*this); }
 
   void swap(weak_ptr &rhs) noexcept {
     aria::swap(m_shared, rhs.m_shared);
