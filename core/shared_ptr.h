@@ -169,6 +169,7 @@ private:
 };
 
 template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) { a.swap(b); }
+template <class T> void swap(weak_ptr<T> &a, weak_ptr<T> &b) { a.swap(b); }
 
 template <class T, class... Args> shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(forward<Args>(args)...)); }
 

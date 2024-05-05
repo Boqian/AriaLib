@@ -201,4 +201,21 @@ TEST(test_weak_ptr, basic) {
     EXPECT_EQ(Counter::n_bctor, 1);
     EXPECT_EQ(Counter::n_bdtor, 1);
   }
+  {
+    Counter::init();
+    auto s = make_shared<Base>();
+    weak_ptr<Base> w(s);
+    auto s2 = w.lock();
+    EXPECT_EQ(w.use_count(), 2);
+    s.reset();
+    EXPECT_EQ(w.use_count(), 1);
+    EXPECT_EQ(Counter::n_bctor, 1);
+    EXPECT_EQ(Counter::n_bdtor, 0);
+    EXPECT_FALSE(w.expired());
+    w.reset();
+    EXPECT_EQ(Counter::n_bdtor, 0);
+    s2.reset();
+    EXPECT_EQ(Counter::n_bctor, 1);
+    EXPECT_EQ(Counter::n_bdtor, 1);
+  }
 }
