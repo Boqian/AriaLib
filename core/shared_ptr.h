@@ -191,13 +191,11 @@ private:
 
 template <class T> class enable_shared_from_this {
 public:
-  constexpr enable_shared_from_this() noexcept {}
-  //~enable_shared_from_this() = default;
+  shared_ptr<T> shared_from_this() const { return m_wptr.lock(); }
+  weak_ptr<T> weak_from_this() const noexcept { return m_wptr; }
 
-  shared_ptr<T> shared_from_this() { return m_wptr.lock(); }
-  shared_ptr<T const> shared_from_this() const { return m_wptr.lock(); }
-  weak_ptr<T> weak_from_this() noexcept { return m_wptr; }
-  weak_ptr<T const> weak_from_this() const noexcept { return m_wptr; }
+protected:
+  constexpr enable_shared_from_this() noexcept {}
 
 private:
   template <class U> friend class shared_ptr;

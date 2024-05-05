@@ -8,11 +8,15 @@ struct Counter {
   static inline int n_ddtor = 0;
   static inline int n_bctor = 0;
   static inline int n_dctor = 0;
+  static inline int n_Actor = 0;
+  static inline int n_Adtor = 0;
   static void init() {
-    n_bdtor = 0;
-    n_ddtor = 0;
     n_bctor = 0;
+    n_bdtor = 0;
     n_dctor = 0;
+    n_ddtor = 0;
+    n_Actor = 0;
+    n_Adtor = 0;
   }
 };
 
@@ -222,12 +226,25 @@ TEST(test_weak_ptr, basic) {
   }
 }
 
-struct A : enable_shared_from_this<A> {};
+struct A : enable_shared_from_this<A> {
+  A() { Counter::n_Actor++; }
+  ~A() { Counter::n_Adtor++; }
+};
 
 TEST(test_shared_ptr, shared_from_this) {
+  Counter::init();
   auto p = make_shared<A>();
   EXPECT_EQ(p.use_count(), 1);
-
   auto q = p->shared_from_this();
   EXPECT_EQ(p.use_count(), 2);
+  EXPECT_EQ(q.use_count(), 2);
+  EXPECT_EQ(Counter::n_Actor, 1);
+  EXPECT_EQ(Counter::n_Adtor, 0);
+  p.reset();
+  EXPECT_EQ(Counter::n_Actor, 1);
+  EXPECT_EQ(Counter::n_Adtor, 0);
+  EXPECT_EQ(q.use_count(), 1);
+  q.reset();
+  EXPECT_EQ(Counter::n_Actor, 1);
+  EXPECT_EQ(Counter::n_Adtor, 1);
 }
