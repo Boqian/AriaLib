@@ -94,15 +94,15 @@ concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts.
 template <class... Ts> class variant : public _variant_storage<Ts...> {
 public:
   using Storage = _variant_storage<Ts...>;
-  constexpr variant() : Storage(integral_constant<size_t, 0>()), which(0) {}
+  constexpr variant()
+    requires is_default_constructible_v<nth_type<0, Ts...>>
+      : Storage(integral_constant<size_t, 0>()), which(0) {}
 
   constexpr ~variant() {}
 
-  template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M>()>
+  template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M, Ts...>()>
     requires has_non_ambiguous_match<T, Ts...>
   constexpr variant(T &&t) : Storage(integral_constant<size_t, Idx>(), forward<T &&>(t)), which(Idx) {}
-
-  template <class T> static constexpr size_t index_of() { return first_match_index<T, type_list<Ts...>>(); }
 
   constexpr size_t index() const noexcept { return which; }
   constexpr bool valueless_by_exception() const noexcept { return which == variant_npos; }
@@ -119,10 +119,10 @@ private:
 
 template <size_t, class> struct variant_alternative;
 template <size_t I, class... Ts> struct variant_alternative<I, variant<Ts...>> {
-  using type = nth_type<I, type_list<Ts...>>;
+  using type = nth_type<I, Ts...>;
 };
 template <size_t I, class... Ts> struct variant_alternative<I, const variant<Ts...>> {
-  using type = const nth_type<I, type_list<Ts...>>;
+  using type = const nth_type<I, Ts...>;
 };
 template <size_t I, class T> using variant_alternative_t = typename variant_alternative<I, T>::type;
 
@@ -151,11 +151,9 @@ template <size_t I, class... Ts> constexpr const auto &&get(const variant<Ts...>
     throw bad_variant_access{};
   return _variant_raw_get<I>(move(v));
 }
-template <class T, class... Ts> constexpr T &get(variant<Ts...> &v) { return get<first_match_index<T, type_list<Ts...>>()>(v); }
-template <class T, class... Ts> constexpr const T &get(const variant<Ts...> &v) { return get<first_match_index<T, type_list<Ts...>>()>(v); }
-template <class T, class... Ts> constexpr T &&get(variant<Ts...> &&v) { return get<first_match_index<T, type_list<Ts...>>()>(move(v)); }
-template <class T, class... Ts> constexpr const T &&get(const variant<Ts...> &&v) {
-  return get<first_match_index<T, type_list<Ts...>>()>(move(v));
-}
+template <class T, class... Ts> constexpr T &get(variant<Ts...> &v) { return get<index_of<T, Ts...>()>(v); }
+template <class T, class... Ts> constexpr const T &get(const variant<Ts...> &v) { return get<index_of<T, Ts...>()>(v); }
+template <class T, class... Ts> constexpr T &&get(variant<Ts...> &&v) { return get<index_of<T, Ts...>()>(move(v)); }
+template <class T, class... Ts> constexpr const T &&get(const variant<Ts...> &&v) { return get<index_of<T, Ts...>()>(move(v)); }
 
 } // namespace aria
