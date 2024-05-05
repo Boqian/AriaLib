@@ -12,7 +12,7 @@ struct shared_base {
   std::atomic<long> m_uses = 1;
   std::atomic<long> m_weaks = 0;
 
-  void decrease_use(void *ptr) noexcept {
+  template <class U> void decrease_use(U *ptr) noexcept {
     if (--m_uses == 0) {
       del(ptr);
       if (m_weaks == 0)
@@ -32,6 +32,7 @@ template <class T> struct default_shared : shared_base {
 } // namespace detail
 
 template <class T> class weak_ptr;
+template <class T> class enable_shared_from_this;
 
 template <class T> class shared_ptr {
 public:
@@ -46,7 +47,11 @@ public:
 
   template <class Y>
     requires convertible_to<Y *, T *>
-  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new detail::default_shared<Y>()) {}
+  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new detail::default_shared<Y>()) {
+    if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
+      m_ptr->m_wptr = *this;
+    }
+  }
 
   shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }
 
@@ -77,7 +82,14 @@ public:
   {
     return *m_ptr;
   }
+  add_lvalue_reference_t<T> operator*()
+    requires !is_void_v<T>
+  {
+    return *m_ptr;
+  }
+
   const T *operator->() const { return m_ptr; }
+  T *operator->() { return m_ptr; }
 
   operator bool() const noexcept { return m_ptr; }
 
@@ -92,7 +104,7 @@ public:
   }
 
 private:
-  friend weak_ptr<T>;
+  friend class weak_ptr<T>; // weak_ptr.lock()
 
   T *m_ptr{};
   detail::shared_base *m_shared{};
@@ -124,6 +136,11 @@ public:
   weak_ptr &operator=(const weak_ptr &rhs) noexcept {
     auto tmp = rhs;
     swap(tmp);
+    return *this;
+  }
+
+  template <class Y> weak_ptr &operator=(const shared_ptr<Y> &r) noexcept {
+    weak_ptr<T>(r).swap(*this);
     return *this;
   }
 
@@ -170,6 +187,21 @@ public:
 private:
   T *m_ptr{};
   detail::shared_base *m_shared{};
+};
+
+template <class T> class enable_shared_from_this {
+public:
+  constexpr enable_shared_from_this() noexcept {}
+  //~enable_shared_from_this() = default;
+
+  shared_ptr<T> shared_from_this() { return m_wptr.lock(); }
+  shared_ptr<T const> shared_from_this() const { return m_wptr.lock(); }
+  weak_ptr<T> weak_from_this() noexcept { return m_wptr; }
+  weak_ptr<T const> weak_from_this() const noexcept { return m_wptr; }
+
+private:
+  template <class U> friend class shared_ptr;
+  weak_ptr<T> m_wptr;
 };
 
 template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) { a.swap(b); }

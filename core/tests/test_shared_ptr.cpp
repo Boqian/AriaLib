@@ -69,6 +69,8 @@ TEST(test_shared_ptr, make_shard) {
     auto p = make_shared<pair<int, double>>(1, 1.3);
     EXPECT_EQ(p->first, 1);
     EXPECT_DOUBLE_EQ(p->second, 1.3);
+    p->first = 333;
+    EXPECT_EQ(p->first, 333);
   }
   {
     auto p = make_shared<int>();
@@ -218,4 +220,14 @@ TEST(test_weak_ptr, basic) {
     EXPECT_EQ(Counter::n_bctor, 1);
     EXPECT_EQ(Counter::n_bdtor, 1);
   }
+}
+
+struct A : enable_shared_from_this<A> {};
+
+TEST(test_shared_ptr, shared_from_this) {
+  auto p = make_shared<A>();
+  EXPECT_EQ(p.use_count(), 1);
+
+  auto q = p->shared_from_this();
+  EXPECT_EQ(p.use_count(), 2);
 }
