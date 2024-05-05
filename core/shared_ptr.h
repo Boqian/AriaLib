@@ -4,10 +4,8 @@
 
 namespace aria {
 
-namespace detail {
-
-struct shared_base {
-  virtual ~shared_base() = default;
+struct _shared_base {
+  virtual ~_shared_base() = default;
   virtual void destory(void *ptr) const = 0;
   std::atomic<long> m_uses = 1;
   std::atomic<long> m_weaks = 0;
@@ -26,10 +24,9 @@ struct shared_base {
   }
 };
 
-template <class T> struct default_shared : shared_base {
+template <class T> struct _default_shared : _shared_base {
   void destory(void *ptr) const override { delete static_cast<T *>(ptr); }
 };
-} // namespace detail
 
 template <class T> class weak_ptr;
 template <class T> class enable_shared_from_this;
@@ -47,7 +44,7 @@ public:
 
   template <class Y>
     requires convertible_to<Y *, T *>
-  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new detail::default_shared<Y>()) {
+  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>()) {
     if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
       m_ptr->m_wptr = *this;
     }
@@ -94,7 +91,7 @@ private:
   friend class weak_ptr<T>; // weak_ptr.lock()
 
   T *m_ptr{};
-  detail::shared_base *m_shared{};
+  _shared_base *m_shared{};
 };
 
 template <class T> class weak_ptr {
@@ -173,7 +170,7 @@ public:
 
 private:
   T *m_ptr{};
-  detail::shared_base *m_shared{};
+  _shared_base *m_shared{};
 };
 
 template <class T> class enable_shared_from_this {
