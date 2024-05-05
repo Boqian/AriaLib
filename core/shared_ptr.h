@@ -76,26 +76,13 @@ public:
 
   T *get() { return m_ptr; }
   const T *get() const { return m_ptr; }
-
-  const add_lvalue_reference_t<T> operator*() const
-    requires(!is_void_v<T>)
-  {
-    return *m_ptr;
-  }
-  add_lvalue_reference_t<T> operator*()
-    requires(!is_void_v<T>)
-  {
-    return *m_ptr;
-  }
-
-  const T *operator->() const { return m_ptr; }
+  add_lvalue_reference_t<T> operator*() { return *m_ptr; }
+  const add_lvalue_reference_t<T> operator*() const { return *m_ptr; }
   T *operator->() { return m_ptr; }
-
+  const T *operator->() const { return m_ptr; }
   operator bool() const noexcept { return m_ptr; }
-
   long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
   bool unique() const noexcept { return use_count() == 1; }
-
   void reset() noexcept { shared_ptr().swap(*this); }
 
   void swap(shared_ptr &rhs) noexcept {
