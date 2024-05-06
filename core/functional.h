@@ -179,7 +179,7 @@ template <class R, class... Args> class function<R(Args...)> {
 public:
   using result_type = R;
 
-  template <class F> function(F &&f) : ptr(make_unique<Callable<F>>(forward<F &&>(f))) {}
+  template <class F> function(F &&f) : ptr(make_unique<Callable<F>>(forward<F>(f))) {}
 
   function() noexcept = default;
   function(nullptr_t) noexcept {}
@@ -189,6 +189,13 @@ public:
   function &operator=(const function &) = delete;
   function &operator=(function &&rhs) noexcept {
     ptr = move(rhs.ptr);
+    return *this;
+  }
+
+  function &operator=(std::nullptr_t) noexcept { ptr.reset(); }
+
+  template <class F> function &operator=(F &&f) {
+    function(forward<F>(f)).swap(*this);
     return *this;
   }
 
