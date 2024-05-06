@@ -57,13 +57,15 @@ template <class From, class To> struct is_convertible : conditional_t<details::c
 template <class From, class To> inline constexpr bool is_convertible_v = is_convertible<From, To>::value;
 
 //----------------- remove_cv -----------------------
+
 template <class T> struct remove_cv : type_identity<T> {};
 template <class T> struct remove_cv<const T> : type_identity<T> {};
 template <class T> struct remove_cv<volatile T> : type_identity<T> {};
 template <class T> struct remove_cv<const volatile T> : type_identity<T> {};
 template <class T> using remove_cv_t = remove_cv<T>::type;
 
-//----------------- is_...type -----------------------
+//----------------- Primary type categories -----------------------
+
 template <class T> struct is_void : is_same<void, remove_cv_t<T>> {};
 template <class T> inline constexpr bool is_void_v = is_void<T>::value;
 
@@ -91,7 +93,7 @@ template <class T> inline constexpr bool is_arithmetic_v = is_integral_v<T> || i
 template <class T> struct is_arithmetic : bool_constant<is_arithmetic_v<T>> {};
 
 //----------------- add_lvalue_reference, add_rvalue_reference
-//-----------------------
+
 namespace detail {
 template <class T> auto try_add_lvalue_ref(int) -> type_identity<T &>;
 template <class T> auto try_add_lvalue_ref(...) -> type_identity<T>;
@@ -174,5 +176,22 @@ template <class T, class U> struct common_type<T, U> {
 };
 
 template <class T, class U, class... R> struct common_type<T, U, R...> : common_type<common_type_t<T, U>, R...> {};
+
+//----------------- type properties -----------------------
+template <class T> struct is_const : false_type {};
+template <class T> struct is_const<const T> : true_type {};
+template <class T> inline constexpr bool is_const_v = is_const<T>::value;
+
+template <class T> struct is_signed : false_type {};
+template <class T>
+  requires(is_arithmetic_v<T>)
+struct is_signed<T> : bool_constant<T(-1) < T(0)> {};
+template <class T> inline constexpr bool is_signed_v = is_signed<T>::value;
+
+template <class T> struct is_unsigned : false_type {};
+template <class T>
+  requires(is_arithmetic_v<T>)
+struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
+template <class T> inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
 
 } // namespace aria

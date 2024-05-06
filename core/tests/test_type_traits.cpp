@@ -85,4 +85,17 @@ void test_traits() {
   static_assert(is_same_v<int, common_type_t<int, short>>);
   static_assert(is_same_v<int, common_type_t<int, short, char>>);
   static_assert(is_same_v<long long, common_type_t<int, short, char, long long>>);
+
+  static_assert(!is_const_v<int>);
+  static_assert(is_const_v<const int>);
+
+  static_assert(is_arithmetic_v<float>);
+  static_assert(!is_arithmetic_v<BB>);
+
+  static_assert(is_signed_v<int>);
+  static_assert(!is_signed_v<unsigned int>);
+  static_assert(!is_signed_v<BB>);
+  static_assert(!is_unsigned_v<int>);
+  static_assert(is_unsigned_v<unsigned int>);
+  static_assert(!is_unsigned_v<BB>);
 }
