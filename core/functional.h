@@ -175,11 +175,15 @@ template <> struct hash<nullptr_t> {
 
 template <typename> class function {};
 
-template <class Ret, class... Args> class function<Ret(Args...)> {
+template <class R, class... Args> class function<R(Args...)> {
 public:
-  template <class T> function(T &&t) : ptr(make_unique<Callable<T>>(forward<T>(t))) {}
+  using result_type = R;
 
-  function() = default;
+  template <class F> function(F &&f) : ptr(make_unique<Callable<F>>(forward<F &&>(f))) {}
+
+  function() noexcept = default;
+  function(nullptr_t) noexcept {}
+  ~function() = default;
   function(const function &) = delete;
   function(function &&rhs) noexcept : ptr(move(rhs.ptr)) {}
   function &operator=(const function &) = delete;
@@ -188,7 +192,7 @@ public:
     return *this;
   }
 
-  Ret operator()(Args... args) const { return ptr->invoke(forward<Args>(args)...); }
+  result_type operator()(Args... args) const { return ptr->invoke(forward<Args>(args)...); }
 
   operator bool() const noexcept { return ptr; }
 
@@ -199,14 +203,14 @@ private:
   public:
     ICallable() = default;
     virtual ~ICallable() = default;
-    virtual Ret invoke(Args...) const = 0;
+    virtual R invoke(Args...) const = 0;
   };
 
   template <class T> struct Callable : public ICallable {
     Callable(T &&at) : t(forward<T>(at)) {}
     ~Callable() = default;
 
-    Ret invoke(Args... args) const override { return t(forward<Args>(args)...); }
+    R invoke(Args... args) const override { return t(forward<Args>(args)...); }
 
   private:
     T t;
@@ -214,5 +218,7 @@ private:
 
   unique_ptr<ICallable> ptr;
 };
+
+template <class R, class... Args> void swap(function<R(Args...)> &a, function<R(Args...)> &b) noexcept { a.swap(b); }
 
 } // namespace aria
