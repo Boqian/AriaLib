@@ -16,6 +16,7 @@ swap
 integer_sequence
 pair, make_pair
 tuple, tupe_element, get(), tupe_size
+unreachable()
 */
 
 namespace aria {
@@ -185,6 +186,7 @@ template <class T, T N> using make_integer_sequence = decltype(_integer_sequence
 
 template <size_t N> using make_index_sequence = make_integer_sequence<std::size_t, N>;
 
+//------------------------- unreachable() -------------------------//
 [[noreturn]] inline void unreachable() {
 #if defined(_MSC_VER) && !defined(__clang__) // MSVC
   __assume(false);
