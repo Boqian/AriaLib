@@ -185,4 +185,12 @@ template <class T, T N> using make_integer_sequence = decltype(_integer_sequence
 
 template <size_t N> using make_index_sequence = make_integer_sequence<std::size_t, N>;
 
+[[noreturn]] inline void unreachable() {
+#if defined(_MSC_VER) && !defined(__clang__) // MSVC
+  __assume(false);
+#else // GCC, Clang
+  __builtin_unreachable();
+#endif
+}
+
 } // namespace aria

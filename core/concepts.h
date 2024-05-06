@@ -14,4 +14,10 @@ concept convertible_to = is_convertible_v<From, To> && requires { static_cast<To
 template <class T>
 concept integral = is_integral_v<T>;
 
+template <class T>
+concept signed_integral = integral<T> && is_signed_v<T>;
+
+template <class T>
+concept unsigned_integral = integral<T> && is_unsigned_v<T>;
+
 } // namespace aria
