@@ -16,7 +16,14 @@ struct CC {
 };
 
 struct CannotCopy {
+  CannotCopy(CannotCopy &){};
   CannotCopy(const CannotCopy &) = delete;
+  CannotCopy(CannotCopy &&) = default;
+};
+
+struct CannotMove {
+  CannotMove(CannotMove &&) = delete;
+  CannotMove(const CannotMove &) = default;
 };
 
 void test_traits() {
@@ -113,4 +120,8 @@ void test_traits() {
 
   static_assert(!is_copy_contructible_v<CannotCopy>);
   static_assert(is_copy_contructible_v<AA>);
+  static_assert(is_move_contructible_v<AA>);
+  static_assert(is_move_contructible_v<CannotCopy>);
+  static_assert(is_copy_contructible_v<CannotMove>);
+  static_assert(!is_move_contructible_v<CannotMove>);
 }

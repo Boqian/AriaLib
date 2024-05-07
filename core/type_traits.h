@@ -152,21 +152,19 @@ template <class T> inline constexpr bool is_rvalue_reference_v = is_rvalue_refer
 template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
 
 //----------------- is_constructible -----------------------
-namespace details {
 template <class T>
-concept default_construct = requires {
+concept _default_construct = requires {
   T();
   T{};
   ::new T;
 };
 
 template <class T, class... Args>
-concept constructable = requires(Args... args) { T(args...); };
-} // namespace details
+concept _constructible = requires { T(declval<Args>()...); };
 
-template <class T> struct is_default_constructible : bool_constant<details::default_construct<T>> {};
+template <class T> struct is_default_constructible : bool_constant<_default_construct<T>> {};
 template <class T> inline constexpr bool is_default_constructible_v = is_default_constructible<T>::value;
-template <class T, class... Args> struct is_constructible : bool_constant<details::constructable<T, Args...>> {};
+template <class T, class... Args> struct is_constructible : bool_constant<_constructible<T, Args...>> {};
 template <class T, class... Args> inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
 template <class T> struct is_copy_contructible : is_constructible<T, add_lvalue_reference_t<add_const_t<T>>> {};
 template <class T> inline constexpr bool is_copy_contructible_v = is_copy_contructible<T>::value;
@@ -174,14 +172,19 @@ template <class T> struct is_move_contructible : is_constructible<T, add_rvalue_
 template <class T> inline constexpr bool is_move_contructible_v = is_move_contructible<T>::value;
 
 //----------------- is_assignable -----------------
+template <class T, class U>
+concept _assignable = requires { declval<T>() = declval<U>(); };
+template <class T, class U> struct is_assignable : bool_constant<_assignable<T, U>> {};
+template <class T, class U> inline constexpr bool is_assignable_v = is_assignable<T, U>::value;
+template <class T> struct is_copy_assignable : is_assignable<T, add_lvalue_reference_t<add_const_t<T>>> {};
+template <class T> inline constexpr bool is_copy_assignable_v = is_copy_assignable<T>::value;
+template <class T> struct is_move_assignable : is_assignable<T, add_rvalue_reference_t<T>> {};
+template <class T> inline constexpr bool is_move_assignable_v = is_move_assignable<T>::value;
 
 //----------------- is_destructible -----------------------
-namespace details {
 template <class T>
-concept destructible = is_lvalue_reference_v<T> || requires { declval<T>().~T(); };
-}
-
-template <class T> struct is_destructible : bool_constant<details::destructible<T>> {};
+concept _destructible = is_lvalue_reference_v<T> || requires { declval<T>().~T(); };
+template <class T> struct is_destructible : bool_constant<_destructible<T>> {};
 template <class T> inline constexpr bool is_destructible_v = is_destructible<T>::value;
 
 //----------------- common_type -----------------------
