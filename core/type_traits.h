@@ -173,12 +173,8 @@ template <class T, class... Args> struct is_constructible : bool_constant<detail
 template <class T, class... Args> inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
 
 //----------------- is_copy_contructible -----------------------
-namespace details {
-template <class T>
-concept copy_constructable = requires(T t) { T(t); };
-}
-
-template <class T> struct is_copy_contructible : bool_constant<details::copy_constructable<T>> {};
+template <class T> struct is_copy_contructible : is_constructible<T, add_lvalue_reference_t<add_const_t<T>>> {};
+template <class T> inline constexpr bool is_copy_contructible_v = is_copy_contructible<T>::value;
 
 //----------------- is_destructible -----------------------
 namespace details {

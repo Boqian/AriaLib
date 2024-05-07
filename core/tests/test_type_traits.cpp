@@ -15,6 +15,10 @@ struct CC {
   CC(int, double) {}
 };
 
+struct CannotCopy {
+  CannotCopy(const CannotCopy &) = delete;
+};
+
 void test_traits() {
   using namespace aria;
   static_assert(is_same_v<conditional_t<true, int, double>, int>);
@@ -106,4 +110,7 @@ void test_traits() {
   static_assert(is_same_v<remove_cvref_t<const int>, int>);
   static_assert(is_same_v<remove_cvref_t<const int &>, int>);
   static_assert(is_same_v<remove_cvref_t<int &>, int>);
+
+  static_assert(!is_copy_contructible_v<CannotCopy>);
+  static_assert(is_copy_contructible_v<AA>);
 }
