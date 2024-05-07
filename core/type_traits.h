@@ -165,16 +165,15 @@ concept constructable = requires(Args... args) { T(args...); };
 } // namespace details
 
 template <class T> struct is_default_constructible : bool_constant<details::default_construct<T>> {};
-
 template <class T> inline constexpr bool is_default_constructible_v = is_default_constructible<T>::value;
-
 template <class T, class... Args> struct is_constructible : bool_constant<details::constructable<T, Args...>> {};
-
 template <class T, class... Args> inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
-
-//----------------- is_copy_contructible -----------------------
 template <class T> struct is_copy_contructible : is_constructible<T, add_lvalue_reference_t<add_const_t<T>>> {};
 template <class T> inline constexpr bool is_copy_contructible_v = is_copy_contructible<T>::value;
+template <class T> struct is_move_contructible : is_constructible<T, add_rvalue_reference_t<T>> {};
+template <class T> inline constexpr bool is_move_contructible_v = is_move_contructible<T>::value;
+
+//----------------- is_assignable -----------------
 
 //----------------- is_destructible -----------------------
 namespace details {
