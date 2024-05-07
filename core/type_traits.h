@@ -56,8 +56,21 @@ template <class From, class To> struct is_convertible : conditional_t<details::c
 
 template <class From, class To> inline constexpr bool is_convertible_v = is_convertible<From, To>::value;
 
-//----------------- remove_cv -----------------------
+//----------------- add_const add_volatile add_cv-----------------------
+template <class T> struct add_const : type_identity<const T> {};
+template <class T> using add_const_t = add_const<T>::type;
+template <class T> struct add_volatile : type_identity<volatile T> {};
+template <class T> using add_volatile_t = add_volatile<T>::type;
+template <class T> struct add_cv : type_identity<const volatile T> {};
+template <class T> using add_cv_t = add_cv<T>::type;
 
+//----------------- remove_const remove_volatile remove_cv-----------------------
+template <class T> struct remove_const : type_identity<T> {};
+template <class T> struct remove_const<const T> : type_identity<T> {};
+template <class T> using remove_const_t = remove_const<T>::type;
+template <class T> struct remove_volatile : type_identity<T> {};
+template <class T> struct remove_volatile<volatile T> : type_identity<T> {};
+template <class T> using remove_volatile_t = remove_volatile<T>::type;
 template <class T> struct remove_cv : type_identity<T> {};
 template <class T> struct remove_cv<const T> : type_identity<T> {};
 template <class T> struct remove_cv<volatile T> : type_identity<T> {};
@@ -92,6 +105,11 @@ template <class T> struct is_floating_point : bool_constant<is_floating_point_v<
 template <class T> inline constexpr bool is_arithmetic_v = is_integral_v<T> || is_floating_point_v<T>;
 template <class T> struct is_arithmetic : bool_constant<is_arithmetic_v<T>> {};
 
+//----------------- is_base_of -----------------------
+template <class T, class U> struct is_base_of : bool_constant<!is_void_v<T> && is_convertible_v<U *, T *>> {};
+
+template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U>::value;
+
 //----------------- add_lvalue_reference, add_rvalue_reference
 
 namespace detail {
@@ -106,11 +124,6 @@ template <class T> struct add_rvalue_reference : decltype(detail::try_add_rvalue
 template <class T> using add_lvalue_reference_t = add_lvalue_reference<T>::type;
 template <class T> using add_rvalue_reference_t = add_rvalue_reference<T>::type;
 
-//----------------- is_base_of -----------------------
-template <class T, class U> struct is_base_of : bool_constant<!is_void_v<T> && is_convertible_v<U *, T *>> {};
-
-template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U>::value;
-
 //----------------- remove_reference -----------------------
 template <class T> struct remove_reference : type_identity<T> {};
 template <class T> struct remove_reference<T &> : type_identity<T> {};
@@ -118,13 +131,15 @@ template <class T> struct remove_reference<T &&> : type_identity<T> {};
 template <class T> using remove_reference_t = remove_reference<T>::type;
 
 //----------------- remove_cvref -----------------------
-template <class T> struct remove_cvref {
-  using type = remove_cv_t<remove_reference_t<T>>;
-};
+template <class T> struct remove_cvref : type_identity<remove_cv_t<remove_reference_t<T>>> {};
 template <class T> using remove_cvref_t = remove_cvref<T>::type;
 
-//----------------- is_lvalue_reference
-// is_rvalue_reference-----------------------
+//----------------- is_lvalue_reference is_rvalue_reference-----------------------
+template <class T> struct is_reference : false_type {};
+template <class T> struct is_reference<T &> : true_type {};
+template <class T> struct is_reference<T &&> : true_type {};
+template <class T> inline constexpr bool is_referenct_v = is_reference<T>::value;
+
 template <class T> struct is_lvalue_reference : false_type {};
 template <class T> struct is_lvalue_reference<T &> : true_type {};
 template <class T> inline constexpr bool is_lvalue_reference_v = is_lvalue_reference<T>::value;
@@ -156,6 +171,14 @@ template <class T> inline constexpr bool is_default_constructible_v = is_default
 template <class T, class... Args> struct is_constructible : bool_constant<details::constructable<T, Args...>> {};
 
 template <class T, class... Args> inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
+
+//----------------- is_copy_contructible -----------------------
+namespace details {
+template <class T>
+concept copy_constructable = requires(T t) { T(t); };
+}
+
+template <class T> struct is_copy_contructible : bool_constant<details::copy_constructable<T>> {};
 
 //----------------- is_destructible -----------------------
 namespace details {

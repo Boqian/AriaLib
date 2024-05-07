@@ -98,4 +98,12 @@ void test_traits() {
   static_assert(!is_unsigned_v<int>);
   static_assert(is_unsigned_v<unsigned int>);
   static_assert(!is_unsigned_v<BB>);
+
+  static_assert(is_same_v<add_const_t<int>, const int>);
+  static_assert(is_same_v<remove_const_t<int>, int>);
+  static_assert(is_same_v<remove_const_t<const int>, int>);
+
+  static_assert(is_same_v<remove_cvref_t<const int>, int>);
+  static_assert(is_same_v<remove_cvref_t<const int &>, int>);
+  static_assert(is_same_v<remove_cvref_t<int &>, int>);
 }
