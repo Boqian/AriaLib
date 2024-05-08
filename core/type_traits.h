@@ -187,9 +187,15 @@ template <class T> inline constexpr bool is_move_assignable_v = is_move_assignab
 
 //----------------- is_destructible -----------------------
 template <class T>
-concept _destructible = is_lvalue_reference_v<T> || requires { declval<T>().~T(); };
+concept _destructible = is_lvalue_reference_v<T> || requires { declval<T &>().~T(); };
+
+template <class T>
+concept _nothrow_destructible = is_lvalue_reference_v<T> || requires { requires noexcept(declval<T>().~T()); };
+
 template <class T> struct is_destructible : bool_constant<_destructible<T>> {};
 template <class T> inline constexpr bool is_destructible_v = is_destructible<T>::value;
+template <class T> struct is_nothrow_destructible : bool_constant<_nothrow_destructible<T>> {};
+template <class T> inline constexpr bool is_nothrow_destructible_v = is_nothrow_destructible<T>::value;
 
 //-----------------swap, is_swappable -----------------------
 template <class T>

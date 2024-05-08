@@ -16,6 +16,14 @@ struct CC {
   CC(int, double) {}
 };
 
+struct ThrowDtor {
+  ~ThrowDtor() noexcept(false) {}
+};
+
+struct NoThrowDtor {
+  ~NoThrowDtor() {} // noexcept by default
+};
+
 struct CannotCopy {
   CannotCopy(CannotCopy &){};
   CannotCopy(const CannotCopy &) = delete;
@@ -98,6 +106,9 @@ void test_traits() {
   static_assert(!is_destructible_v<void>);
   static_assert(!is_destructible_v<BB>);
   static_assert(is_destructible_v<BB &>);
+  static_assert(is_nothrow_destructible_v<int>);
+  static_assert(is_nothrow_destructible_v<NoThrowDtor>);
+  static_assert(!is_nothrow_destructible_v<ThrowDtor>);
 
   static_assert(is_integral_v<int>);
   static_assert(is_integral_v<char>);
