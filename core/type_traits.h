@@ -206,10 +206,20 @@ concept _swappable = requires {
   swap(declval<U>(), declval<T>());
 };
 
+template <class T, class U>
+concept _nothrow_swappable = requires {
+  requires noexcept(swap(declval<T>(), declval<U>()));
+  requires noexcept(swap(declval<U>(), declval<T>()));
+};
+
 template <class T, class U> struct is_swappable_with : bool_constant<_swappable<T, U>> {};
 template <class T, class U> inline constexpr bool is_swappable_with_v = is_swappable_with<T, U>::value;
 template <class T> struct is_swappable : is_swappable_with<T &, T &> {};
 template <class T> inline constexpr bool is_swappable_v = is_swappable<T>::value;
+template <class T, class U> struct is_nothrow_swappable_with : bool_constant<_nothrow_swappable<T, U>> {};
+template <class T, class U> inline constexpr bool is_nothrow_swappable_with_v = is_nothrow_swappable_with<T, U>::value;
+template <class T> struct is_nothrow_swappable : is_nothrow_swappable_with<T &, T &> {};
+template <class T> inline constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<T>::value;
 
 //----------------- common_type -----------------------
 template <class... Ts> struct common_type {};

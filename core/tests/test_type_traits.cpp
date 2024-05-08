@@ -39,6 +39,12 @@ struct NoStdSwap {
 
 void swap(NoStdSwap &, NoStdSwap &) noexcept {}
 
+struct ThrowSwap {
+  ThrowSwap(ThrowSwap &&) = delete;
+};
+
+void swap(ThrowSwap &, ThrowSwap &) {}
+
 void test_traits() {
   using namespace aria;
   static_assert(is_same_v<conditional_t<true, int, double>, int>);
@@ -151,4 +157,8 @@ void test_traits() {
   static_assert(is_swappable_v<AA>);
   static_assert(!is_swappable_v<NoSwap>);
   static_assert(is_swappable_v<NoStdSwap>);
+  static_assert(is_nothrow_swappable_v<NoStdSwap>);
+  static_assert(is_nothrow_swappable_v<int>);
+  static_assert(!is_nothrow_swappable_v<ThrowSwap>);
+  static_assert(!is_nothrow_swappable_v<NoSwap>);
 }
