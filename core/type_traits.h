@@ -1,6 +1,14 @@
 #pragma once
 // https://en.cppreference.com/w/cpp/header/type_traits
 
+/*
+ * integral_constant
+ * move, forward
+ * swap
+ * declval
+ * type_identity
+ */
+
 namespace aria {
 
 template <class T, T v> struct integral_constant {
@@ -137,6 +145,16 @@ template <class T> inline constexpr bool is_rvalue_reference_v = is_rvalue_refer
 //----------------- declval -----------------------
 template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
 
+//----------------- move, forward------------------
+template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept { return static_cast<remove_reference_t<T> &&>(t); }
+
+template <typename T> constexpr T &&forward(remove_reference_t<T> &t) noexcept { return static_cast<T &&>(t); }
+
+template <typename T> constexpr T &&forward(remove_reference_t<T> &&t) noexcept {
+  static_assert(!is_lvalue_reference_v<T>);
+  return static_cast<T &&>(t);
+}
+
 //----------------- is_constructible -----------------------
 template <class T>
 concept _default_construct = requires {
@@ -172,6 +190,24 @@ template <class T>
 concept _destructible = is_lvalue_reference_v<T> || requires { declval<T>().~T(); };
 template <class T> struct is_destructible : bool_constant<_destructible<T>> {};
 template <class T> inline constexpr bool is_destructible_v = is_destructible<T>::value;
+
+//-----------------swap, is_swappable -----------------------
+template <class T> constexpr void swap(T &a, T &b) noexcept {
+  T temp = move(a);
+  a = move(b);
+  b = move(temp);
+}
+
+template <class T, class U>
+concept _swappable = requires {
+  swap(declval<T>(), declval<U>());
+  swap(declval<U>(), declval<T>());
+};
+
+template <class T, class U> struct is_swappable_with : bool_constant<_swappable<T, U>> {};
+template <class T, class U> inline constexpr bool is_swappable_with_v = is_swappable_with<T, U>::value;
+template <class T> struct is_swappable : is_swappable_with<T &, T &> {};
+template <class T> inline constexpr bool is_swappable_v = is_swappable<T>::value;
 
 //----------------- common_type -----------------------
 template <class... Ts> struct common_type {};

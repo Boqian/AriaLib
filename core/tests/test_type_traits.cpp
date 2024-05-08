@@ -1,4 +1,5 @@
 #include "../type_traits.h"
+#include "../utility.h"
 #include <string>
 
 struct Base {};
@@ -124,4 +125,8 @@ void test_traits() {
   static_assert(is_move_contructible_v<CannotCopy>);
   static_assert(is_copy_contructible_v<CannotMove>);
   static_assert(!is_move_contructible_v<CannotMove>);
+
+  static_assert(!is_swappable_with_v<int, int>);
+  static_assert(is_swappable_with_v<int &, int &>);
+  static_assert(is_swappable_v<int>);
 }

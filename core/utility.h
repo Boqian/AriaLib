@@ -11,8 +11,6 @@ initializer_list
 size_t, ptrdiff_t, nullptr_t
 move, forward //in type_traits.h
 as_const
-declval
-swap
 integer_sequence
 pair, make_pair
 tuple, tupe_element, get(), tupe_size
@@ -25,29 +23,9 @@ using size_t = unsigned long long;
 using nullptr_t = decltype(nullptr);
 using std::initializer_list;
 
-//----------------- move, forward------------------
-template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept { return static_cast<remove_reference_t<T> &&>(t); }
-
-template <typename T> constexpr T &&forward(remove_reference_t<T> &t) noexcept { return static_cast<T &&>(t); }
-
-template <typename T> constexpr T &&forward(remove_reference_t<T> &&t) noexcept {
-  static_assert(!is_lvalue_reference_v<T>);
-  return static_cast<T &&>(t);
-}
-
 //----------------- as_const ------------------
 template <class T> const T &as_const(T &t) noexcept { return t; }
 template <class T> const T &as_const(T &&) = delete;
-
-//----------------- declval ------------------
-template <class T> add_rvalue_reference_t<T> declval() noexcept;
-
-//----------------- swap ------------------
-template <class T> constexpr void swap(T &a, T &b) noexcept {
-  T temp = move(a);
-  a = move(b);
-  b = move(temp);
-}
 
 //------------------------- pair -------------------------//
 template <class T1, class T2> struct pair {
