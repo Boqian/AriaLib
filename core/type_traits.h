@@ -157,12 +157,7 @@ template <typename T> constexpr T &&forward(remove_reference_t<T> &&t) noexcept 
 
 //----------------- is_constructible -----------------------
 template <class T>
-concept _default_construct = requires {
-  T();
-  T{};
-  ::new T;
-};
-
+concept _default_construct = requires { T(); } && requires { T{}; } && requires { ::new T; };
 template <class T, class... Args>
 concept _constructible = requires { T(declval<Args>()...); };
 
