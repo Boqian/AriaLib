@@ -177,7 +177,7 @@ template <class T> inline constexpr bool is_move_contructible_v = is_move_contru
 
 //----------------- is_assignable -----------------
 template <class T, class U>
-concept _assignable = requires { declval<T>() = declval<U>(); };
+concept _assignable = requires(T t) { t = declval<U>(); };
 template <class T, class U> struct is_assignable : bool_constant<_assignable<T, U>> {};
 template <class T, class U> inline constexpr bool is_assignable_v = is_assignable<T, U>::value;
 template <class T> struct is_copy_assignable : is_assignable<T, add_lvalue_reference_t<add_const_t<T>>> {};
@@ -192,7 +192,9 @@ template <class T> struct is_destructible : bool_constant<_destructible<T>> {};
 template <class T> inline constexpr bool is_destructible_v = is_destructible<T>::value;
 
 //-----------------swap, is_swappable -----------------------
-template <class T> constexpr void swap(T &a, T &b) noexcept {
+template <class T>
+  requires is_move_contructible_v<T> && is_move_assignable_v<T>
+constexpr void swap(T &a, T &b) noexcept {
   T temp = move(a);
   a = move(b);
   b = move(temp);

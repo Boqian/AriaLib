@@ -27,6 +27,18 @@ struct CannotMove {
   CannotMove(const CannotMove &) = default;
 };
 
+struct NoSwap {
+  NoSwap(const NoSwap &) = delete;
+  NoSwap(NoSwap &&) = delete;
+};
+
+struct NoStdSwap {
+  NoStdSwap(const NoStdSwap &) = delete;
+  NoStdSwap(NoStdSwap &&) = delete;
+};
+
+void swap(NoStdSwap &, NoStdSwap &) noexcept {}
+
 void test_traits() {
   using namespace aria;
   static_assert(is_same_v<conditional_t<true, int, double>, int>);
@@ -121,12 +133,22 @@ void test_traits() {
 
   static_assert(!is_copy_contructible_v<CannotCopy>);
   static_assert(is_copy_contructible_v<AA>);
+  static_assert(is_copy_contructible_v<int>);
+  static_assert(is_move_contructible_v<int>);
   static_assert(is_move_contructible_v<AA>);
   static_assert(is_move_contructible_v<CannotCopy>);
   static_assert(is_copy_contructible_v<CannotMove>);
   static_assert(!is_move_contructible_v<CannotMove>);
 
+  static_assert(is_assignable_v<int, int>);
+  static_assert(is_assignable_v<int, int &>);
+  static_assert(is_copy_assignable_v<int>);
+  static_assert(is_move_assignable_v<int>);
+
   static_assert(!is_swappable_with_v<int, int>);
   static_assert(is_swappable_with_v<int &, int &>);
   static_assert(is_swappable_v<int>);
+  static_assert(is_swappable_v<AA>);
+  static_assert(!is_swappable_v<NoSwap>);
+  static_assert(is_swappable_v<NoStdSwap>);
 }
