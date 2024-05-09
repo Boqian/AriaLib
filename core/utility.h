@@ -15,6 +15,7 @@ integer_sequence
 pair, make_pair
 tuple, tupe_element, get(), tupe_size
 unreachable()
+exchange
 */
 
 namespace aria {
@@ -171,6 +172,13 @@ template <size_t N> using make_index_sequence = make_integer_sequence<std::size_
 #else // GCC, Clang
   __builtin_unreachable();
 #endif
+}
+
+//------------------------- exchange() -------------------------//
+template <class T, class U = T> constexpr T exchange(T &obj, U &&new_value) {
+  T old_value = std::move(obj);
+  obj = std::forward<U>(new_value);
+  return old_value;
 }
 
 } // namespace aria
