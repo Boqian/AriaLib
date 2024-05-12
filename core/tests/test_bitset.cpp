@@ -26,4 +26,12 @@ TEST(test_bitset, basic) {
     bt[2] = 1;
     EXPECT_EQ(bt.to_ullong(), 7);
   }
+  {
+    bitset<4> bt(2);
+    EXPECT_EQ(bt.to_ullong(), 2);
+    bt.flip(0);
+    EXPECT_EQ(bt.to_ullong(), 3);
+    bt.flip(1);
+    EXPECT_EQ(bt.to_ullong(), 1);
+  }
 }

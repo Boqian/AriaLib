@@ -22,7 +22,6 @@ public:
   };
 
   constexpr bitset() noexcept = default;
-  constexpr bitset(unsigned long val) { v[0] = val; }
   constexpr bitset(unsigned long long val) { v[0] = val; }
 
   constexpr bitset &reset(size_t i) { return set(i, false); }
@@ -36,8 +35,22 @@ public:
     return *this;
   }
 
+  constexpr bitset &flip(std::size_t i) {
+    auto [words_idx, bit_idx] = get_idx(i);
+    v[words_idx] ^= (1 << bit_idx);
+    return *this;
+  }
+
   constexpr bool operator[](size_t i) const { return get(i); }
   constexpr reference operator[](size_t i) { return reference(*this, i); }
+
+  constexpr bool test(size_t i) const {
+    if (i >= N)
+      throw std::out_of_range("out of range");
+    return get(i);
+  }
+
+  constexpr size_t size() const noexcept { return N; }
 
   constexpr unsigned long long to_ullong() const {
     if constexpr (N > bits_per_byte * sizeof(unsigned long long)) {
