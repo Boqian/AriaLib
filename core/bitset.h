@@ -60,6 +60,13 @@ public:
     return *this;
   }
 
+  constexpr size_t count() const noexcept {
+    set_unused(false);
+    size_t sum = 0;
+    //  for (auto x:v) sum += pop_count
+    return sum;
+  }
+
   constexpr bool all() const noexcept {
     set_unused(true);
     return aria::all_of(begin(v), end(v), [](auto x) { return x == ~T(0); });
@@ -115,7 +122,7 @@ public:
     return *this;
   }
 
-  bool operator==(const bitset &rhs) const noexcept {
+  constexpr bool operator==(const bitset &rhs) const noexcept {
     if (this == &rhs)
       return true;
     set_unused(false);
@@ -149,4 +156,9 @@ private:
   static constexpr ptrdiff_t words = N / bits_per_word + (N % bits_per_word != 0 ? 1 : 0);
   mutable T v[words] = {};
 };
+
+template <size_t N> constexpr bitset<N> operator&(const bitset<N> &a, const bitset<N> &b) noexcept { return bitset<N>(a) &= b; }
+template <size_t N> constexpr bitset<N> operator|(const bitset<N> &a, const bitset<N> &b) noexcept { return bitset<N>(a) |= b; }
+template <size_t N> constexpr bitset<N> operator^(const bitset<N> &a, const bitset<N> &b) noexcept { return bitset<N>(a) ^= b; }
+
 } // namespace aria
