@@ -24,8 +24,6 @@ public:
   constexpr bitset() noexcept = default;
   constexpr bitset(unsigned long long val) { v[0] = val; }
 
-  constexpr bitset &reset(size_t i) { return set(i, false); }
-
   constexpr bitset &set(size_t i, bool value = true) {
     auto [words_idx, bit_idx] = get_idx(i);
     v[words_idx] &= ~(1 << bit_idx);
@@ -35,9 +33,31 @@ public:
     return *this;
   }
 
+  constexpr bitset &set() noexcept {
+    for (auto &x : v)
+      x = ~T(0);
+    reset_unused();
+    return *this;
+  }
+
+  constexpr bitset &reset(size_t i) { return set(i, false); }
+
+  constexpr bitset &reset() noexcept {
+    for (auto &x : v)
+      x = 0;
+    return *this;
+  }
+
   constexpr bitset &flip(std::size_t i) {
     auto [words_idx, bit_idx] = get_idx(i);
     v[words_idx] ^= (1 << bit_idx);
+    return *this;
+  }
+
+  constexpr bitset &flip() noexcept {
+    for (auto &x : v)
+      x = ~x;
+    reset_unused();
     return *this;
   }
 
@@ -64,6 +84,13 @@ private:
   constexpr bool get(size_t i) const {
     auto [words_idx, bit_idx] = get_idx(i);
     return v[words_idx] & (1 << bit_idx);
+  }
+
+  constexpr void reset_unused() noexcept {
+    static constexpr ptrdiff_t unused_bits = words * bits_per_word - N;
+    if constexpr (unused_bits > 0) {
+      v[words - 1] &= ((1 << (sizeof(T) * 8 - unused_bits)) - 1);
+    }
   }
 
   constexpr pair<size_t, size_t> get_idx(size_t i) const { return {i / bits_per_word, i % bits_per_word}; }
