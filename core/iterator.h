@@ -67,6 +67,9 @@ template <class Container> constexpr auto rend(Container &cont) { return cont.re
 template <class Container> constexpr auto rend(const Container &cont) { return cont.rend(); }
 template <class Container> constexpr auto crend(const Container &cont) { return cont.rend(); }
 
+template <class T, size_t N> constexpr T *begin(T (&array)[N]) noexcept { return array; }
+template <class T, size_t N> constexpr T *end(T (&array)[N]) noexcept { return array + N; }
+
 template <class Iter> class reverse_iterator {
 public:
   using iterator_type = Iter;

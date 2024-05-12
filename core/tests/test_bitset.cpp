@@ -53,4 +53,18 @@ TEST(test_bitset, basic) {
     EXPECT_EQ((~a).to_ullong(), 14);
     EXPECT_EQ(a.to_ullong(), 1);
   }
+  {
+    bitset<3> a(7);
+    EXPECT_TRUE(a.all());
+  }
+  {
+    bitset<3> a(0);
+    EXPECT_TRUE(a.none());
+  }
+  {
+    bitset<3> a(0);
+    EXPECT_FALSE(a.any());
+    a[1] = 1;
+    EXPECT_TRUE(a.any());
+  }
 }

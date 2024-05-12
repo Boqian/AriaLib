@@ -1,4 +1,5 @@
 #pragma once
+#include "algorithm.h"
 #include "utility.h"
 #include <stdexcept>
 
@@ -36,7 +37,6 @@ public:
   constexpr bitset &set() noexcept {
     for (auto &x : v)
       x = ~T(0);
-    reset_unused();
     return *this;
   }
 
@@ -57,8 +57,22 @@ public:
   constexpr bitset &flip() noexcept {
     for (auto &x : v)
       x = ~x;
-    reset_unused();
     return *this;
+  }
+
+  constexpr bool all() const noexcept {
+    set_unused(true);
+    return aria::all_of(begin(v), end(v), [](auto x) { return x == ~T(0); });
+  }
+
+  constexpr bool any() const noexcept {
+    set_unused(false);
+    return aria::any_of(begin(v), end(v), [](auto x) { return x != T(0); });
+  }
+
+  constexpr bool none() const noexcept {
+    set_unused(false);
+    return aria::all_of(begin(v), end(v), [](auto x) { return x == T(0); });
   }
 
   constexpr bool operator[](size_t i) const { return get(i); }
@@ -76,11 +90,30 @@ public:
     if constexpr (N > bits_per_byte * sizeof(unsigned long long)) {
       throw std::overflow_error("overflow");
     } else {
+      set_unused(false);
       return v[0];
     }
   }
 
-  bitset operator~() const noexcept { return bitset<N>(*this).flip(); }
+  constexpr bitset operator~() const noexcept { return bitset<N>(*this).flip(); }
+
+  constexpr bitset &operator&=(const bitset &other) noexcept {
+    for (int i = 0; i < words; i++)
+      v[i] &= other.v[i];
+    return *this;
+  }
+
+  constexpr bitset &operator|=(const bitset &other) noexcept {
+    for (int i = 0; i < words; i++)
+      v[i] |= other.v[i];
+    return *this;
+  }
+
+  constexpr bitset &operator^=(const bitset &other) noexcept {
+    for (int i = 0; i < words; i++)
+      v[i] ^= other.v[i];
+    return *this;
+  }
 
 private:
   constexpr bool get(size_t i) const {
@@ -88,10 +121,15 @@ private:
     return v[words_idx] & (1 << bit_idx);
   }
 
-  constexpr void reset_unused() noexcept {
-    static constexpr ptrdiff_t unused_bits = words * bits_per_word - N;
+  constexpr void set_unused(bool value) const noexcept {
+    static constexpr auto unused_bits = words * bits_per_word - N;
+    static constexpr auto used_bits = bits_per_word - unused_bits;
     if constexpr (unused_bits > 0) {
-      v[words - 1] &= ((1 << (sizeof(T) * 8 - unused_bits)) - 1);
+      if (value) {
+        v[words - 1] |= (((T(1) << unused_bits) - 1) << used_bits);
+      } else {
+        v[words - 1] &= ((T(1) << used_bits) - 1);
+      }
     }
   }
 
@@ -101,6 +139,6 @@ private:
   static constexpr ptrdiff_t bits_per_byte = 8;
   static constexpr ptrdiff_t bits_per_word = bits_per_byte * sizeof(T);
   static constexpr ptrdiff_t words = N / bits_per_word + (N % bits_per_word != 0 ? 1 : 0);
-  T v[words] = {};
+  mutable T v[words] = {};
 };
 } // namespace aria

@@ -1,4 +1,6 @@
+#include "algorithm.h"
 #include "list.h"
+#include "numeric.h"
 #include "vector.h"
 #include "gtest/gtest.h"
 
@@ -32,5 +34,11 @@ TEST(test_iterator, begin_end) {
     vector<int> v = {1, 2, 3, 4};
     EXPECT_EQ(begin(v), v.begin());
     EXPECT_EQ(end(v), v.end());
+  }
+  {
+    const int v[3] = {1, 2, 3};
+    EXPECT_EQ(*begin(v), 1);
+    EXPECT_EQ(accumulate(begin(v), end(v), 0), 6);
+    EXPECT_TRUE(all_of(begin(v), end(v), [](auto x) { return x > 0 && x < 4; }));
   }
 }
