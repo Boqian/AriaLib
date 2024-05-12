@@ -115,6 +115,14 @@ public:
     return *this;
   }
 
+  bool operator==(const bitset &rhs) const noexcept {
+    if (this == &rhs)
+      return true;
+    set_unused(false);
+    rhs.set_unused(false);
+    return equal(begin(v), end(v), begin(rhs.v));
+  }
+
 private:
   constexpr bool get(size_t i) const {
     auto [words_idx, bit_idx] = get_idx(i);

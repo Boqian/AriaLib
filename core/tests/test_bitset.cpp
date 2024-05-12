@@ -67,4 +67,9 @@ TEST(test_bitset, basic) {
     a[1] = 1;
     EXPECT_TRUE(a.any());
   }
+  {
+    bitset<4> a(5), b(5), c(6);
+    EXPECT_EQ(a, b);
+    EXPECT_TRUE(a != c);
+  }
 }
