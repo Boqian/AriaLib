@@ -43,4 +43,14 @@ TEST(test_bitset, basic) {
     bt.reset();
     EXPECT_EQ(bt.to_ullong(), 0);
   }
+  {
+    bitset<10> a(123);
+    auto b = a;
+    EXPECT_EQ(b.to_ullong(), 123);
+  }
+  {
+    bitset<4> a(1);
+    EXPECT_EQ((~a).to_ullong(), 14);
+    EXPECT_EQ(a.to_ullong(), 1);
+  }
 }

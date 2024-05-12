@@ -80,6 +80,8 @@ public:
     }
   }
 
+  bitset operator~() const noexcept { return bitset<N>(*this).flip(); }
+
 private:
   constexpr bool get(size_t i) const {
     auto [words_idx, bit_idx] = get_idx(i);
