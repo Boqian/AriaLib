@@ -277,8 +277,6 @@ public:
     aria::swap(m_alloc, rhs.m_alloc);
   }
 
-  bool operator==(const deque &rhs) const noexcept { return (this == &rhs) || equal(begin(), end(), rhs.begin(), rhs.end()); }
-
 private:
   pointer create_bucket() { return m_alloc.allocate(s_bucket_size); }
 
@@ -314,5 +312,13 @@ private:
 };
 
 template <class T, class Allocator> void swap(deque<T, Allocator> &a, deque<T, Allocator> &b) { a.swap(b); }
+
+template <class T, class Alloc> [[nodiscard]] constexpr bool operator==(const deque<T, Alloc> &a, const deque<T, Alloc> &b) {
+  return equal(a.begin(), a.end(), b.begin(), b.end());
+}
+
+template <class T, class Alloc> [[nodiscard]] constexpr auto operator<=>(const deque<T, Alloc> &a, const deque<T, Alloc> &b) {
+  return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+}
 
 } // namespace aria
