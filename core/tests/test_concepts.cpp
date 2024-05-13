@@ -1,4 +1,4 @@
-#include "../concepts.h"
+#include "concepts.h"
 
 void test_concepts() {
   using namespace aria;
@@ -14,4 +14,7 @@ void test_concepts() {
   static_assert(!convertible_to<int, Base>);
   static_assert(convertible_to<Derived, Base>);
   static_assert(!convertible_to<Base, Derived>);
+
+  static_assert(signed_integral<int>);
+  static_assert(unsigned_integral<unsigned int>);
 }
