@@ -277,17 +277,7 @@ public:
     aria::swap(m_alloc, rhs.m_alloc);
   }
 
-  bool operator==(const deque &rhs) const noexcept {
-    if (this == &rhs)
-      return true;
-    if (size() != rhs.size())
-      return false;
-    for (size_type i = 0; i < size(); i++) {
-      if ((*this)[i] != rhs[i])
-        return false;
-    }
-    return true;
-  }
+  bool operator==(const deque &rhs) const noexcept { return (this == &rhs) || equal(begin(), end(), rhs.begin(), rhs.end()); }
 
 private:
   pointer create_bucket() { return m_alloc.allocate(s_bucket_size); }

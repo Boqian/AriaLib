@@ -182,3 +182,10 @@ TEST(test_deque, const_iterator) {
     EXPECT_EQ(*it, i);
   }
 }
+
+TEST(test_deque, equal_op) {
+  deque<int> a = {1, 2, 3}, b = {1, 2, 3}, c = {1, 3, 3}, d = {1, 2, 3, 4};
+  EXPECT_EQ(a, b);
+  EXPECT_NE(a, c);
+  EXPECT_NE(a, d);
+}
