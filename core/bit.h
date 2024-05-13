@@ -57,4 +57,16 @@ template <unsigned_integral T> constexpr int popcount(T x) noexcept {
   return static_cast<int>(x >> (bits - 8));
 }
 
+template <unsigned_integral T> constexpr T bit_ceil(T x) noexcept {
+  if (x != 0)
+    return T(1) << bit_width(x - 1);
+  return 1;
+}
+
+template <unsigned_integral T> constexpr T bit_floor(T x) noexcept {
+  if (x != 0)
+    return T{1} << (bit_width(x) - 1);
+  return 0;
+}
+
 } // namespace aria
