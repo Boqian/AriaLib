@@ -32,6 +32,22 @@ template <integral T> constexpr T byteswap(T x) noexcept {
 
 template <unsigned_integral T> constexpr bool has_single_bit(T x) noexcept { return x && !(x & (x - 1)); }
 
+template <unsigned_integral T> constexpr int countl_zero(T x) noexcept {
+  T y = 0;
+  unsigned int bits = 8 * sizeof(T), cx = bits / 2;
+  do {
+    y = static_cast<T>(x >> cx);
+    if (y != 0) {
+      bits -= cx;
+      x = y;
+    }
+    cx >>= 1;
+  } while (cx != 0);
+  return static_cast<int>(bits) - static_cast<int>(x);
+}
+
+template <unsigned_integral T> constexpr int bit_width(T x) noexcept { return 8 * sizeof(T) - countl_zero(x); }
+
 template <unsigned_integral T> constexpr int popcount(T x) noexcept {
   constexpr int bits = 8 * sizeof(T);
   x = static_cast<T>(x - ((x >> 1) & static_cast<T>(0x5555'5555'5555'5555ull)));
