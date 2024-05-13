@@ -72,4 +72,13 @@ TEST(test_bitset, basic) {
     EXPECT_EQ(a, b);
     EXPECT_TRUE(a != c);
   }
+  {
+    constexpr int N = 500;
+    bitset<N> a;
+    a.set();
+    for (int i = 0; i < N; i++) {
+      EXPECT_EQ(a.count(), N - i);
+      a.reset(N - i - 1);
+    }
+  }
 }

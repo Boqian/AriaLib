@@ -1,5 +1,6 @@
 #pragma once
 #include "algorithm.h"
+#include "bit.h"
 #include "utility.h"
 #include <stdexcept>
 
@@ -27,9 +28,9 @@ public:
 
   constexpr bitset &set(size_t i, bool value = true) {
     auto [words_idx, bit_idx] = get_idx(i);
-    v[words_idx] &= ~(1 << bit_idx);
+    v[words_idx] &= ~(T(1) << bit_idx);
     if (value) {
-      v[words_idx] |= (1 << bit_idx);
+      v[words_idx] |= (T(1) << bit_idx);
     }
     return *this;
   }
@@ -50,7 +51,7 @@ public:
 
   constexpr bitset &flip(std::size_t i) {
     auto [words_idx, bit_idx] = get_idx(i);
-    v[words_idx] ^= (1 << bit_idx);
+    v[words_idx] ^= (T(1) << bit_idx);
     return *this;
   }
 
@@ -63,7 +64,8 @@ public:
   constexpr size_t count() const noexcept {
     set_unused(false);
     size_t sum = 0;
-    //  for (auto x:v) sum += pop_count
+    for (auto x : v)
+      sum += popcount(x);
     return sum;
   }
 
@@ -133,7 +135,7 @@ public:
 private:
   constexpr bool get(size_t i) const {
     auto [words_idx, bit_idx] = get_idx(i);
-    return v[words_idx] & (1 << bit_idx);
+    return v[words_idx] & (T(1) << bit_idx);
   }
 
   constexpr void set_unused(bool value) const noexcept {
