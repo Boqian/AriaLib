@@ -1,6 +1,6 @@
 #pragma once
+#include "array.h"
 #include "concepts.h"
-#include "utility.h"
 
 // https://en.cppreference.com/w/cpp/header/bit
 
@@ -22,6 +22,12 @@ constexpr To bit_cast(const From &from) {
   To to;
   memcpy(&to, &from, sizeof(to));
   return to;
+}
+
+template <integral T> constexpr T byteswap(T x) noexcept {
+  auto bits = bit_cast<array<char, sizeof(T)>>(x);
+  reverse(begin(bits), end(bits));
+  return bit_cast<T>(bits);
 }
 
 template <unsigned_integral T> constexpr int popcount(T x) noexcept {

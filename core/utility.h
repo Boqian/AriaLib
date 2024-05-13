@@ -1,6 +1,7 @@
 #pragma once
 
 #include "concepts.h"
+#include "cstddef.h"
 #include "type_traits.h"
 #include <compare>
 #include <cstring> //memcpy
@@ -8,7 +9,6 @@
 
 /*
 initializer_list
-size_t, ptrdiff_t, nullptr_t
 move, forward //in type_traits.h
 as_const
 integer_sequence
@@ -19,9 +19,7 @@ exchange
 */
 
 namespace aria {
-using ptrdiff_t = long long;
-using size_t = unsigned long long;
-using nullptr_t = decltype(nullptr);
+
 using std::initializer_list;
 
 //----------------- as_const ------------------

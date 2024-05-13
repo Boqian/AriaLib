@@ -1,4 +1,6 @@
 #pragma once
+#include "cstddef.h"
+
 // https://en.cppreference.com/w/cpp/header/type_traits
 
 /*
