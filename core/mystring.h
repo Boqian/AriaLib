@@ -1,13 +1,132 @@
 #pragma once
 
-#include "utility.h"
 #include "allocator.h"
+#include "utility.h"
 #include <algorithm> //min
 #include <stdexcept>
 
 namespace aria {
 
- template <class CharT, class Allocator = allocator<CharT>> class basic_string {
+template <class StringType> class string_const_iterator {
+public:
+  using value_type = typename StringType::value_type;
+  using pointer = typename StringType::const_pointer;
+  using reference = const value_type &;
+  using difference_type = ptrdiff_t;
+
+  string_const_iterator() = default;
+  string_const_iterator(pointer p) : ptr(p) {}
+
+  reference operator*() const noexcept { return *ptr; }
+  pointer operator->() const noexcept { return ptr; }
+
+  string_const_iterator &operator++() {
+    ++ptr;
+    return *this;
+  }
+
+  string_const_iterator operator++(int) {
+    auto tmp = *this;
+    ++(*this);
+    return tmp;
+  }
+
+  string_const_iterator &operator--() {
+    --ptr;
+    return *this;
+  }
+
+  string_const_iterator operator--(int) {
+    auto tmp = *this;
+    --(*this);
+    return tmp;
+  }
+
+  string_const_iterator &operator+=(const difference_type d) noexcept {
+    ptr += d;
+    return *this;
+  }
+
+  string_const_iterator &operator-=(const difference_type d) noexcept {
+    ptr -= d;
+    return *this;
+  }
+
+  string_const_iterator operator+(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  string_const_iterator operator-(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
+
+  difference_type operator-(string_const_iterator rhs) const noexcept { return ptr - rhs.ptr; }
+
+  auto operator<=>(const string_const_iterator &) const noexcept = default;
+
+private:
+  pointer ptr{};
+};
+
+template <class StringType> class string_iterator : public string_const_iterator<StringType> {
+  using Base = string_const_iterator<StringType>;
+
+public:
+  using value_type = typename StringType::value_type;
+  using pointer = typename StringType::pointer;
+  using reference = value_type &;
+  using difference_type = typename Base::difference_type;
+  using Base::Base;
+
+  string_iterator &operator++() noexcept {
+    Base::operator++();
+    return *this;
+  }
+  string_iterator operator++(int) noexcept {
+    auto temp = *this;
+    Base::operator++();
+    return temp;
+  }
+  string_iterator &operator--() noexcept {
+    Base::operator--();
+    return *this;
+  }
+  string_iterator operator--(int) noexcept {
+    auto temp = *this;
+    Base::operator--();
+    return temp;
+  }
+
+  string_iterator &operator+=(const difference_type d) {
+    Base::operator+=(d);
+    return *this;
+  }
+
+  string_iterator &operator-=(const difference_type d) {
+    Base::operator-=(d);
+    return *this;
+  }
+
+  string_iterator operator+(const difference_type d) const {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  using Base::operator-;
+
+  string_iterator operator-(const difference_type d) const {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
+};
+
+template <class CharT, class Allocator = allocator<CharT>> class basic_string {
 public:
   using size_type = size_t;
   using value_type = CharT;
@@ -98,20 +217,8 @@ public:
     return *this;
   }
 
-   basic_string &operator+=(const basic_string &rhs) {
-    reserve_more(rhs.size());
-    memcpy(m_ptr + m_size, rhs.m_ptr, rhs.size() * sizeof(value_type));
-    m_size += rhs.size();
-    return *this;
-  }
-
-   basic_string &operator+=(const_pointer rhs) {
-    size_t added_size = strlen(rhs);
-    reserve_more(added_size);
-    memcpy(m_ptr + m_size, rhs, added_size * sizeof(value_type));
-    m_size += added_size;
-    return *this;
-  }
+  basic_string &operator+=(const basic_string &rhs) { return append(rhs.m_ptr, rhs.size()); }
+  basic_string &operator+=(const_pointer rhs) { return append(rhs, strlen(rhs)); }
 
 private:
   pointer get(size_type i) { return m_ptr + i; }
@@ -124,6 +231,13 @@ private:
     copy(str, size);
   }
 
+  basic_string &append(const_pointer rhs, size_t added_size) {
+    reserve_more(added_size);
+    memcpy(m_ptr + m_size, rhs, added_size * sizeof(value_type));
+    m_size += added_size;
+    return *this;
+  }
+
   void reset() noexcept {
     if (m_ptr) {
       m_alloc.deallocate(m_ptr, m_capacity);
@@ -132,7 +246,7 @@ private:
       m_capacity = 0;
     }
   }
-  
+
   void copy(const_pointer src, size_type size) {
     if (src) {
       memcpy(m_ptr, src, size * sizeof(value_type));
@@ -140,7 +254,7 @@ private:
     }
   }
 
-  void reserve_more(size_type added_size) { 
+  void reserve_more(size_type added_size) {
     size_type new_capacity = std::max(size_type(1), capacity());
     const size_type new_size = size() + added_size;
     while (new_size > new_capacity)
