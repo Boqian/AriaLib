@@ -82,3 +82,17 @@ TEST(test_string, operation) {
     EXPECT_EQ((a += b), "1987987987");
   }
 }
+
+TEST(test_string, iterator) {
+  {
+    string a = "12345";
+    auto beg = a.begin(), ed = a.end();
+    EXPECT_EQ(*beg, '1');
+    EXPECT_EQ(*(beg + 1), '2');
+    EXPECT_EQ(*(ed - 2), '4');
+    int sum = 0;
+    for (auto c : a)
+      sum += c - '0';
+    EXPECT_EQ(sum, 15);
+  }
+}

@@ -1,8 +1,9 @@
 #pragma once
 
+#include "algorithm.h"
 #include "allocator.h"
+#include "iterator.h"
 #include "utility.h"
-#include <algorithm> //min
 #include <stdexcept>
 
 namespace aria {
@@ -52,17 +53,8 @@ public:
     return *this;
   }
 
-  string_const_iterator operator+(const difference_type d) const noexcept {
-    auto temp = *this;
-    temp += d;
-    return temp;
-  }
-
-  string_const_iterator operator-(const difference_type d) const noexcept {
-    auto temp = *this;
-    temp -= d;
-    return temp;
-  }
+  string_const_iterator operator+(const difference_type d) const noexcept { return string_const_iterator(*this) += d; }
+  string_const_iterator operator-(const difference_type d) const noexcept { return string_const_iterator(*this) -= d; }
 
   difference_type operator-(string_const_iterator rhs) const noexcept { return ptr - rhs.ptr; }
 
@@ -135,6 +127,10 @@ public:
   using reference = value_type &;
   using const_reference = const value_type &;
   inline static const size_type npos = -1;
+  using iterator = string_iterator<basic_string<CharT, Allocator>>;
+  using const_iterator = string_const_iterator<basic_string<CharT, Allocator>>;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
   basic_string() = default;
   ~basic_string() noexcept { reset(); }
@@ -142,23 +138,20 @@ public:
   basic_string(const_pointer str) : basic_string(str, strlen(str)) {}
   basic_string(const basic_string &rhs) : basic_string(rhs.m_ptr, rhs.size(), rhs.capacity()) {}
 
-  basic_string(basic_string &&rhs) noexcept {
-    swap(rhs);
-    rhs.reset();
-  }
+  basic_string(basic_string &&rhs) noexcept { swap(rhs); }
 
   basic_string &operator=(const basic_string &rhs) {
     if (this != &rhs) {
-      reserve(rhs.capacity());
-      copy(rhs.m_ptr, rhs.size());
+      auto tmp = rhs;
+      swap(tmp);
     }
     return *this;
   }
 
   basic_string &operator=(basic_string &&rhs) noexcept {
     if (this != &rhs) {
-      swap(rhs);
-      rhs.reset();
+      auto tmp = move(rhs);
+      swap(tmp);
     }
     return *this;
   }
@@ -180,6 +173,15 @@ public:
   void clear() noexcept { m_size = 0; }
   void pop_back() { m_size--; }
 
+  auto begin() const noexcept { return const_iterator(get(0)); }
+  auto end() const noexcept { return const_iterator(get(m_size)); }
+  auto begin() noexcept { return iterator(get(0)); }
+  auto end() noexcept { return iterator(get(m_size)); }
+  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
+  auto rend() const noexcept { return const_reverse_iterator(begin()); }
+  auto rbegin() noexcept { return reverse_iterator(end()); }
+  auto rend() noexcept { return reverse_iterator(begin()); }
+
   void reserve(size_type new_cap) {
     if (new_cap <= capacity())
       return;
@@ -193,13 +195,7 @@ public:
   bool operator==(const basic_string &rhs) const noexcept {
     if (this == &rhs)
       return true;
-    if (size() != rhs.size())
-      return false;
-    for (size_type i = 0; i < size(); i++) {
-      if ((*this)[i] != rhs[i])
-        return false;
-    }
-    return true;
+    return equal(begin(), end(), rhs.begin(), rhs.end());
   }
 
   basic_string substr(size_type pos = 0, size_type count = npos) const {
