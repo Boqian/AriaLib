@@ -157,10 +157,11 @@ public:
   }
 
   void swap(basic_string &rhs) noexcept {
-    ::aria::swap(m_alloc, rhs.m_alloc);
-    ::aria::swap(m_ptr, rhs.m_ptr);
-    ::aria::swap(m_size, rhs.m_size);
-    ::aria::swap(m_capacity, rhs.m_capacity);
+    using aria::swap;
+    swap(m_alloc, rhs.m_alloc);
+    swap(m_ptr, rhs.m_ptr);
+    swap(m_size, rhs.m_size);
+    swap(m_capacity, rhs.m_capacity);
   }
 
   size_type size() const noexcept { return m_size; }
@@ -172,6 +173,9 @@ public:
   const_reference &operator[](size_type i) const { return *get(i); }
   void clear() noexcept { m_size = 0; }
   void pop_back() { m_size--; }
+  const CharT *data() const noexcept { return m_ptr; }
+  CharT *data() noexcept { return m_ptr; }
+  const CharT *c_str() const noexcept { return m_ptr; }
 
   auto begin() const noexcept { return const_iterator(get(0)); }
   auto end() const noexcept { return const_iterator(get(m_size)); }
@@ -257,6 +261,8 @@ private:
       new_capacity *= 2;
     reserve(new_capacity);
   }
+
+  void add_null_teminate() noexcept { *get(m_size) = value_type(0); }
 
   Allocator m_alloc;
   pointer m_ptr = nullptr;
