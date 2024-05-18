@@ -95,4 +95,11 @@ TEST(test_string, iterator) {
       sum += c - '0';
     EXPECT_EQ(sum, 15);
   }
+  {
+    const string a = "12345";
+    string b;
+    for (auto it = a.rbegin(); it != a.rend(); ++it)
+      b += *it;
+    EXPECT_EQ(b, "54321");
+  }
 }

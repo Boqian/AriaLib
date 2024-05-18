@@ -64,61 +64,7 @@ private:
   pointer ptr{};
 };
 
-template <class StringType> class string_iterator : public string_const_iterator<StringType> {
-  using Base = string_const_iterator<StringType>;
-
-public:
-  using value_type = typename StringType::value_type;
-  using pointer = typename StringType::pointer;
-  using reference = value_type &;
-  using difference_type = typename Base::difference_type;
-  using Base::Base;
-
-  string_iterator &operator++() noexcept {
-    Base::operator++();
-    return *this;
-  }
-  string_iterator operator++(int) noexcept {
-    auto temp = *this;
-    Base::operator++();
-    return temp;
-  }
-  string_iterator &operator--() noexcept {
-    Base::operator--();
-    return *this;
-  }
-  string_iterator operator--(int) noexcept {
-    auto temp = *this;
-    Base::operator--();
-    return temp;
-  }
-
-  string_iterator &operator+=(const difference_type d) {
-    Base::operator+=(d);
-    return *this;
-  }
-
-  string_iterator &operator-=(const difference_type d) {
-    Base::operator-=(d);
-    return *this;
-  }
-
-  string_iterator operator+(const difference_type d) const {
-    auto temp = *this;
-    temp += d;
-    return temp;
-  }
-
-  using Base::operator-;
-
-  string_iterator operator-(const difference_type d) const {
-    auto temp = *this;
-    temp -= d;
-    return temp;
-  }
-};
-
-template <class CharT, class Allocator = allocator<CharT>> class basic_string {
+template <class CharT, class Allocator = allocator<CharT>> class basic_string : public iterable {
 public:
   using size_type = size_t;
   using value_type = CharT;
@@ -127,8 +73,8 @@ public:
   using reference = value_type &;
   using const_reference = const value_type &;
   inline static const size_type npos = -1;
-  using iterator = string_iterator<basic_string<CharT, Allocator>>;
   using const_iterator = string_const_iterator<basic_string<CharT, Allocator>>;
+  using iterator = mutable_iterator<const_iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
@@ -181,10 +127,6 @@ public:
   auto end() const noexcept { return const_iterator(get(m_size)); }
   auto begin() noexcept { return iterator(get(0)); }
   auto end() noexcept { return iterator(get(m_size)); }
-  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
-  auto rend() const noexcept { return const_reverse_iterator(begin()); }
-  auto rbegin() noexcept { return reverse_iterator(end()); }
-  auto rend() noexcept { return reverse_iterator(begin()); }
 
   void reserve(size_type new_cap) {
     if (new_cap <= capacity())
