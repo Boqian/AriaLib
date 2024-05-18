@@ -4,6 +4,7 @@
 #include "allocator.h"
 #include "exception.h"
 #include "iterator.h"
+#include "mixin.h"
 #include "utility.h"
 
 namespace aria {
@@ -70,64 +71,7 @@ private:
   pointer ptr = nullptr;
 };
 
-template <class VectorType> class vec_iterator : public vec_const_iterator<VectorType> {
-  using Base = vec_const_iterator<VectorType>;
-
-public:
-  using value_type = typename VectorType::value_type;
-  using pointer = typename VectorType::pointer;
-  using reference = value_type &;
-  using difference_type = typename Base::difference_type;
-  using Base::Base;
-
-  reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
-  pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
-
-  vec_iterator &operator++() noexcept {
-    Base::operator++();
-    return *this;
-  }
-  vec_iterator operator++(int) noexcept {
-    auto temp = *this;
-    Base::operator++();
-    return temp;
-  }
-  vec_iterator &operator--() noexcept {
-    Base::operator--();
-    return *this;
-  }
-  vec_iterator operator--(int) noexcept {
-    auto temp = *this;
-    Base::operator--();
-    return temp;
-  }
-
-  vec_iterator &operator+=(const difference_type d) {
-    Base::operator+=(d);
-    return *this;
-  }
-
-  vec_iterator &operator-=(const difference_type d) {
-    Base::operator-=(d);
-    return *this;
-  }
-
-  vec_iterator operator+(const difference_type d) const {
-    auto temp = *this;
-    temp += d;
-    return temp;
-  }
-
-  using Base::operator-;
-
-  vec_iterator operator-(const difference_type d) const {
-    auto temp = *this;
-    temp -= d;
-    return temp;
-  }
-};
-
-template <class T, class Allocator = allocator<T>> class vector {
+template <class T, class Allocator = allocator<T>> class vector : public container {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -137,8 +81,8 @@ public:
   using allocator_type = Allocator;
   using pointer = typename allocator_type::pointer;
   using const_pointer = typename allocator_type::const_pointer;
-  using iterator = vec_iterator<vector<T, Allocator>>;
   using const_iterator = vec_const_iterator<vector<T, Allocator>>;
+  using iterator = mutable_iterator<const_iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
@@ -219,7 +163,6 @@ public:
 
   size_type size() const noexcept { return m_size; }
   size_type capacity() const noexcept { return m_capacity; }
-  bool empty() const noexcept { return m_size == 0; }
   reference back() noexcept { return *get(m_size - 1); }
   const_reference back() const noexcept { return *get(m_size - 1); }
 

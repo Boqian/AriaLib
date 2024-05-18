@@ -70,6 +70,72 @@ template <class Container> constexpr auto crend(const Container &cont) { return 
 template <class T, size_t N> constexpr T *begin(T (&array)[N]) noexcept { return array; }
 template <class T, size_t N> constexpr T *end(T (&array)[N]) noexcept { return array + N; }
 
+template <class const_iterator> class mutable_iterator {
+public:
+  using value_type = typename const_iterator::value_type;
+  using pointer = value_type *;
+  using reference = value_type &;
+  using difference_type = typename const_iterator::difference_type;
+
+  mutable_iterator() = default;
+  mutable_iterator(const_iterator a) : it(a) {}
+
+  template <class... Args>
+    requires constructible_from<const_iterator, Args...>
+  explicit mutable_iterator(Args &&...args) : it(forward<Args>(args)...) {}
+
+  reference operator*() const noexcept { return const_cast<reference>(it.operator*()); }
+  pointer operator->() const noexcept { return const_cast<pointer>(it.operator->()); }
+
+  mutable_iterator &operator++() noexcept {
+    it.operator++();
+    return *this;
+  }
+  mutable_iterator operator++(int) noexcept {
+    auto temp = *this;
+    it.operator++();
+    return temp;
+  }
+  mutable_iterator &operator--() noexcept {
+    it.operator--();
+    return *this;
+  }
+  mutable_iterator operator--(int) noexcept {
+    auto temp = *this;
+    it.operator--();
+    return temp;
+  }
+
+  mutable_iterator &operator+=(const difference_type d) {
+    it.operator+=(d);
+    return *this;
+  }
+
+  mutable_iterator &operator-=(const difference_type d) {
+    it.operator-=(d);
+    return *this;
+  }
+
+  mutable_iterator operator+(const difference_type d) const {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  difference_type operator-(const mutable_iterator &rhs) const noexcept { return it - rhs.it; }
+
+  mutable_iterator operator-(const difference_type d) const {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
+
+  auto operator<=>(const mutable_iterator &) const noexcept = default;
+
+private:
+  const_iterator it;
+};
+
 template <class Iter> class reverse_iterator {
 public:
   using iterator_type = Iter;
