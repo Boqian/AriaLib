@@ -55,16 +55,12 @@ template <class InputIt> constexpr InputIt next(InputIt it, ptrdiff_t n = 1) { r
 template <class InputIt> constexpr InputIt prev(InputIt it, ptrdiff_t n = 1) { return advance(it, -n); }
 
 template <class Container> constexpr auto begin(Container &cont) { return cont.begin(); }
-template <class Container> constexpr auto begin(const Container &cont) { return cont.begin(); }
 template <class Container> constexpr auto cbegin(const Container &cont) { return cont.begin(); }
 template <class Container> constexpr auto end(Container &cont) { return cont.end(); }
-template <class Container> constexpr auto end(const Container &cont) { return cont.end(); }
 template <class Container> constexpr auto cend(const Container &cont) { return cont.end(); }
 template <class Container> constexpr auto rbegin(Container &cont) { return cont.rbegin(); }
-template <class Container> constexpr auto rbegin(const Container &cont) { return cont.rbegin(); }
 template <class Container> constexpr auto crbegin(const Container &cont) { return cont.rbegin(); }
 template <class Container> constexpr auto rend(Container &cont) { return cont.rend(); }
-template <class Container> constexpr auto rend(const Container &cont) { return cont.rend(); }
 template <class Container> constexpr auto crend(const Container &cont) { return cont.rend(); }
 
 template <class T, size_t N> constexpr T *begin(T (&array)[N]) noexcept { return array; }
@@ -206,10 +202,12 @@ template <bidirectional_iterator Iter> reverse_iterator<Iter> make_reverse_itera
 
 class iterable {
 public:
-  constexpr decltype(auto) cbegin(this auto const &self) noexcept { return self.begin(); }
-  constexpr decltype(auto) cend(this auto const &self) noexcept { return self.end(); }
+  constexpr auto cbegin(this auto const &self) noexcept { return self.begin(); }
+  constexpr auto cend(this auto const &self) noexcept { return self.end(); }
   constexpr auto rbegin(this auto &&self) noexcept { return make_reverse_iterator(self.end()); }
   constexpr auto rend(this auto &&self) noexcept { return make_reverse_iterator(self.begin()); }
+  constexpr auto crbegin(this auto const &self) noexcept { return self.rbegin(); }
+  constexpr auto crend(this auto const &self) noexcept { return self.rend(); }
 };
 
 } // namespace aria

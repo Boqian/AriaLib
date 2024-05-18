@@ -36,6 +36,11 @@ TEST(test_iterator, begin_end) {
     EXPECT_EQ(end(v), v.end());
   }
   {
+    const vector<int> v = {1, 2, 3, 4};
+    EXPECT_EQ(begin(v), v.begin());
+    EXPECT_EQ(end(v), v.end());
+  }
+  {
     const int v[3] = {1, 2, 3};
     EXPECT_EQ(*begin(v), 1);
     EXPECT_EQ(accumulate(begin(v), end(v), 0), 6);
