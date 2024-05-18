@@ -25,7 +25,7 @@ template <class T> const auto &get_key(const T &x) {
 }
 } // namespace ns_myhash
 
-template <class Key, class T, class Hash = aria::hash<Key>, class KeyEqual = aria::equal_to<Key>> class my_hash {
+template <class Key, class T, class Hash = aria::hash<Key>, class KeyEqual = aria::equal_to<Key>> class my_hash : iterable {
 public:
   using key_type = Key;
   using value_type = typename ns_myhash::KeyVal<Key, T>::type;
@@ -86,10 +86,6 @@ public:
   auto end() const noexcept { return m_list.end(); }
   auto begin() noexcept { return m_list.begin(); }
   auto end() noexcept { return m_list.end(); }
-  auto rbegin() const noexcept { return m_list.rbegin(); }
-  auto rend() const noexcept { return m_list.rend(); }
-  auto rbegin() noexcept { return m_list.rbegin(); }
-  auto rend() noexcept { return m_list.rend(); }
 
   void reserve(size_type n) {
     if (n <= bucket_count())
