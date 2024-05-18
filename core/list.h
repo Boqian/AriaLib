@@ -60,7 +60,7 @@ private:
   const _node_base *ptr;
 };
 
-template <class T, class Allocator = allocator<T>> class list {
+template <class T, class Allocator = allocator<T>> class list : public iterable {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -127,10 +127,6 @@ public:
   auto end() const noexcept { return const_iterator(&m_end); }
   auto begin() noexcept { return iterator(m_first); }
   auto end() noexcept { return iterator(&m_end); }
-  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
-  auto rend() const noexcept { return const_reverse_iterator(begin()); }
-  auto rbegin() noexcept { return reverse_iterator(end()); }
-  auto rend() noexcept { return reverse_iterator(begin()); }
 
   iterator insert(const_iterator pos, value_type value) { return iterator(insert_node(get_ptr(pos), move(value))); }
   iterator erase(const_iterator pos) { return iterator(erase_node(get_ptr(pos))); }

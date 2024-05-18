@@ -70,6 +70,7 @@ template <class Container> constexpr auto crend(const Container &cont) { return 
 template <class T, size_t N> constexpr T *begin(T (&array)[N]) noexcept { return array; }
 template <class T, size_t N> constexpr T *end(T (&array)[N]) noexcept { return array + N; }
 
+// use const iterator type to implement mutable iterator type
 template <class const_iterator> class mutable_iterator {
 public:
   using value_type = typename const_iterator::value_type;
@@ -199,6 +200,16 @@ public:
 
 private:
   iterator_type it;
+};
+
+template <bidirectional_iterator Iter> reverse_iterator<Iter> make_reverse_iterator(Iter i) { return reverse_iterator(i); }
+
+class iterable {
+public:
+  constexpr decltype(auto) cbegin(this auto const &self) noexcept { return self.begin(); }
+  constexpr decltype(auto) cend(this auto const &self) noexcept { return self.end(); }
+  constexpr auto rbegin(this auto &&self) noexcept { return make_reverse_iterator(self.end()); }
+  constexpr auto rend(this auto &&self) noexcept { return make_reverse_iterator(self.begin()); }
 };
 
 } // namespace aria

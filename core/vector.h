@@ -4,7 +4,6 @@
 #include "allocator.h"
 #include "exception.h"
 #include "iterator.h"
-#include "mixin.h"
 #include "utility.h"
 
 namespace aria {
@@ -71,7 +70,7 @@ private:
   pointer ptr = nullptr;
 };
 
-template <class T, class Allocator = allocator<T>> class vector : public container {
+template <class T, class Allocator = allocator<T>> class vector : public iterable {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -163,6 +162,7 @@ public:
 
   size_type size() const noexcept { return m_size; }
   size_type capacity() const noexcept { return m_capacity; }
+  bool empty() const noexcept { return size() == 0; }
   reference back() noexcept { return *get(m_size - 1); }
   const_reference back() const noexcept { return *get(m_size - 1); }
 
@@ -191,10 +191,10 @@ public:
   auto end() const noexcept { return const_iterator(get(m_size)); }
   auto begin() noexcept { return iterator(get(0)); }
   auto end() noexcept { return iterator(get(m_size)); }
-  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
-  auto rend() const noexcept { return const_reverse_iterator(begin()); }
-  auto rbegin() noexcept { return reverse_iterator(end()); }
-  auto rend() noexcept { return reverse_iterator(begin()); }
+  // auto rbegin() const noexcept { return const_reverse_iterator(end()); }
+  // auto rend() const noexcept { return const_reverse_iterator(begin()); }
+  // auto rbegin() noexcept { return reverse_iterator(end()); }
+  // auto rend() noexcept { return reverse_iterator(begin()); }
 
 private:
   Allocator m_alloc;

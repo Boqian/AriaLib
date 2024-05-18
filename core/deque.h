@@ -88,7 +88,7 @@ private:
   difference_type index{};
 };
 
-template <class T, class Allocator = allocator<T>> class deque {
+template <class T, class Allocator = allocator<T>> class deque : public iterable {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -205,10 +205,6 @@ public:
   const_iterator end() const noexcept { return const_iterator(&m_buckets.back(), m_end); }
   iterator begin() noexcept { return iterator(&m_buckets[m_bucket_start_index], m_start); }
   iterator end() noexcept { return iterator(&m_buckets.back(), m_end); }
-  auto rbegin() const noexcept { return const_reverse_iterator(end()); }
-  auto rend() const noexcept { return const_reverse_iterator(begin()); }
-  auto rbegin() noexcept { return reverse_iterator(end()); }
-  auto rend() noexcept { return reverse_iterator(begin()); }
 
   void swap(deque &rhs) noexcept {
     aria::swap(m_buckets, rhs.m_buckets);

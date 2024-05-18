@@ -1,10 +1,10 @@
 #pragma once
 
+#include "algorithm.h"
 #include "functional.h"
 #include "list.h"
 #include "utility.h"
 #include "vector.h"
-#include <algorithm.h>
 
 namespace aria {
 
