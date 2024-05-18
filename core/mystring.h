@@ -111,7 +111,7 @@ public:
   }
 
   size_type size() const noexcept { return m_size; }
-  size_type capacity() const noexcept { return m_capacity; }
+  size_type capacity() const noexcept { return (m_capacity == 0) ? 0 : m_capacity - 1; }
   bool empty() const noexcept { return m_size == 0; }
   reference back() noexcept { return *get(m_size - 1); }
   const_reference back() const noexcept { return *get(m_size - 1); }
@@ -129,7 +129,8 @@ public:
   auto end() noexcept { return iterator(get(m_size)); }
 
   void reserve(size_type new_cap) {
-    if (new_cap <= capacity())
+    new_cap++; // add one for null terminator
+    if (new_cap <= m_capacity)
       return;
     auto new_ptr = m_alloc.allocate(new_cap);
     memcpy(new_ptr, m_ptr, m_size * sizeof(value_type));
@@ -155,7 +156,7 @@ public:
   basic_string &operator+=(CharT ch) {
     reserve_more(1);
     *get(m_size) = ch;
-    m_size += 1;
+    add_size(1);
     return *this;
   }
 
@@ -176,7 +177,7 @@ private:
   basic_string &append(const_pointer rhs, size_t added_size) {
     reserve_more(added_size);
     memcpy(m_ptr + m_size, rhs, added_size * sizeof(value_type));
-    m_size += added_size;
+    add_size(added_size);
     return *this;
   }
 
@@ -192,7 +193,7 @@ private:
   void copy(const_pointer src, size_type size) {
     if (src) {
       memcpy(m_ptr, src, size * sizeof(value_type));
-      m_size = size;
+      set_size(size);
     }
   }
 
@@ -202,6 +203,16 @@ private:
     while (new_size > new_capacity)
       new_capacity *= 2;
     reserve(new_capacity);
+  }
+
+  void set_size(size_t new_size) {
+    m_size = new_size;
+    add_null_teminate();
+  }
+
+  void add_size(size_t size) {
+    m_size += size;
+    add_null_teminate();
   }
 
   void add_null_teminate() noexcept { *get(m_size) = value_type(0); }

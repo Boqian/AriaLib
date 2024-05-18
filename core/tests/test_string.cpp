@@ -103,3 +103,10 @@ TEST(test_string, iterator) {
     EXPECT_EQ(b, "54321");
   }
 }
+
+TEST(test_string, c_str) {
+  string a = "12345";
+  EXPECT_EQ(strlen(a.c_str()), 5);
+  *(a.data() + 2) = 'a';
+  EXPECT_EQ(a, "12a45");
+}
