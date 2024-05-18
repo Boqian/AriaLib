@@ -88,65 +88,6 @@ private:
   difference_type index{};
 };
 
-template <class DequeType> class deque_iterator : public deque_const_iterator<DequeType> {
-  using Base = deque_const_iterator<DequeType>;
-
-public:
-  using value_type = typename DequeType::value_type;
-  using pointer = typename DequeType::pointer;
-  using reference = value_type &;
-  using difference_type = typename Base::difference_type;
-  using Base::Base;
-
-  deque_iterator(pointer *p, difference_type index) : Base(const_cast<Base::bucket_pointer>(p), index) {}
-
-  reference operator*() const noexcept { return const_cast<reference>(Base::operator*()); }
-  pointer operator->() const noexcept { return const_cast<pointer>(Base::operator->()); }
-
-  deque_iterator &operator++() noexcept {
-    Base::operator++();
-    return *this;
-  }
-  deque_iterator operator++(int) noexcept {
-    auto temp = *this;
-    Base::operator++();
-    return temp;
-  }
-  deque_iterator &operator--() noexcept {
-    Base::operator--();
-    return *this;
-  }
-  deque_iterator operator--(int) noexcept {
-    auto temp = *this;
-    Base::operator--();
-    return temp;
-  }
-
-  deque_iterator &operator+=(const difference_type d) {
-    Base::operator+=(d);
-    return *this;
-  }
-
-  deque_iterator &operator-=(const difference_type d) {
-    Base::operator-=(d);
-    return *this;
-  }
-
-  deque_iterator operator+(const difference_type d) const {
-    auto temp = *this;
-    temp += d;
-    return temp;
-  }
-
-  using Base::operator-;
-
-  deque_iterator operator-(const difference_type d) const {
-    auto temp = *this;
-    temp -= d;
-    return temp;
-  }
-};
-
 template <class T, class Allocator = allocator<T>> class deque {
 public:
   using size_type = size_t;
@@ -157,8 +98,8 @@ public:
   using allocator_type = Allocator;
   using pointer = typename allocator_type::pointer;
   using const_pointer = typename allocator_type::const_pointer;
-  using iterator = deque_iterator<deque<T, Allocator>>;
   using const_iterator = deque_const_iterator<deque<T, Allocator>>;
+  using iterator = mutable_iterator<const_iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
   inline static constexpr int s_bucket_size = max<size_type>(64 / sizeof(T), 16);

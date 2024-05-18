@@ -84,6 +84,8 @@ public:
     requires constructible_from<const_iterator, Args...>
   explicit mutable_iterator(Args &&...args) : it(forward<Args>(args)...) {}
 
+  operator const_iterator() const noexcept { return it; }
+
   reference operator*() const noexcept { return const_cast<reference>(it.operator*()); }
   pointer operator->() const noexcept { return const_cast<pointer>(it.operator->()); }
 
@@ -106,25 +108,37 @@ public:
     return temp;
   }
 
-  mutable_iterator &operator+=(const difference_type d) {
-    it.operator+=(d);
+  mutable_iterator &operator+=(const difference_type d)
+    requires random_access_iterator<const_iterator>
+  {
+    it += d;
     return *this;
   }
 
-  mutable_iterator &operator-=(const difference_type d) {
+  mutable_iterator &operator-=(const difference_type d)
+    requires random_access_iterator<const_iterator>
+  {
     it.operator-=(d);
     return *this;
   }
 
-  mutable_iterator operator+(const difference_type d) const {
+  mutable_iterator operator+(const difference_type d) const
+    requires random_access_iterator<const_iterator>
+  {
     auto temp = *this;
     temp += d;
     return temp;
   }
 
-  difference_type operator-(const mutable_iterator &rhs) const noexcept { return it - rhs.it; }
+  difference_type operator-(const mutable_iterator &rhs) const noexcept
+    requires random_access_iterator<const_iterator>
+  {
+    return it - rhs.it;
+  }
 
-  mutable_iterator operator-(const difference_type d) const {
+  mutable_iterator operator-(const difference_type d) const
+    requires random_access_iterator<const_iterator>
+  {
     auto temp = *this;
     temp -= d;
     return temp;
@@ -135,6 +149,10 @@ public:
 private:
   const_iterator it;
 };
+
+template <class const_iterator> constexpr bool operator==(const_iterator a, mutable_iterator<const_iterator> b) noexcept {
+  return static_cast<const_iterator>(b) == a;
+}
 
 template <class Iter> class reverse_iterator {
 public:
