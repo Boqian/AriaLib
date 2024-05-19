@@ -252,12 +252,12 @@ template <class CharT, class Alloc>
   return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
 }
 
-int stoi(const string &str, size_t *pos = nullptr, int base = 10) {
+template <class T, class CFunc> T _to_int(CFunc cfunc, const string &str, size_t *pos = nullptr, int base = 10) {
   int &errno_ref = errno; // Nonzero cost, pay it once
   const char *ptr = str.c_str();
   char *end_ptr;
   errno_ref = 0;
-  const long ans = std::strtol(ptr, &end_ptr, base);
+  const auto ans = cfunc(ptr, &end_ptr, base);
   if (ptr == end_ptr) {
     throw std::invalid_argument("invalid stoi argument");
   }
@@ -267,7 +267,38 @@ int stoi(const string &str, size_t *pos = nullptr, int base = 10) {
   if (pos) {
     *pos = static_cast<size_t>(end_ptr - ptr);
   }
-  return static_cast<int>(ans);
+  return static_cast<T>(ans);
 }
+
+template <class T, class CFunc> T _to_float(CFunc cfunc, const string &str, size_t *pos = nullptr) {
+  int &errno_ref = errno; // Nonzero cost, pay it once
+  const char *ptr = str.c_str();
+  char *end_ptr;
+  errno_ref = 0;
+  const auto ans = cfunc(ptr, &end_ptr);
+  if (ptr == end_ptr) {
+    throw std::invalid_argument("invalid stoi argument");
+  }
+  if (errno_ref == ERANGE) {
+    throw std::out_of_range("stoi argument out of range");
+  }
+  if (pos) {
+    *pos = static_cast<size_t>(end_ptr - ptr);
+  }
+  return static_cast<T>(ans);
+}
+
+int stoi(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<int>(std::strtol, str, pos, base); }
+long stol(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<long>(std::strtol, str, pos, base); }
+long long stoll(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<long long>(std::strtoll, str, pos, base); }
+unsigned long stoul(const string &str, size_t *pos = nullptr, int base = 10) {
+  return _to_int<unsigned long>(std::strtoul, str, pos, base);
+}
+unsigned long long stoull(const string &str, size_t *pos = nullptr, int base = 10) {
+  return _to_int<unsigned long long>(std::strtoull, str, pos, base);
+}
+float stof(const string &str, size_t *pos = nullptr) { return _to_float<float>(std::strtof, str, pos); }
+double stod(const string &str, size_t *pos = nullptr) { return _to_float<double>(std::strtod, str, pos); }
+long double stold(const string &str, size_t *pos = nullptr) { return _to_float<long double>(std::strtold, str, pos); }
 
 } // namespace aria

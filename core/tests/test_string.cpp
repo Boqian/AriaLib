@@ -134,6 +134,8 @@ TEST(test_string, compare) {
 }
 
 TEST(test_string, to_int) {
-  string a = "123";
+  string a = "123", b = "3.5";
   EXPECT_EQ(stoi(a), 123);
+  EXPECT_DOUBLE_EQ(stof(b), 3.5);
+  EXPECT_DOUBLE_EQ(stod(b), 3.5);
 }
