@@ -1,5 +1,6 @@
-#include "../type_traits.h"
-#include "../utility.h"
+#include "type_traits.h"
+#include "utility.h"
+#include "gtest/gtest.h"
 #include <string>
 
 struct Base {};
@@ -172,4 +173,14 @@ void test_traits() {
   static_assert(is_nothrow_swappable_v<int>);
   static_assert(!is_nothrow_swappable_v<ThrowSwap>);
   static_assert(!is_nothrow_swappable_v<NoSwap>);
+}
+
+TEST(test_type_traits, swap) {
+  int a[3] = {1, 2};
+  int b[3] = {4, 5};
+  aria::swap(a, b);
+  EXPECT_EQ(a[0], 4);
+  EXPECT_EQ(a[1], 5);
+  EXPECT_EQ(b[0], 1);
+  EXPECT_EQ(b[1], 2);
 }

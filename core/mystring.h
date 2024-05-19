@@ -104,13 +104,23 @@ public:
 
   void swap(basic_string &rhs) noexcept {
     using aria::swap;
+
+    const bool lhs_on_stack = on_stack(), rhs_on_stack = rhs.on_stack();
+    swap(m_small_str, rhs.m_small_str);
     swap(m_alloc, rhs.m_alloc);
     swap(m_ptr, rhs.m_ptr);
     swap(m_size, rhs.m_size);
     swap(m_capacity, rhs.m_capacity);
+    if (lhs_on_stack) {
+      rhs.m_ptr = rhs.m_small_str;
+    }
+    if (rhs_on_stack) {
+      m_ptr = m_small_str;
+    }
   }
 
   size_type size() const noexcept { return m_size; }
+  size_type length() const noexcept { return m_size; }
   size_type capacity() const noexcept { return (m_capacity == 0) ? 0 : m_capacity - 1; }
   bool empty() const noexcept { return m_size == 0; }
   reference back() noexcept { return *get(m_size - 1); }
@@ -118,7 +128,7 @@ public:
   reference operator[](size_type i) { return *get(i); }
   const_reference &operator[](size_type i) const { return *get(i); }
   void clear() noexcept { m_size = 0; }
-  void pop_back() { m_size--; }
+  void pop_back() { add_size(-1); }
   const CharT *data() const noexcept { return m_ptr; }
   CharT *data() noexcept { return m_ptr; }
   const CharT *c_str() const noexcept { return m_ptr; }
@@ -129,12 +139,12 @@ public:
   auto end() noexcept { return iterator(get(m_size)); }
 
   void reserve(size_type new_cap) {
-    new_cap++; // add one for null terminator
     if (new_cap <= m_capacity)
       return;
     auto new_ptr = m_alloc.allocate(new_cap);
     memcpy(new_ptr, m_ptr, m_size * sizeof(value_type));
-    m_alloc.deallocate(m_ptr, m_capacity);
+    if (!on_stack())
+      m_alloc.deallocate(m_ptr, m_capacity);
     m_capacity = new_cap;
     m_ptr = new_ptr;
   }
@@ -168,9 +178,9 @@ private:
   const pointer get(size_type i) const { return m_ptr + i; }
 
   basic_string(const_pointer str, size_type size, size_type cap = 0) {
-    if (cap == 0)
-      cap = size;
-    reserve(cap);
+    cap = max(cap, size + 1);
+    if (cap > s_stack_cap)
+      reserve(cap);
     copy(str, size);
   }
 
@@ -182,12 +192,12 @@ private:
   }
 
   void reset() noexcept {
-    if (m_ptr) {
+    if (!on_stack()) {
       m_alloc.deallocate(m_ptr, m_capacity);
-      m_ptr = nullptr;
-      m_size = 0;
-      m_capacity = 0;
     }
+    m_ptr = m_small_str;
+    set_size(0);
+    m_capacity = s_stack_cap;
   }
 
   void copy(const_pointer src, size_type size) {
@@ -198,11 +208,14 @@ private:
   }
 
   void reserve_more(size_type added_size) {
-    size_type new_capacity = std::max(size_type(1), capacity());
     const size_type new_size = size() + added_size;
-    while (new_size > new_capacity)
-      new_capacity *= 2;
-    reserve(new_capacity);
+    size_type cap = std::max(s_stack_cap, m_capacity);
+    if (new_size + 1 <= cap)
+      return;
+
+    while (new_size + 1 > cap)
+      cap *= 2;
+    reserve(cap - 1);
   }
 
   void set_size(size_t new_size) {
@@ -217,10 +230,14 @@ private:
 
   void add_null_teminate() noexcept { *get(m_size) = value_type(0); }
 
-  Allocator m_alloc;
-  pointer m_ptr = nullptr;
+  bool on_stack() const noexcept { return m_ptr == m_small_str; }
+
+  static constexpr size_t s_stack_cap = 16;
+  value_type m_small_str[s_stack_cap]{};
+  pointer m_ptr = m_small_str;
   size_type m_size = 0;
-  size_type m_capacity = 0;
+  size_type m_capacity = s_stack_cap;
+  Allocator m_alloc;
 };
 
 using string = basic_string<char>;

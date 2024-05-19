@@ -224,6 +224,14 @@ template <class T, class U> inline constexpr bool is_nothrow_swappable_with_v = 
 template <class T> struct is_nothrow_swappable : is_nothrow_swappable_with<T &, T &> {};
 template <class T> inline constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<T>::value;
 
+template <class T, size_t N>
+void swap(T (&a)[N], T (&b)[N]) noexcept
+  requires is_swappable_v<T>
+{
+  for (int i = 0; i < N; i++)
+    swap(a[i], b[i]);
+}
+
 //----------------- common_type -----------------------
 template <class... Ts> struct common_type {};
 template <class... Ts> using common_type_t = common_type<Ts...>::type;
