@@ -288,17 +288,13 @@ template <class T, class CFunc> T _to_float(CFunc cfunc, const string &str, size
   return static_cast<T>(ans);
 }
 
-int stoi(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<int>(std::strtol, str, pos, base); }
-long stol(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<long>(std::strtol, str, pos, base); }
-long long stoll(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<long long>(std::strtoll, str, pos, base); }
-unsigned long stoul(const string &str, size_t *pos = nullptr, int base = 10) {
-  return _to_int<unsigned long>(std::strtoul, str, pos, base);
-}
-unsigned long long stoull(const string &str, size_t *pos = nullptr, int base = 10) {
-  return _to_int<unsigned long long>(std::strtoull, str, pos, base);
-}
-float stof(const string &str, size_t *pos = nullptr) { return _to_float<float>(std::strtof, str, pos); }
-double stod(const string &str, size_t *pos = nullptr) { return _to_float<double>(std::strtod, str, pos); }
-long double stold(const string &str, size_t *pos = nullptr) { return _to_float<long double>(std::strtold, str, pos); }
+int stoi(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<int>(strtol, str, pos, base); }
+long stol(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<long>(strtol, str, pos, base); }
+long long stoll(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<long long>(strtoll, str, pos, base); }
+unsigned long stoul(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<unsigned long>(strtoul, str, pos, base); }
+auto stoull(const string &str, size_t *pos = nullptr, int base = 10) { return _to_int<unsigned long long>(strtoull, str, pos, base); }
+float stof(const string &str, size_t *pos = nullptr) { return _to_float<float>(strtof, str, pos); }
+double stod(const string &str, size_t *pos = nullptr) { return _to_float<double>(strtod, str, pos); }
+long double stold(const string &str, size_t *pos = nullptr) { return _to_float<long double>(strtold, str, pos); }
 
 } // namespace aria
