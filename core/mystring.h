@@ -5,6 +5,7 @@
 #include "iterator.h"
 #include "utility.h"
 #include <cassert>
+#include <cstdlib>
 #include <stdexcept>
 
 namespace aria {
@@ -73,11 +74,11 @@ public:
   using const_pointer = const value_type *;
   using reference = value_type &;
   using const_reference = const value_type &;
-  inline static const size_type npos = -1;
   using const_iterator = string_const_iterator<basic_string<CharT, Allocator>>;
   using iterator = mutable_iterator<const_iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+  static constexpr size_type npos = -1;
 
   basic_string() = default;
   ~basic_string() noexcept { reset(); }
@@ -249,6 +250,24 @@ template <class CharT, class Alloc> void swap(basic_string<CharT, Alloc> &a, bas
 template <class CharT, class Alloc>
 [[nodiscard]] constexpr auto operator<=>(const basic_string<CharT, Alloc> &a, const basic_string<CharT, Alloc> &b) {
   return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+}
+
+int stoi(const string &str, size_t *pos = nullptr, int base = 10) {
+  int &errno_ref = errno; // Nonzero cost, pay it once
+  const char *ptr = str.c_str();
+  char *end_ptr;
+  errno_ref = 0;
+  const long ans = std::strtol(ptr, &end_ptr, base);
+  if (ptr == end_ptr) {
+    throw std::invalid_argument("invalid stoi argument");
+  }
+  if (errno_ref == ERANGE) {
+    throw std::out_of_range("stoi argument out of range");
+  }
+  if (pos) {
+    *pos = static_cast<size_t>(end_ptr - ptr);
+  }
+  return static_cast<int>(ans);
 }
 
 } // namespace aria

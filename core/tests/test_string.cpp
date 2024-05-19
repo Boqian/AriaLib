@@ -132,3 +132,8 @@ TEST(test_string, compare) {
   EXPECT_TRUE(a < c);
   EXPECT_TRUE(c < b);
 }
+
+TEST(test_string, to_int) {
+  string a = "123";
+  EXPECT_EQ(stoi(a), 123);
+}
