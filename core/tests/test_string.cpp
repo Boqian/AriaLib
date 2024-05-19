@@ -82,6 +82,13 @@ TEST(test_string, operation) {
     EXPECT_EQ((a += b), "1987987");
     EXPECT_EQ((a += b), "1987987987");
   }
+  {
+    string a = "";
+    a.push_back('1');
+    EXPECT_EQ(a, "1");
+    a.pop_back();
+    EXPECT_EQ(a, "");
+  }
 }
 
 TEST(test_string, iterator) {
@@ -117,4 +124,11 @@ TEST(test_string, swap) {
   a.swap(b);
   EXPECT_EQ(a, "456");
   EXPECT_EQ(b, "123");
+}
+
+TEST(test_string, compare) {
+  string a = "123", b = "456", c = "13";
+  EXPECT_TRUE(a < b);
+  EXPECT_TRUE(a < c);
+  EXPECT_TRUE(c < b);
 }

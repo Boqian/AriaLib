@@ -130,6 +130,7 @@ public:
   const_reference &operator[](size_type i) const { return *get(i); }
   void clear() noexcept { set_size(0); }
   void pop_back() { add_size(-1); }
+  void push_back(CharT ch) { operator+=(ch); }
   const CharT *data() const noexcept { return m_ptr; }
   CharT *data() noexcept { return m_ptr; }
   const CharT *c_str() const noexcept { return m_ptr; }
@@ -244,5 +245,10 @@ private:
 using string = basic_string<char>;
 
 template <class CharT, class Alloc> void swap(basic_string<CharT, Alloc> &a, basic_string<CharT, Alloc> &b) noexcept { a.swap(b); }
+
+template <class CharT, class Alloc>
+[[nodiscard]] constexpr auto operator<=>(const basic_string<CharT, Alloc> &a, const basic_string<CharT, Alloc> &b) {
+  return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+}
 
 } // namespace aria

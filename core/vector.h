@@ -191,10 +191,6 @@ public:
   auto end() const noexcept { return const_iterator(get(m_size)); }
   auto begin() noexcept { return iterator(get(0)); }
   auto end() noexcept { return iterator(get(m_size)); }
-  // auto rbegin() const noexcept { return const_reverse_iterator(end()); }
-  // auto rend() const noexcept { return const_reverse_iterator(begin()); }
-  // auto rbegin() noexcept { return reverse_iterator(end()); }
-  // auto rend() noexcept { return reverse_iterator(begin()); }
 
 private:
   Allocator m_alloc;
