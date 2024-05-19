@@ -4,6 +4,7 @@
 #include "allocator.h"
 #include "iterator.h"
 #include "utility.h"
+#include <cassert>
 #include <stdexcept>
 
 namespace aria {
@@ -120,29 +121,29 @@ public:
   }
 
   size_type size() const noexcept { return m_size; }
-  size_type length() const noexcept { return m_size; }
+  size_type length() const noexcept { return size(); }
   size_type capacity() const noexcept { return (m_capacity == 0) ? 0 : m_capacity - 1; }
-  bool empty() const noexcept { return m_size == 0; }
-  reference back() noexcept { return *get(m_size - 1); }
-  const_reference back() const noexcept { return *get(m_size - 1); }
+  bool empty() const noexcept { return size() == 0; }
+  reference back() noexcept { return *get(size() - 1); }
+  const_reference back() const noexcept { return *get(size() - 1); }
   reference operator[](size_type i) { return *get(i); }
   const_reference &operator[](size_type i) const { return *get(i); }
-  void clear() noexcept { m_size = 0; }
+  void clear() noexcept { set_size(0); }
   void pop_back() { add_size(-1); }
   const CharT *data() const noexcept { return m_ptr; }
   CharT *data() noexcept { return m_ptr; }
   const CharT *c_str() const noexcept { return m_ptr; }
 
   auto begin() const noexcept { return const_iterator(get(0)); }
-  auto end() const noexcept { return const_iterator(get(m_size)); }
+  auto end() const noexcept { return const_iterator(get(size())); }
   auto begin() noexcept { return iterator(get(0)); }
-  auto end() noexcept { return iterator(get(m_size)); }
+  auto end() noexcept { return iterator(get(size())); }
 
   void reserve(size_type new_cap) {
     if (new_cap <= m_capacity)
       return;
     auto new_ptr = m_alloc.allocate(new_cap);
-    memcpy(new_ptr, m_ptr, m_size * sizeof(value_type));
+    memcpy(new_ptr, m_ptr, (size() + 1) * sizeof(value_type));
     if (!on_stack())
       m_alloc.deallocate(m_ptr, m_capacity);
     m_capacity = new_cap;
@@ -165,7 +166,7 @@ public:
 
   basic_string &operator+=(CharT ch) {
     reserve_more(1);
-    *get(m_size) = ch;
+    *get(size()) = ch;
     add_size(1);
     return *this;
   }
@@ -186,7 +187,7 @@ private:
 
   basic_string &append(const_pointer rhs, size_t added_size) {
     reserve_more(added_size);
-    memcpy(m_ptr + m_size, rhs, added_size * sizeof(value_type));
+    memcpy(m_ptr + size(), rhs, added_size * sizeof(value_type));
     add_size(added_size);
     return *this;
   }
@@ -228,7 +229,7 @@ private:
     add_null_teminate();
   }
 
-  void add_null_teminate() noexcept { *get(m_size) = value_type(0); }
+  void add_null_teminate() noexcept { *get(size()) = value_type(0); }
 
   bool on_stack() const noexcept { return m_ptr == m_small_str; }
 
@@ -241,5 +242,7 @@ private:
 };
 
 using string = basic_string<char>;
+
+template <class CharT, class Alloc> void swap(basic_string<CharT, Alloc> &a, basic_string<CharT, Alloc> &b) noexcept { a.swap(b); }
 
 } // namespace aria

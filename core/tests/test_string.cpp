@@ -111,3 +111,10 @@ TEST(test_string, c_str) {
   *(a.data() + 2) = 'a';
   EXPECT_EQ(a, "12a45");
 }
+
+TEST(test_string, swap) {
+  string a = "123", b = "456";
+  a.swap(b);
+  EXPECT_EQ(a, "456");
+  EXPECT_EQ(b, "123");
+}

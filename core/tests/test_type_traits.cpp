@@ -1,7 +1,7 @@
+#include "mystring.h"
 #include "type_traits.h"
 #include "utility.h"
 #include "gtest/gtest.h"
-#include <string>
 
 struct Base {};
 struct Derived : Base {};
