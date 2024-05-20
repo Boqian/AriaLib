@@ -154,4 +154,6 @@ TEST(test_string, find) {
   string a = "12345", b = "34", c = "24";
   EXPECT_EQ(a.find(b), 2);
   EXPECT_EQ(a.find(c), string::npos);
+  EXPECT_EQ(a.find("12"), 0);
+  EXPECT_EQ(a.find("12", 100), string::npos);
 }

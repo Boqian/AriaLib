@@ -186,6 +186,13 @@ public:
     return ptr ? (ptr - m_ptr) : npos;
   }
 
+  size_type find(const CharT *s, size_type pos = 0) const {
+    if (pos + strlen(s) > size())
+      return npos;
+    const auto ptr = strstr(data() + pos, s);
+    return ptr ? (ptr - m_ptr) : npos;
+  }
+
 private:
   pointer get(size_type i) { return m_ptr + i; }
   const pointer get(size_type i) const { return m_ptr + i; }
