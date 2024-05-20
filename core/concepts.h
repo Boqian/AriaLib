@@ -37,4 +37,10 @@ concept signed_integral = integral<T> && is_signed_v<T>;
 template <class T>
 concept unsigned_integral = integral<T> && is_unsigned_v<T>;
 
+template <class T>
+concept floating_point = is_floating_point_v<T>;
+
+template <class T>
+concept arithmetic = is_arithmetic_v<T>;
+
 } // namespace aria

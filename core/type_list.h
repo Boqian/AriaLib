@@ -55,4 +55,6 @@ consteval size_t index_of() {
   return first_match_index<T, type_list<Ts...>>();
 }
 
+template <class T, class... Ts> consteval size_t index_of(type_list<Ts...>) { return index_of<T, Ts...>(); }
+
 } // namespace aria

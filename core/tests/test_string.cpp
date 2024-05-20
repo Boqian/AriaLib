@@ -133,9 +133,19 @@ TEST(test_string, compare) {
   EXPECT_TRUE(c < b);
 }
 
-TEST(test_string, to_int) {
+TEST(test_string, to_number) {
   string a = "123", b = "3.5";
   EXPECT_EQ(stoi(a), 123);
   EXPECT_DOUBLE_EQ(stof(b), 3.5);
   EXPECT_DOUBLE_EQ(stod(b), 3.5);
+}
+
+TEST(test_string, to_string) {
+  EXPECT_EQ(to_string(123), "123");
+  EXPECT_EQ(to_string(-1), "-1");
+  EXPECT_EQ(to_string(123u), "123");
+  EXPECT_EQ(to_string(5.5), "5.500000");
+  EXPECT_EQ(to_string(true), "1");
+  EXPECT_EQ(to_string(false), "0");
+  EXPECT_EQ(to_string(char(12)), "12");
 }

@@ -2,9 +2,12 @@
 
 #include "algorithm.h"
 #include "allocator.h"
+#include "array.h"
 #include "iterator.h"
+#include "type_list.h"
 #include "utility.h"
 #include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -296,5 +299,18 @@ auto stoull(const string &str, size_t *pos = nullptr, int base = 10) { return _t
 float stof(const string &str, size_t *pos = nullptr) { return _to_float<float>(strtof, str, pos); }
 double stod(const string &str, size_t *pos = nullptr) { return _to_float<double>(strtod, str, pos); }
 long double stold(const string &str, size_t *pos = nullptr) { return _to_float<long double>(strtold, str, pos); }
+
+template <arithmetic T> string to_string(T x) {
+  using num_type_list = type_list<int, long, long long, unsigned, unsigned long, unsigned long, float, double, long double>;
+  static constexpr const char *const fmt_array[] = {"%d", "%ld", "%lld", "%u", "%lu", "%llu", "%f", "%f", "%Lf"};
+  if constexpr (!exact_one_match<T, num_type_list>()) {
+    return to_string<int>(x);
+  } else {
+    static constexpr const char *fmt = fmt_array[index_of<T>(num_type_list())];
+    char buffer[100];
+    sprintf(buffer, fmt, x);
+    return string(buffer);
+  }
+}
 
 } // namespace aria
