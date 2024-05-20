@@ -1,10 +1,11 @@
 #pragma once
 
+#include "iterator.h"
 #include "type_traits.h"
 
 namespace aria {
 
-template <class CharT> class basic_string_view {
+template <class CharT> class basic_string_view : public iterable {
 public:
   using value_type = CharT;
   using pointer = CharT *;
@@ -13,6 +14,10 @@ public:
   using const_reference = const CharT &;
   using size_type = size_t;
   using difference_type = ptrdiff_t;
+  using iterator = array_iterator<CharT>;
+  using const_iterator = basic_const_iterator<iterator>;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
   static constexpr size_type npos = -1;
 
   constexpr basic_string_view() noexcept = default;
@@ -29,6 +34,10 @@ public:
   constexpr bool empty() const noexcept { return size() == 0; }
   constexpr void remove_prefix(size_type n) { m_ptr += n; }
   constexpr void remove_suffix(size_type n) { m_size -= n; }
+  constexpr auto begin() const noexcept { return const_iterator(m_ptr); }
+  constexpr auto end() const noexcept { return const_iterator(m_ptr + m_size); }
+  constexpr auto begin() noexcept { return iterator(m_ptr); }
+  constexpr auto end() noexcept { return iterator(m_ptr + m_size); }
 
   constexpr void swap(basic_string_view &rhs) noexcept {
     aria::swap(m_ptr, rhs.m_ptr);
