@@ -66,6 +66,86 @@ template <class Container> constexpr auto crend(const Container &cont) { return 
 template <class T, size_t N> constexpr T *begin(T (&array)[N]) noexcept { return array; }
 template <class T, size_t N> constexpr T *end(T (&array)[N]) noexcept { return array + N; }
 
+template <class iter> class basic_const_iterator {
+public:
+  using value_type = typename iter::value_type;
+  using pointer = const value_type *;
+  using reference = const value_type &;
+  using difference_type = typename iter::difference_type;
+
+  basic_const_iterator() = default;
+  basic_const_iterator(iter a) : it(a) {}
+
+  template <class... Args>
+    requires constructible_from<iter, Args...>
+  explicit basic_const_iterator(Args &&...args) : it(forward<Args>(args)...) {}
+
+  operator iter() const noexcept { return it; }
+
+  reference operator*() const noexcept { return it.operator*(); }
+  pointer operator->() const noexcept { return it.operator->(); }
+
+  basic_const_iterator &operator++() noexcept {
+    it.operator++();
+    return *this;
+  }
+  basic_const_iterator operator++(int) noexcept {
+    auto temp = *this;
+    it.operator++();
+    return temp;
+  }
+  basic_const_iterator &operator--() noexcept {
+    it.operator--();
+    return *this;
+  }
+  basic_const_iterator operator--(int) noexcept {
+    auto temp = *this;
+    it.operator--();
+    return temp;
+  }
+
+  basic_const_iterator &operator+=(const difference_type d)
+    requires random_access_iterator<iter>
+  {
+    it += d;
+    return *this;
+  }
+
+  basic_const_iterator &operator-=(const difference_type d)
+    requires random_access_iterator<iter>
+  {
+    it.operator-=(d);
+    return *this;
+  }
+
+  basic_const_iterator operator+(const difference_type d) const
+    requires random_access_iterator<iter>
+  {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  difference_type operator-(const basic_const_iterator &rhs) const noexcept
+    requires random_access_iterator<iter>
+  {
+    return it - rhs.it;
+  }
+
+  basic_const_iterator operator-(const difference_type d) const
+    requires random_access_iterator<iter>
+  {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
+
+  auto operator<=>(const basic_const_iterator &) const noexcept = default;
+
+private:
+  iter it;
+};
+
 // use const iterator type to implement mutable iterator type
 template <class const_iterator> class mutable_iterator {
 public:
@@ -200,6 +280,8 @@ private:
 
 template <bidirectional_iterator Iter> reverse_iterator<Iter> make_reverse_iterator(Iter i) { return reverse_iterator(i); }
 
+template <class Iter> constexpr basic_const_iterator<Iter> make_const_iterator(Iter i) { return basic_const_iterator(i); }
+
 class iterable {
 public:
   constexpr auto cbegin(this auto const &self) noexcept { return self.begin(); }
@@ -208,6 +290,69 @@ public:
   constexpr auto rend(this auto &&self) noexcept { return make_reverse_iterator(self.begin()); }
   constexpr auto crbegin(this auto const &self) noexcept { return self.rbegin(); }
   constexpr auto crend(this auto const &self) noexcept { return self.rend(); }
+};
+
+template <class T> class array_iterator {
+public:
+  using value_type = T;
+  using pointer = T *;
+  using reference = T &;
+  using difference_type = ptrdiff_t;
+
+  array_iterator() = default;
+  array_iterator(T *p) : ptr(p) {}
+  array_iterator(const T *p) : ptr(const_cast<pointer>(p)) {}
+
+  reference operator*() const noexcept { return *ptr; }
+  pointer operator->() const noexcept { return ptr; }
+
+  array_iterator &operator++() noexcept {
+    ++ptr;
+    return *this;
+  }
+  array_iterator operator++(int) noexcept {
+    auto temp = *this;
+    ++ptr;
+    return temp;
+  }
+  array_iterator &operator--() noexcept {
+    --ptr;
+    return *this;
+  }
+  array_iterator operator--(int) noexcept {
+    auto temp = *this;
+    --ptr;
+    return temp;
+  }
+
+  array_iterator &operator+=(const difference_type d) noexcept {
+    ptr += d;
+    return *this;
+  }
+
+  array_iterator &operator-=(const difference_type d) noexcept {
+    ptr -= d;
+    return *this;
+  }
+
+  array_iterator operator+(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  array_iterator operator-(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
+
+  difference_type operator-(array_iterator rhs) const noexcept { return ptr - rhs.ptr; }
+
+  auto operator<=>(const array_iterator &) const noexcept = default;
+
+private:
+  pointer ptr = nullptr;
 };
 
 } // namespace aria

@@ -8,68 +8,6 @@
 
 namespace aria {
 
-template <class VectorType> class vec_const_iterator {
-public:
-  using value_type = typename VectorType::value_type;
-  using pointer = typename VectorType::const_pointer;
-  using reference = const value_type &;
-  using difference_type = ptrdiff_t;
-
-  vec_const_iterator() = default;
-  vec_const_iterator(pointer p) : ptr(p) {}
-
-  reference operator*() const noexcept { return *ptr; }
-  pointer operator->() const noexcept { return ptr; }
-
-  vec_const_iterator &operator++() noexcept {
-    ++ptr;
-    return *this;
-  }
-  vec_const_iterator operator++(int) noexcept {
-    auto temp = *this;
-    ++ptr;
-    return temp;
-  }
-  vec_const_iterator &operator--() noexcept {
-    --ptr;
-    return *this;
-  }
-  vec_const_iterator operator--(int) noexcept {
-    auto temp = *this;
-    --ptr;
-    return temp;
-  }
-
-  vec_const_iterator &operator+=(const difference_type d) noexcept {
-    ptr += d;
-    return *this;
-  }
-
-  vec_const_iterator &operator-=(const difference_type d) noexcept {
-    ptr -= d;
-    return *this;
-  }
-
-  vec_const_iterator operator+(const difference_type d) const noexcept {
-    auto temp = *this;
-    temp += d;
-    return temp;
-  }
-
-  vec_const_iterator operator-(const difference_type d) const noexcept {
-    auto temp = *this;
-    temp -= d;
-    return temp;
-  }
-
-  difference_type operator-(vec_const_iterator rhs) const noexcept { return ptr - rhs.ptr; }
-
-  auto operator<=>(const vec_const_iterator &) const noexcept = default;
-
-private:
-  pointer ptr = nullptr;
-};
-
 template <class T, class Allocator = allocator<T>> class vector : public iterable {
 public:
   using size_type = size_t;
@@ -80,8 +18,8 @@ public:
   using allocator_type = Allocator;
   using pointer = typename allocator_type::pointer;
   using const_pointer = typename allocator_type::const_pointer;
-  using const_iterator = vec_const_iterator<vector<T, Allocator>>;
-  using iterator = mutable_iterator<const_iterator>;
+  using iterator = array_iterator<T>;
+  using const_iterator = basic_const_iterator<iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 

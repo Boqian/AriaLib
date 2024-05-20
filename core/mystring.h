@@ -13,62 +13,6 @@
 
 namespace aria {
 
-template <class StringType> class string_const_iterator {
-public:
-  using value_type = typename StringType::value_type;
-  using pointer = typename StringType::const_pointer;
-  using reference = const value_type &;
-  using difference_type = ptrdiff_t;
-
-  string_const_iterator() = default;
-  string_const_iterator(pointer p) : ptr(p) {}
-
-  reference operator*() const noexcept { return *ptr; }
-  pointer operator->() const noexcept { return ptr; }
-
-  string_const_iterator &operator++() {
-    ++ptr;
-    return *this;
-  }
-
-  string_const_iterator operator++(int) {
-    auto tmp = *this;
-    ++(*this);
-    return tmp;
-  }
-
-  string_const_iterator &operator--() {
-    --ptr;
-    return *this;
-  }
-
-  string_const_iterator operator--(int) {
-    auto tmp = *this;
-    --(*this);
-    return tmp;
-  }
-
-  string_const_iterator &operator+=(const difference_type d) noexcept {
-    ptr += d;
-    return *this;
-  }
-
-  string_const_iterator &operator-=(const difference_type d) noexcept {
-    ptr -= d;
-    return *this;
-  }
-
-  string_const_iterator operator+(const difference_type d) const noexcept { return string_const_iterator(*this) += d; }
-  string_const_iterator operator-(const difference_type d) const noexcept { return string_const_iterator(*this) -= d; }
-
-  difference_type operator-(string_const_iterator rhs) const noexcept { return ptr - rhs.ptr; }
-
-  auto operator<=>(const string_const_iterator &) const noexcept = default;
-
-private:
-  pointer ptr{};
-};
-
 template <class CharT, class Allocator = allocator<CharT>> class basic_string : public iterable {
 public:
   using size_type = size_t;
@@ -77,8 +21,8 @@ public:
   using const_pointer = const value_type *;
   using reference = value_type &;
   using const_reference = const value_type &;
-  using const_iterator = string_const_iterator<basic_string<CharT, Allocator>>;
-  using iterator = mutable_iterator<const_iterator>;
+  using iterator = array_iterator<CharT>;
+  using const_iterator = basic_const_iterator<iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
   static constexpr size_type npos = -1;
