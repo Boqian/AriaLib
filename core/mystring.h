@@ -179,6 +179,13 @@ public:
   basic_string &operator+=(const basic_string &rhs) { return append(rhs.m_ptr, rhs.size()); }
   basic_string &operator+=(const_pointer rhs) { return append(rhs, strlen(rhs)); }
 
+  size_type find(const basic_string &str, size_type pos = 0) const {
+    if (pos + str.size() > size())
+      return npos;
+    const auto ptr = strstr(data() + pos, str.data());
+    return ptr ? (ptr - m_ptr) : npos;
+  }
+
 private:
   pointer get(size_type i) { return m_ptr + i; }
   const pointer get(size_type i) const { return m_ptr + i; }

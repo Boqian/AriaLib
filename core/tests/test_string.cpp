@@ -149,3 +149,9 @@ TEST(test_string, to_string) {
   EXPECT_EQ(to_string(false), "0");
   EXPECT_EQ(to_string(char(12)), "12");
 }
+
+TEST(test_string, find) {
+  string a = "12345", b = "34", c = "24";
+  EXPECT_EQ(a.find(b), 2);
+  EXPECT_EQ(a.find(c), string::npos);
+}
