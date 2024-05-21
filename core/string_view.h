@@ -25,6 +25,10 @@ public:
   constexpr basic_string_view(const CharT *s) noexcept : m_ptr(s), m_size(strlen(s)) {}
   constexpr basic_string_view(nullptr_t) = delete;
 
+  // todo use to_address
+  template <class It, class End> constexpr basic_string_view(It it, End end) : m_ptr(it.operator->()), m_size(end - it) {}
+  template <class R> constexpr basic_string_view(const R &r) : m_ptr(aria::begin(r).operator->()), m_size(aria::end(r) - aria::begin(r)) {}
+
   constexpr const_reference operator[](size_type i) const noexcept { return *(m_ptr + i); }
   constexpr const_pointer data() const noexcept { return m_ptr; }
   constexpr const_reference front() const noexcept { return *m_ptr; }
