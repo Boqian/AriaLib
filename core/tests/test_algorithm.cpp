@@ -98,11 +98,13 @@ TEST(test_algorithm, numeric) {
 
 TEST(test_algorithm, copy) {
   {
-    vector<int> a = {1, 2, 3}, b(3, 0), c(3, 0);
+    vector<int> a = {1, 2, 3}, b(3, 0), c(3, 0), d(3, 0);
     copy(begin(a), end(a), begin(b));
     EXPECT_EQ(b, vector({1, 2, 3}));
     auto it = copy_if(begin(a), end(a), begin(c), [](int x) { return x % 2 == 1; });
     EXPECT_EQ(c, vector({1, 3, 0}));
     EXPECT_EQ(distance(begin(c), it), 2);
+    copy_n(begin(a), 3, begin(d));
+    EXPECT_EQ(d, vector({1, 2, 3}));
   }
 }
