@@ -122,6 +122,30 @@ template <class T> constexpr const T &min(const T &a, const T &b) { return (a < 
 template <class T, class Compare> const T &min(const T &a, const T &b, Compare comp) { return comp(a, b) ? a : b; }
 template <class T> constexpr T min(std::initializer_list<T> ilist) { return *min_element(ilist.begin(), ilist.end()); }
 
+//-----------------------Modifying sequence operations-----------------------
+template <class InputIt, class OutputIt> constexpr OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
+  for (; first != last; ++first, ++d_first)
+    *d_first = *first;
+  return d_first;
+}
+
+template <class InputIt, class OutputIt, class UnaryPred>
+constexpr OutputIt copy_if(InputIt first, InputIt last, OutputIt d_first, UnaryPred pred) {
+  for (; first != last; ++first)
+    if (pred(*first)) {
+      *d_first = *first;
+      ++d_first;
+    }
+  return d_first;
+}
+
+template <class InputIt, class Size, class OutputIt> constexpr OutputIt copy_n(InputIt first, Size count, OutputIt d_first) {
+  for (; count > 0; ++first, ++d_first, --count) {
+    *d_first = *first;
+  }
+  return d_first;
+}
+
 //-----------------------Order-changing operations-----------------------
 template <class ForwardIt1, class ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) {
   using aria::swap;

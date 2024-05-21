@@ -95,3 +95,14 @@ TEST(test_algorithm, numeric) {
     EXPECT_EQ(reduce(v.begin(), v.end(), 1, op), 24);
   }
 }
+
+TEST(test_algorithm, copy) {
+  {
+    vector<int> a = {1, 2, 3}, b(3, 0), c(3, 0);
+    copy(begin(a), end(a), begin(b));
+    EXPECT_EQ(b, vector({1, 2, 3}));
+    auto it = copy_if(begin(a), end(a), begin(c), [](int x) { return x % 2 == 1; });
+    EXPECT_EQ(c, vector({1, 3, 0}));
+    EXPECT_EQ(distance(begin(c), it), 2);
+  }
+}
