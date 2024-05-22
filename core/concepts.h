@@ -25,6 +25,11 @@ concept copy_constructible =
     move_constructible<T> && constructible_from<T, T &> && convertible_to<T &, T> && constructible_from<T, const T &> &&
     convertible_to<const T &, T> && constructible_from<T, const T> && convertible_to<const T, T>;
 
+template <class LHS, class RHS>
+concept assignable_from = is_lvalue_reference_v<LHS> && requires(LHS lhs, RHS &&rhs) {
+  { lhs = forward<RHS>(rhs) } -> same_as<LHS>;
+};
+
 template <class T>
 concept default_initializable = constructible_from<T> && requires { T{}; } && requires { ::new T; };
 
@@ -46,46 +51,45 @@ concept arithmetic = is_arithmetic_v<T>;
 template <class T>
 concept not_void = !same_as<T, void>;
 
-// namespace ranges {
-// namespace _Swap {
-// template <class T> void swap(T &, T &) = delete;
-//
-// template <class _Ty1, class _Ty2>
-// concept _Use_ADL_swap = (_Has_class_or_enum_type<_Ty1> || _Has_class_or_enum_type<_Ty2>)&&requires(_Ty1 &&__t, _Ty2 &&__u) {
-//   swap(static_cast<_Ty1 &&>(__t), static_cast<_Ty2 &&>(__u)); // intentional ADL
-// };
-//
-// struct _Cpo {
-//   template <class _Ty1, class _Ty2>
-//     requires _Use_ADL_swap<_Ty1, _Ty2>
-//   constexpr void operator()(_Ty1 &&__t, _Ty2 &&__u) const
-//       noexcept(noexcept(swap(static_cast<_Ty1 &&>(__t), static_cast<_Ty2 &&>(__u)))) { // intentional ADL
-//     swap(static_cast<_Ty1 &&>(__t), static_cast<_Ty2 &&>(__u));                        // intentional ADL
-//   }
-//
-//   template <class _Ty>
-//     requires(!_Use_ADL_swap<_Ty &, _Ty &> && move_constructible<_Ty> && assignable_from<_Ty &, _Ty>)
-//   constexpr void operator()(_Ty &__x, _Ty &__y) const noexcept(is_nothrow_move_constructible_v<_Ty> && is_nothrow_move_assignable_v<_Ty>)
-//   {
-//     _Ty __tmp(static_cast<_Ty &&>(__x));
-//     __x = static_cast<_Ty &&>(__y);
-//     __y = static_cast<_Ty &&>(__tmp);
-//   }
-//
-//   template <class _Ty1, class _Ty2, size_t _Size>
-//   constexpr void operator()(_Ty1 (&__t)[_Size], _Ty2 (&__u)[_Size]) const noexcept(noexcept((*this)(__t[0], __u[0])))
-//     requires requires { (*this)(__t[0], __u[0]); }
-//   {
-//     for (size_t __i = 0; __i < _Size; ++__i) {
-//       (*this)(__t[__i], __u[__i]);
-//     }
-//   }
-// };
-// } // namespace _Swap
-//
-// inline namespace _Cpos {
-//_EXPORT_STD inline constexpr _Swap::_Cpo swap;
-// }
-// } // namespace ranges
+template <class T>
+concept has_class_or_enumTpe = is_class_v<remove_cvref_t<T>> || is_enum_v<remove_cvref_t<T>> || is_union_v<remove_cvref_t<T>>;
+
+namespace ranges {
+namespace _Swap {
+template <class T> void swap(T &, T &) = delete;
+
+template <class T, class U>
+concept _Use_ADL_swap =
+    (has_class_or_enumTpe<T> || has_class_or_enumTpe<U>)&&requires(T &&t, U &&u) { swap(forward<T>(t), forward<U>(u)); };
+
+struct _Cpo {
+  template <class T, class U>
+    requires _Use_ADL_swap<T, U>
+  constexpr void operator()(T &&t, U &&u) const noexcept {
+    swap(static_cast<T &&>(t), static_cast<U &&>(u));
+  }
+
+  template <class T>
+    requires(!_Use_ADL_swap<T &, T &> && move_constructible<T> && assignable_from<T &, T>)
+  constexpr void operator()(T &x, T &y) const {
+    T temp = move(x);
+    x = move(y);
+    y = move(temp);
+  }
+
+  template <class T, class U, size_t Size>
+  constexpr void operator()(T (&t)[Size], U (&u)[Size]) const noexcept(noexcept((*this)(t[0], u[0])))
+    requires requires { (*this)(t[0], u[0]); }
+  {
+    for (size_t i = 0; i < Size; ++i)
+      (*this)(t[i], u[i]);
+  }
+};
+} // namespace _Swap
+
+inline namespace _Cpos {
+inline constexpr _Swap::_Cpo swap;
+}
+} // namespace ranges
 
 } // namespace aria
