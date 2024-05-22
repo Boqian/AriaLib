@@ -87,9 +87,14 @@ struct _Cpo {
 };
 } // namespace _Swap
 
-inline namespace _Cpos {
 inline constexpr _Swap::_Cpo swap;
-}
+
 } // namespace ranges
+
+template <class T>
+concept swappable = requires(T &a, T &b) { ranges::swap(a, b); };
+
+template <class T>
+concept movable = is_object_v<T> && move_constructible<T> && assignable_from<T &, T> && swappable<T>;
 
 } // namespace aria

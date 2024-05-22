@@ -74,6 +74,16 @@ template <class T> struct remove_cv<volatile T> : type_identity<T> {};
 template <class T> struct remove_cv<const volatile T> : type_identity<T> {};
 template <class T> using remove_cv_t = remove_cv<T>::type;
 
+//----------------- compiler implemented traits -----------------------
+using std::is_class;
+using std::is_class_v;
+using std::is_enum;
+using std::is_enum_v;
+using std::is_trivial;
+using std::is_trivial_v;
+using std::is_union;
+using std::is_union_v;
+
 //----------------- Primary type categories -----------------------
 
 template <class T> struct is_void : is_same<void, remove_cv_t<T>> {};
@@ -91,6 +101,9 @@ template <class T> struct is_pointer<T *volatile> : true_type {};
 template <class T> struct is_pointer<T *const volatile> : true_type {};
 template <class T> inline constexpr bool is_pointer_v = is_pointer<T>::value;
 
+template <class T> struct is_null_pointer : is_same<remove_cv_t<T>, nullptr_t> {};
+template <class T> inline constexpr bool is_null_pointer_v = is_null_pointer<T>::value;
+
 template <class T> struct is_array : false_type {};
 template <class T> struct is_array<T[]> : true_type {};
 template <class T, size_t N> struct is_array<T[N]> : true_type {};
@@ -101,6 +114,12 @@ template <class T> struct is_floating_point : bool_constant<is_floating_point_v<
 
 template <class T> inline constexpr bool is_arithmetic_v = is_integral_v<T> || is_floating_point_v<T>;
 template <class T> struct is_arithmetic : bool_constant<is_arithmetic_v<T>> {};
+
+template <class T> struct is_scalar : bool_constant<is_arithmetic_v<T> || is_enum_v<T> || is_pointer_v<T> || is_null_pointer_v<T>> {};
+template <class T> inline constexpr bool is_scalar_v = is_scalar<T>::value;
+
+template <class T> struct is_object : bool_constant<is_scalar_v<T> || is_array_v<T> || is_union_v<T> || is_class_v<T>> {};
+template <class T> inline constexpr bool is_object_v = is_object<T>::value;
 
 //----------------- is_base_of -----------------------
 template <class T, class U> struct is_base_of : bool_constant<!is_void_v<T> && is_convertible_v<U *, T *>> {};
@@ -259,15 +278,5 @@ template <class T>
   requires(is_arithmetic_v<T>)
 struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
 template <class T> inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
-
-//----------------- compiler implemented traits -----------------------
-using std::is_class;
-using std::is_class_v;
-using std::is_enum;
-using std::is_enum_v;
-using std::is_trivial;
-using std::is_trivial_v;
-using std::is_union;
-using std::is_union_v;
 
 } // namespace aria
