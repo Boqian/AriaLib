@@ -7,9 +7,21 @@
 namespace aria {
 
 template <class I>
-concept forward_iterator = requires(I i) {
-  { i++ } -> same_as<I>;
+concept weakly_incrementable = std::movable<I> && requires(I i) {
   { ++i } -> same_as<I &>;
+  { i++ };
+};
+
+template <class I>
+concept input_or_output_iterator = weakly_incrementable<I> && requires(I i) {
+  { *i } -> not_void;
+};
+
+// todo indirect_readable, incrementable
+template <class I>
+concept forward_iterator = requires(I i) {
+  { ++i } -> same_as<I &>;
+  { i++ };
 };
 
 template <class I>

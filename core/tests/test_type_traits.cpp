@@ -173,6 +173,9 @@ void test_traits() {
   static_assert(is_nothrow_swappable_v<int>);
   static_assert(!is_nothrow_swappable_v<ThrowSwap>);
   static_assert(!is_nothrow_swappable_v<NoSwap>);
+
+  static_assert(is_class_v<AA>);
+  static_assert(!is_class_v<int>);
 }
 
 TEST(test_type_traits, swap) {

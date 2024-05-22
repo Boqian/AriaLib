@@ -1,6 +1,6 @@
 #pragma once
 #include "cstddef.h"
-
+#include <type_traits> //for complier implemented traits
 // https://en.cppreference.com/w/cpp/header/type_traits
 
 /*
@@ -259,5 +259,15 @@ template <class T>
   requires(is_arithmetic_v<T>)
 struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
 template <class T> inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
+
+//----------------- compiler implemented traits -----------------------
+using std::is_class;
+using std::is_class_v;
+using std::is_enum;
+using std::is_enum_v;
+using std::is_trivial;
+using std::is_trivial_v;
+using std::is_union;
+using std::is_union_v;
 
 } // namespace aria
