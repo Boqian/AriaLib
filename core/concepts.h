@@ -97,4 +97,11 @@ concept swappable = requires(T &a, T &b) { ranges::swap(a, b); };
 template <class T>
 concept movable = is_object_v<T> && move_constructible<T> && assignable_from<T &, T> && swappable<T>;
 
+template <class T>
+concept copyable =
+    copy_constructible<T> && movable<T> && assignable_from<T &, T &> && assignable_from<T &, const T &> && assignable_from<T &, const T>;
+
+template <class T>
+concept semiregular = copyable<T> && default_initializable<T>;
+
 } // namespace aria
