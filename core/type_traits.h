@@ -45,6 +45,25 @@ template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U
 
 template <class T, class... Args> inline constexpr bool is_any_of_v = (is_same_v<T, Args> || ...);
 
+namespace details {
+template <class T, class U>
+concept same_as = is_same_v<T, U> && is_same_v<U, T>;
+
+template <class Fn, class... Args>
+concept invocable = requires(Fn fn, Args... args) { fn(forward<Args>(args)...); };
+
+template <class Fn, class R, class... Args>
+concept invocable_r = requires(Fn fn, Args... args) {
+  { fn(forward<Args>(args)...) } -> same_as<R>;
+};
+
+} // namespace details
+
+template <class Fn, class... Args> struct is_invocable : bool_constant<details::invocable<Fn, Args...>> {};
+template <class Fn, class... Args> inline constexpr bool is_invocable_v = is_invocable<Fn, Args...>::value;
+template <class Fn, class R, class... Args> struct is_invocable_r : bool_constant<details::invocable_r<Fn, R, Args...>> {};
+template <class Fn, class R, class... Args> inline constexpr bool is_invocable_r_v = is_invocable_r<Fn, R, Args...>::value;
+
 //----------------- Miscellaneous transformations -----------------------
 template <class T> struct type_identity {
   using type = T;

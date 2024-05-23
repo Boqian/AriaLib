@@ -208,3 +208,23 @@ void test_function_class() {
   static_assert(is_member_pointer_v<decltype(&S1::foo)>);
   static_assert(!is_member_pointer_v<int>);
 }
+
+void f0() {}
+void f1(int) {}
+int f2(int &) { return 1; }
+int f3(int, double &) { return 1; }
+
+void test_invocable() {
+  using namespace aria;
+  static_assert(is_invocable_v<decltype(f0)>);
+  static_assert(!is_invocable_v<decltype(f0), int>);
+  static_assert(is_invocable_v<decltype(f1), int>);
+  static_assert(is_invocable_v<decltype(f1), int &>);
+  static_assert(is_invocable_v<decltype(f2), int &>);
+  static_assert(!is_invocable_v<decltype(f2), int>);
+  static_assert(is_invocable_v<decltype(f3), const int, double &>);
+
+  static_assert(is_invocable_r_v<decltype(f0), void>);
+  static_assert(is_invocable_r_v<decltype(f1), void, int>);
+  static_assert(is_invocable_r_v<decltype(f2), int, int &>);
+}
