@@ -196,8 +196,12 @@ template <class T> struct is_member_pointer : bool_constant<is_member_pointer_v<
 using std::has_unique_object_representations_v;
 using std::is_abstract;
 using std::is_abstract_v;
+using std::is_aggregate;
+using std::is_aggregate_v;
 using std::is_empty;
 using std::is_empty_v;
+using std::is_final;
+using std::is_final_v;
 using std::is_standard_layout;
 using std::is_standard_layout_v;
 using std::is_trivial;
@@ -216,6 +220,14 @@ template <class T>
   requires(is_arithmetic_v<T>)
 struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
 template <class T> inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
+
+template <class T> struct is_bounded_array : false_type {};
+template <class T, size_t N> struct is_bounded_array<T[N]> : true_type {};
+template <class T> inline constexpr bool is_bounded_array_v = is_bounded_array<T>::value;
+
+template <class T> struct is_unbounded_array : false_type {};
+template <class T> struct is_unbounded_array<T[]> : true_type {};
+template <class T> inline constexpr bool is_unbounded_array_v = is_unbounded_array<T>::value;
 
 //----------------- is_constructible -----------------------
 template <class T>
