@@ -132,8 +132,6 @@ using std::is_class;
 using std::is_class_v;
 using std::is_enum;
 using std::is_enum_v;
-using std::is_trivial;
-using std::is_trivial_v;
 using std::is_union;
 using std::is_union_v;
 
@@ -193,6 +191,31 @@ template <class T> inline constexpr bool is_object_v = is_object<T>::value;
 
 template <class T> constexpr bool is_member_pointer_v = is_member_object_pointer_v<T> || is_member_function_pointer_v<T>;
 template <class T> struct is_member_pointer : bool_constant<is_member_pointer_v<T>> {};
+
+//----------------- type properties -----------------------
+using std::has_unique_object_representations_v;
+using std::is_abstract;
+using std::is_abstract_v;
+using std::is_empty;
+using std::is_empty_v;
+using std::is_standard_layout;
+using std::is_standard_layout_v;
+using std::is_trivial;
+using std::is_trivial_v;
+using std::is_trivially_copyable;
+using std::is_trivially_copyable_v;
+
+template <class T> struct is_signed : false_type {};
+template <class T>
+  requires(is_arithmetic_v<T>)
+struct is_signed<T> : bool_constant<T(-1) < T(0)> {};
+template <class T> inline constexpr bool is_signed_v = is_signed<T>::value;
+
+template <class T> struct is_unsigned : false_type {};
+template <class T>
+  requires(is_arithmetic_v<T>)
+struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
+template <class T> inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
 
 //----------------- is_constructible -----------------------
 template <class T>
@@ -279,18 +302,5 @@ template <class T, class U> struct common_type<T, U> {
 };
 
 template <class T, class U, class... R> struct common_type<T, U, R...> : common_type<common_type_t<T, U>, R...> {};
-
-//----------------- type properties -----------------------
-template <class T> struct is_signed : false_type {};
-template <class T>
-  requires(is_arithmetic_v<T>)
-struct is_signed<T> : bool_constant<T(-1) < T(0)> {};
-template <class T> inline constexpr bool is_signed_v = is_signed<T>::value;
-
-template <class T> struct is_unsigned : false_type {};
-template <class T>
-  requires(is_arithmetic_v<T>)
-struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
-template <class T> inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
 
 } // namespace aria
