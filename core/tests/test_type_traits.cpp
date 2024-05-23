@@ -187,3 +187,10 @@ TEST(test_type_traits, swap) {
   EXPECT_EQ(b[0], 1);
   EXPECT_EQ(b[1], 2);
 }
+
+void foo(int) {}
+void test_is_function() {
+  using namespace aria;
+  static_assert(is_function_v<decltype(foo)>);
+  static_assert(!is_function_v<int>);
+}

@@ -56,7 +56,11 @@ template <bool B, class T, class F> using conditional_t = conditional<B, T, F>::
 
 template <class...> using void_t = void;
 
-//----------------- add_const add_volatile add_cv-----------------------
+//----------------- const volatile -----------------------
+template <class T> struct is_const : false_type {};
+template <class T> struct is_const<const T> : true_type {};
+template <class T> inline constexpr bool is_const_v = is_const<T>::value;
+
 template <class T> struct add_const : type_identity<const T> {};
 template <class T> using add_const_t = add_const<T>::type;
 template <class T> struct add_volatile : type_identity<volatile T> {};
@@ -64,7 +68,6 @@ template <class T> using add_volatile_t = add_volatile<T>::type;
 template <class T> struct add_cv : type_identity<const volatile T> {};
 template <class T> using add_cv_t = add_cv<T>::type;
 
-//----------------- remove_const remove_volatile remove_cv-----------------------
 template <class T> struct remove_const : type_identity<T> {};
 template <class T> struct remove_const<const T> : type_identity<T> {};
 template <class T> using remove_const_t = remove_const<T>::type;
@@ -76,6 +79,53 @@ template <class T> struct remove_cv<const T> : type_identity<T> {};
 template <class T> struct remove_cv<volatile T> : type_identity<T> {};
 template <class T> struct remove_cv<const volatile T> : type_identity<T> {};
 template <class T> using remove_cv_t = remove_cv<T>::type;
+
+//----------------- reference -----------------------
+namespace detail {
+template <class T> auto try_add_lvalue_ref(int) -> type_identity<T &>;
+template <class T> auto try_add_lvalue_ref(...) -> type_identity<T>;
+template <class T> auto try_add_rvalue_ref(int) -> type_identity<T &&>;
+template <class T> auto try_add_rvalue_ref(...) -> type_identity<T>;
+} // namespace detail
+
+template <class T> struct add_lvalue_reference : decltype(detail::try_add_lvalue_ref<T>(0)) {};
+template <class T> struct add_rvalue_reference : decltype(detail::try_add_rvalue_ref<T>(0)) {};
+template <class T> using add_lvalue_reference_t = add_lvalue_reference<T>::type;
+template <class T> using add_rvalue_reference_t = add_rvalue_reference<T>::type;
+
+template <class T> struct remove_reference : type_identity<T> {};
+template <class T> struct remove_reference<T &> : type_identity<T> {};
+template <class T> struct remove_reference<T &&> : type_identity<T> {};
+template <class T> using remove_reference_t = remove_reference<T>::type;
+
+template <class T> struct remove_cvref : type_identity<remove_cv_t<remove_reference_t<T>>> {};
+template <class T> using remove_cvref_t = remove_cvref<T>::type;
+
+template <class T> struct is_reference : false_type {};
+template <class T> struct is_reference<T &> : true_type {};
+template <class T> struct is_reference<T &&> : true_type {};
+template <class T> inline constexpr bool is_reference_v = is_reference<T>::value;
+
+template <class T> struct is_lvalue_reference : false_type {};
+template <class T> struct is_lvalue_reference<T &> : true_type {};
+template <class T> inline constexpr bool is_lvalue_reference_v = is_lvalue_reference<T>::value;
+
+template <class T> struct is_rvalue_reference : false_type {};
+template <class T> struct is_rvalue_reference<T &&> : true_type {};
+template <class T> inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
+
+//----------------- declval -----------------------
+template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
+
+//----------------- move, forward------------------
+template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept { return static_cast<remove_reference_t<T> &&>(t); }
+
+template <typename T> constexpr T &&forward(remove_reference_t<T> &t) noexcept { return static_cast<T &&>(t); }
+
+template <typename T> constexpr T &&forward(remove_reference_t<T> &&t) noexcept {
+  static_assert(!is_lvalue_reference_v<T>);
+  return static_cast<T &&>(t);
+}
 
 //----------------- Primary type categories -----------------------
 using std::is_class;
@@ -122,56 +172,8 @@ template <class T> inline constexpr bool is_scalar_v = is_scalar<T>::value;
 template <class T> struct is_object : bool_constant<is_scalar_v<T> || is_array_v<T> || is_union_v<T> || is_class_v<T>> {};
 template <class T> inline constexpr bool is_object_v = is_object<T>::value;
 
-//----------------- add_lvalue_reference, add_rvalue_reference
-
-namespace detail {
-template <class T> auto try_add_lvalue_ref(int) -> type_identity<T &>;
-template <class T> auto try_add_lvalue_ref(...) -> type_identity<T>;
-template <class T> auto try_add_rvalue_ref(int) -> type_identity<T &&>;
-template <class T> auto try_add_rvalue_ref(...) -> type_identity<T>;
-} // namespace detail
-
-template <class T> struct add_lvalue_reference : decltype(detail::try_add_lvalue_ref<T>(0)) {};
-template <class T> struct add_rvalue_reference : decltype(detail::try_add_rvalue_ref<T>(0)) {};
-template <class T> using add_lvalue_reference_t = add_lvalue_reference<T>::type;
-template <class T> using add_rvalue_reference_t = add_rvalue_reference<T>::type;
-
-//----------------- remove_reference -----------------------
-template <class T> struct remove_reference : type_identity<T> {};
-template <class T> struct remove_reference<T &> : type_identity<T> {};
-template <class T> struct remove_reference<T &&> : type_identity<T> {};
-template <class T> using remove_reference_t = remove_reference<T>::type;
-
-//----------------- remove_cvref -----------------------
-template <class T> struct remove_cvref : type_identity<remove_cv_t<remove_reference_t<T>>> {};
-template <class T> using remove_cvref_t = remove_cvref<T>::type;
-
-//----------------- is_lvalue_reference is_rvalue_reference-----------------------
-template <class T> struct is_reference : false_type {};
-template <class T> struct is_reference<T &> : true_type {};
-template <class T> struct is_reference<T &&> : true_type {};
-template <class T> inline constexpr bool is_referenct_v = is_reference<T>::value;
-
-template <class T> struct is_lvalue_reference : false_type {};
-template <class T> struct is_lvalue_reference<T &> : true_type {};
-template <class T> inline constexpr bool is_lvalue_reference_v = is_lvalue_reference<T>::value;
-
-template <class T> struct is_rvalue_reference : false_type {};
-template <class T> struct is_rvalue_reference<T &&> : true_type {};
-template <class T> inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
-
-//----------------- declval -----------------------
-template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}
-
-//----------------- move, forward------------------
-template <class T> constexpr remove_reference_t<T> &&move(T &&t) noexcept { return static_cast<remove_reference_t<T> &&>(t); }
-
-template <typename T> constexpr T &&forward(remove_reference_t<T> &t) noexcept { return static_cast<T &&>(t); }
-
-template <typename T> constexpr T &&forward(remove_reference_t<T> &&t) noexcept {
-  static_assert(!is_lvalue_reference_v<T>);
-  return static_cast<T &&>(t);
-}
+template <class T> constexpr bool is_function_v = !is_const_v<const T> && !is_reference_v<T>;
+template <class T> struct is_function : bool_constant<is_function_v<T>> {};
 
 //----------------- is_constructible -----------------------
 template <class T>
@@ -260,10 +262,6 @@ template <class T, class U> struct common_type<T, U> {
 template <class T, class U, class... R> struct common_type<T, U, R...> : common_type<common_type_t<T, U>, R...> {};
 
 //----------------- type properties -----------------------
-template <class T> struct is_const : false_type {};
-template <class T> struct is_const<const T> : true_type {};
-template <class T> inline constexpr bool is_const_v = is_const<T>::value;
-
 template <class T> struct is_signed : false_type {};
 template <class T>
   requires(is_arithmetic_v<T>)
