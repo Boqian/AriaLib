@@ -49,6 +49,14 @@ template <class T>
 concept arithmetic = is_arithmetic_v<T>;
 
 template <class T>
+concept _boolean_testable_impl = convertible_to<T, bool>;
+
+template <class T>
+concept boolean_testable = _boolean_testable_impl<T> && requires(T &&t) {
+  { !static_cast<T &&>(t) } -> _boolean_testable_impl;
+};
+
+template <class T>
 concept not_void = !same_as<T, void>;
 
 template <class T>
@@ -103,5 +111,19 @@ concept copyable =
 
 template <class T>
 concept semiregular = copyable<T> && default_initializable<T>;
+
+template <class T, class U>
+concept weakly_equality_comparable_with = requires(const remove_reference_t<T> &t, const remove_reference_t<U> &u) {
+  { t == u } -> boolean_testable;
+  { t != u } -> boolean_testable;
+  { u == t } -> boolean_testable;
+  { u != t } -> boolean_testable;
+};
+
+template <class T>
+concept equality_comparable = weakly_equality_comparable_with<T, T>;
+
+template <class T>
+concept regular = semiregular<T> && equality_comparable<T>;
 
 } // namespace aria

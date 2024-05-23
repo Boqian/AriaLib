@@ -24,25 +24,12 @@ template <bool v> using bool_constant = integral_constant<bool, v>;
 using true_type = bool_constant<true>;
 using false_type = bool_constant<false>;
 
-//----------------- type_identity -----------------------
-template <class T> struct type_identity {
-  using type = T;
-};
+//----------------- Type relationships -----------------------
 
-//----------------- conditional -----------------------
-template <bool B, class T, class F> struct conditional : type_identity<T> {};
-template <class T, class F> struct conditional<false, T, F> : type_identity<F> {};
-template <bool B, class T, class F> using conditional_t = conditional<B, T, F>::type;
-
-//----------------- is_same -----------------------
 template <class T, class U> struct is_same : false_type {};
 template <class T> struct is_same<T, T> : true_type {};
 template <class T, class U> inline constexpr bool is_same_v = is_same<T, U>::value;
 
-//----------------- is_any_of -----------------------
-template <class T, class... Args> inline constexpr bool is_any_of_v = (is_same_v<T, Args> || ...);
-
-//----------------- is_convertible -----------------------
 namespace details {
 template <class To> inline void foo(To) {}
 
@@ -52,6 +39,22 @@ concept convertible = requires(From f) { foo<To>(f); };
 
 template <class From, class To> struct is_convertible : bool_constant<details::convertible<From, To>> {};
 template <class From, class To> inline constexpr bool is_convertible_v = is_convertible<From, To>::value;
+
+template <class T, class U> struct is_base_of : bool_constant<!is_same_v<T, void> && is_convertible_v<U *, T *>> {};
+template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U>::value;
+
+template <class T, class... Args> inline constexpr bool is_any_of_v = (is_same_v<T, Args> || ...);
+
+//----------------- Miscellaneous transformations -----------------------
+template <class T> struct type_identity {
+  using type = T;
+};
+
+template <bool B, class T, class F> struct conditional : type_identity<T> {};
+template <class T, class F> struct conditional<false, T, F> : type_identity<F> {};
+template <bool B, class T, class F> using conditional_t = conditional<B, T, F>::type;
+
+template <class...> using void_t = void;
 
 //----------------- add_const add_volatile add_cv-----------------------
 template <class T> struct add_const : type_identity<const T> {};
@@ -74,7 +77,7 @@ template <class T> struct remove_cv<volatile T> : type_identity<T> {};
 template <class T> struct remove_cv<const volatile T> : type_identity<T> {};
 template <class T> using remove_cv_t = remove_cv<T>::type;
 
-//----------------- compiler implemented traits -----------------------
+//----------------- Primary type categories -----------------------
 using std::is_class;
 using std::is_class_v;
 using std::is_enum;
@@ -83,8 +86,6 @@ using std::is_trivial;
 using std::is_trivial_v;
 using std::is_union;
 using std::is_union_v;
-
-//----------------- Primary type categories -----------------------
 
 template <class T> struct is_void : is_same<void, remove_cv_t<T>> {};
 template <class T> inline constexpr bool is_void_v = is_void<T>::value;
@@ -120,10 +121,6 @@ template <class T> inline constexpr bool is_scalar_v = is_scalar<T>::value;
 
 template <class T> struct is_object : bool_constant<is_scalar_v<T> || is_array_v<T> || is_union_v<T> || is_class_v<T>> {};
 template <class T> inline constexpr bool is_object_v = is_object<T>::value;
-
-//----------------- is_base_of -----------------------
-template <class T, class U> struct is_base_of : bool_constant<!is_void_v<T> && is_convertible_v<U *, T *>> {};
-template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U>::value;
 
 //----------------- add_lvalue_reference, add_rvalue_reference
 
