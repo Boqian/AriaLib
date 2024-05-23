@@ -189,8 +189,22 @@ TEST(test_type_traits, swap) {
 }
 
 void foo(int) {}
-void test_is_function() {
+
+struct S1 {
+  int x;
+  int foo(int) {}
+};
+
+void test_function_class() {
   using namespace aria;
   static_assert(is_function_v<decltype(foo)>);
   static_assert(!is_function_v<int>);
+
+  static_assert(is_member_object_pointer_v<decltype(&S1::x)>);
+  static_assert(!is_member_function_pointer_v<decltype(&S1::x)>);
+  static_assert(is_member_pointer_v<decltype(&S1::x)>);
+  static_assert(is_member_function_pointer_v<decltype(&S1::foo)>);
+  static_assert(!is_member_object_pointer_v<decltype(&S1::foo)>);
+  static_assert(is_member_pointer_v<decltype(&S1::foo)>);
+  static_assert(!is_member_pointer_v<int>);
 }
