@@ -3,14 +3,6 @@
 #include <type_traits> //for complier implemented traits
 // https://en.cppreference.com/w/cpp/header/type_traits
 
-/*
- * integral_constant
- * move, forward
- * swap
- * declval
- * type_identity
- */
-
 namespace aria {
 
 template <class T, T v> struct integral_constant {
@@ -30,14 +22,14 @@ template <class T, class U> struct is_same : false_type {};
 template <class T> struct is_same<T, T> : true_type {};
 template <class T, class U> inline constexpr bool is_same_v = is_same<T, U>::value;
 
-namespace details {
+namespace detail {
 template <class To> inline void foo(To) {}
 
 template <typename From, typename To>
 concept convertible = requires(From f) { foo<To>(f); };
-} // namespace details
+} // namespace detail
 
-template <class From, class To> struct is_convertible : bool_constant<details::convertible<From, To>> {};
+template <class From, class To> struct is_convertible : bool_constant<detail::convertible<From, To>> {};
 template <class From, class To> inline constexpr bool is_convertible_v = is_convertible<From, To>::value;
 
 template <class T, class U> struct is_base_of : bool_constant<!is_same_v<T, void> && is_convertible_v<U *, T *>> {};
@@ -45,7 +37,7 @@ template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U
 
 template <class T, class... Args> inline constexpr bool is_any_of_v = (is_same_v<T, Args> || ...);
 
-namespace details {
+namespace detail {
 template <class T, class U>
 concept same_as = is_same_v<T, U> && is_same_v<U, T>;
 
@@ -57,11 +49,11 @@ concept invocable_r = requires(Fn fn, Args... args) {
   { fn(forward<Args>(args)...) } -> same_as<R>;
 };
 
-} // namespace details
+} // namespace detail
 
-template <class Fn, class... Args> struct is_invocable : bool_constant<details::invocable<Fn, Args...>> {};
+template <class Fn, class... Args> struct is_invocable : bool_constant<detail::invocable<Fn, Args...>> {};
 template <class Fn, class... Args> inline constexpr bool is_invocable_v = is_invocable<Fn, Args...>::value;
-template <class Fn, class R, class... Args> struct is_invocable_r : bool_constant<details::invocable_r<Fn, R, Args...>> {};
+template <class Fn, class R, class... Args> struct is_invocable_r : bool_constant<detail::invocable_r<Fn, R, Args...>> {};
 template <class Fn, class R, class... Args> inline constexpr bool is_invocable_r_v = is_invocable_r<Fn, R, Args...>::value;
 
 template <class Fn, class... Args> struct invoke_result {};
