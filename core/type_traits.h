@@ -56,7 +56,6 @@ template <class Fn, class R, class... Args>
 concept invocable_r = requires(Fn fn, Args... args) {
   { fn(forward<Args>(args)...) } -> same_as<R>;
 };
-
 } // namespace details
 
 template <class Fn, class... Args> struct is_invocable : bool_constant<details::invocable<Fn, Args...>> {};
@@ -132,6 +131,22 @@ template <class T> inline constexpr bool is_lvalue_reference_v = is_lvalue_refer
 template <class T> struct is_rvalue_reference : false_type {};
 template <class T> struct is_rvalue_reference<T &&> : true_type {};
 template <class T> inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
+
+//----------------- pointer -----------------------
+namespace detail {
+template <class T> auto try_add_pointer(int) -> type_identity<remove_reference_t<T> *>;
+template <class T> auto try_add_pointer(...) -> type_identity<T>;
+} // namespace detail
+
+template <class T> struct add_pointer : decltype(detail::try_add_pointer<T>(0)) {};
+template <class T> using add_pointer_t = typename add_pointer<T>::type;
+
+template <class T> struct remove_pointer : type_identity<T> {};
+template <class T> struct remove_pointer<T *> : type_identity<T> {};
+template <class T> struct remove_pointer<T *const> : type_identity<T> {};
+template <class T> struct remove_pointer<T *volatile> : type_identity<T> {};
+template <class T> struct remove_pointer<T *const volatile> : type_identity<T> {};
+template <class T> using remove_pointer_t = typename remove_pointer<T>::type;
 
 //----------------- declval -----------------------
 template <typename T> typename add_rvalue_reference_t<T> declval() noexcept {}

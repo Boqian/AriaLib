@@ -176,6 +176,11 @@ void test_traits() {
 
   static_assert(is_class_v<AA>);
   static_assert(!is_class_v<int>);
+
+  static_assert(is_same_v<add_pointer_t<int>, int *>);
+  static_assert(is_same_v<add_pointer_t<int &>, int *>);
+  static_assert(is_same_v<remove_pointer_t<int *>, int>);
+  static_assert(is_same_v<remove_pointer_t<int *const>, int>);
 }
 
 TEST(test_type_traits, swap) {
