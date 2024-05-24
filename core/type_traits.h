@@ -56,12 +56,22 @@ template <class Fn, class R, class... Args>
 concept invocable_r = requires(Fn fn, Args... args) {
   { fn(forward<Args>(args)...) } -> same_as<R>;
 };
+
 } // namespace details
 
 template <class Fn, class... Args> struct is_invocable : bool_constant<details::invocable<Fn, Args...>> {};
 template <class Fn, class... Args> inline constexpr bool is_invocable_v = is_invocable<Fn, Args...>::value;
 template <class Fn, class R, class... Args> struct is_invocable_r : bool_constant<details::invocable_r<Fn, R, Args...>> {};
 template <class Fn, class R, class... Args> inline constexpr bool is_invocable_r_v = is_invocable_r<Fn, R, Args...>::value;
+
+template <class Fn, class... Args> struct invoke_result {};
+template <class Fn, class... Args>
+  requires is_invocable_v<Fn, Args...>
+struct invoke_result<Fn, Args...> {
+  using type = decltype(declval<Fn>()(declval<Args>()...));
+};
+
+template <class Fn, class... Args> using invoke_result_t = invoke_result<Fn, Args...>::type;
 
 //----------------- Miscellaneous transformations -----------------------
 template <class T> struct type_identity {

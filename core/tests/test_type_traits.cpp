@@ -232,4 +232,8 @@ void test_invocable() {
   static_assert(is_invocable_r_v<decltype(f0), void>);
   static_assert(is_invocable_r_v<decltype(f1), void, int>);
   static_assert(is_invocable_r_v<decltype(f2), int, int &>);
+
+  static_assert(is_same_v<invoke_result_t<decltype(f0)>, void>);
+  static_assert(is_same_v<invoke_result_t<decltype(f1), int>, void>);
+  static_assert(is_same_v<invoke_result_t<decltype(f2), int &>, int>);
 }
