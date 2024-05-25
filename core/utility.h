@@ -180,7 +180,7 @@ template <class T, class U = T> constexpr T exchange(T &obj, U &&new_value) {
   return old_value;
 }
 
-//------------------------- inplace -------------------------//
+//------------------------- in_place -------------------------//
 struct in_place_t {
   explicit in_place_t() = default;
 };

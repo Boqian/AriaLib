@@ -131,7 +131,6 @@ private:
 
   static void swap_helper(optional &has, optional &none) noexcept {
     none.construct_in_place(move(has.value()));
-    none.has_value_ = true;
     has.reset();
   }
 
