@@ -15,6 +15,12 @@ public:
   [[no_discard]] const char *what() const noexcept override { return "Bad optional access"; }
 };
 
+template <class T> class optional;
+
+template <class T> struct is_optional : false_type {};
+template <class T> struct is_optional<optional<T>> : true_type {};
+template <class T> inline constexpr bool is_optional_v = is_optional<T>::value;
+
 template <class T> class optional {
 public:
   using value_type = T;
@@ -79,9 +85,9 @@ public:
                                              constexpr optional &
                                          operator=(U &&value) {
     if (has_value()) {
-      value_ = value; // copy-assign
+      value_ = forward<U>(value);
     } else {
-      construct_in_place(value);
+      construct_in_place(forward<U>(value));
     }
     return *this;
   }
