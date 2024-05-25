@@ -34,7 +34,7 @@ public:
     }
   }
 
-  constexpr optional(optional &&rhs) {
+  constexpr optional(optional &&rhs) noexcept {
     if (rhs) {
       has_value_ = true;
       construct_in_place(move(rhs.value()));
@@ -57,7 +57,7 @@ public:
     return *this;
   }
 
-  constexpr optional &operator=(optional &&rhs) {
+  constexpr optional &operator=(optional &&rhs) noexcept {
     if (this == &rhs)
       return *this;
     if (!rhs.has_value()) {
