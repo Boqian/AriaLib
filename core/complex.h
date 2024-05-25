@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 
 namespace aria {
 
@@ -37,4 +38,16 @@ private:
   T x;
   T y;
 };
+
+template <class T> constexpr complex<T> operator+(const complex<T> &a) { return a; }
+template <class T> constexpr complex<T> operator-(const complex<T> &a) { return complex<T>(-a.real(), -a.imag()); }
+template <class T> constexpr complex<T> operator+(const complex<T> &a, const complex<T> &b) noexcept { return complex<T>(a) += b; }
+template <class T> constexpr complex<T> operator-(const complex<T> &a, const complex<T> &b) noexcept { return complex<T>(a) -= b; }
+template <class T> constexpr complex<T> operator*(const complex<T> &a, const complex<T> &b) noexcept { return complex<T>(a) *= b; }
+template <class T> constexpr complex<T> operator/(const complex<T> &a, const complex<T> &b) noexcept { return complex<T>(a) /= b; }
+
+template <class T> constexpr T real(const complex<T> &z) { return z.real(); }
+template <class T> constexpr T imag(const complex<T> &z) { return z.imag(); }
+template <class T> T abs(const complex<T> &z) { return sqrt(z.real() * z.real() + z.imag() * z.imag()); }
+
 } // namespace aria
