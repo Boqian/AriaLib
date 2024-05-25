@@ -16,6 +16,7 @@ pair, make_pair
 tuple, tupe_element, get(), tupe_size
 unreachable()
 exchange
+in_place_t
 */
 
 namespace aria {
@@ -178,5 +179,11 @@ template <class T, class U = T> constexpr T exchange(T &obj, U &&new_value) {
   obj = std::forward<U>(new_value);
   return old_value;
 }
+
+//------------------------- inplace -------------------------//
+struct in_place_t {
+  explicit in_place_t() = default;
+};
+inline constexpr in_place_t in_place{};
 
 } // namespace aria

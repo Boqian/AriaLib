@@ -27,9 +27,14 @@ public:
              constexpr optional(U && u) : has_value_(true),
   value_{forward<U>(u)} {}
 
+  template <class... Args>
+    requires is_constructible_v<T, Args &&...>
+  constexpr explicit optional(in_place_t, Args &&...args) {
+    construct_in_place(forward<Args>(args)...);
+  }
+
   constexpr optional(const optional &rhs) {
     if (rhs) {
-      has_value_ = true;
       construct_in_place(rhs.value());
     }
   }
@@ -51,8 +56,7 @@ public:
     } else if (has_value()) {
       value_ = rhs.value(); // copy-assign
     } else {
-      construct_in_place(rhs.value()); // in-place construct
-      has_value_ = true;
+      construct_in_place(rhs.value());
     }
     return *this;
   }
@@ -66,7 +70,6 @@ public:
       value_ = move(rhs.value()); // move-assign
     } else {
       construct_in_place(move(rhs.value())); // in-place move construct
-      has_value_ = true;
     }
     return *this;
   }
@@ -78,8 +81,7 @@ public:
     if (has_value()) {
       value_ = value; // copy-assign
     } else {
-      construct_in_place(value); // in-place construct
-      has_value_ = true;
+      construct_in_place(value);
     }
     return *this;
   }
@@ -122,7 +124,10 @@ public:
   }
 
 private:
-  template <class... Args> constexpr void construct_in_place(Args &&...args) { new (&value_) T(forward<Args>(args)...); }
+  template <class... Args> constexpr void construct_in_place(Args &&...args) {
+    new (&value_) T(forward<Args>(args)...);
+    has_value_ = true;
+  }
 
   static void swap_helper(optional &has, optional &none) noexcept {
     none.construct_in_place(move(has.value()));
@@ -137,6 +142,10 @@ private:
   };
   bool has_value_ = false;
 };
+
+template <class T, class... Args> constexpr optional<T> make_optional(Args &&...args) {
+  return optional<T>(in_place, forward<Args>(args)...);
+}
 
 template <class T> void swap(optional<T> &a, optional<T> &b) noexcept { a.swap(b); }
 

@@ -139,3 +139,9 @@ TEST(test_optional, swap) {
   EXPECT_FALSE(a);
   EXPECT_EQ(c->x, 2);
 }
+
+TEST(test_optional, make_optional) {
+  auto x = make_optional<pair<int, int>>(1, 2);
+  EXPECT_EQ(x->first, 1);
+  EXPECT_EQ(x->second, 2);
+}
