@@ -112,18 +112,23 @@ public:
 
   constexpr void swap(optional &rhs) noexcept {
     if (*this && rhs) {
-      ::aria::swap(this->value(), rhs.value());
+      using aria::swap;
+      swap(this->value(), rhs.value());
     } else if (*this && !rhs) {
-      rhs = move(*this);
-      reset();
+      swap_helper(*this, rhs);
     } else if (!*this && rhs) {
-      *this = move(rhs);
-      rhs.reset();
+      swap_helper(rhs, *this);
     }
   }
 
 private:
   template <class... Args> constexpr void construct_in_place(Args &&...args) { new (&value_) T(forward<Args>(args)...); }
+
+  static void swap_helper(optional &has, optional &none) noexcept {
+    none.construct_in_place(move(has.value()));
+    none.has_value_ = true;
+    has.reset();
+  }
 
   struct empty_byte {};
   union {
