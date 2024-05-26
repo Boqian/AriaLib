@@ -13,7 +13,10 @@ template <class T, class... Args> constexpr T *construct_at(T *p, Args &&...args
 
 template <class T> constexpr void destroy_at(T *p) { p->~T(); }
 
-template <class T> struct allocator {
+template <class T>
+concept allocatable = !is_const_v<T> && !is_function_v<T> && !is_reference_v<T>;
+
+template <allocatable T> struct allocator {
   using size_type = unsigned int;
   using value_type = T;
   using pointer = value_type *;
@@ -21,11 +24,12 @@ template <class T> struct allocator {
 
   template <class U> using rebind_alloc = allocator<U>;
 
-  allocator() noexcept = default;
+  constexpr allocator() noexcept = default;
 
-  [[nodiscard]] pointer allocate(size_type n) { return reinterpret_cast<pointer>(::operator new(n * sizeof(T))); }
+  // todo operator new is not constexpr
+  [[nodiscard]] constexpr pointer allocate(size_type n) { return static_cast<pointer>(::operator new(n * sizeof(T))); }
 
-  void deallocate(T *p, size_type n) { ::operator delete(p, n); }
+  constexpr void deallocate(T *p, size_type n) { ::operator delete(p, n); }
 };
 
 } // namespace aria

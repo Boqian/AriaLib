@@ -23,14 +23,14 @@ public:
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
-  vector() noexcept = default;
+  constexpr vector() noexcept = default;
 
-  ~vector() {
+  constexpr ~vector() {
     clear();
     m_alloc.deallocate(m_ptr, m_capacity);
   }
 
-  vector(initializer_list<T> init) {
+  constexpr vector(initializer_list<T> init) {
     reserve(init.size());
     m_size = init.size();
     for (size_type i = 0; auto &value : init) {
@@ -38,7 +38,7 @@ public:
     }
   }
 
-  vector(size_type n, const T &value = T()) {
+  constexpr vector(size_type n, const T &value = T()) {
     reserve(n);
     m_size += n;
     for (int i = 0; i < n; i++) {
@@ -46,7 +46,7 @@ public:
     }
   }
 
-  vector(const vector &rhs) {
+  constexpr vector(const vector &rhs) {
     reserve(rhs.size());
     m_size = rhs.size();
     for (int i = 0; i < m_size; i++) {
@@ -54,9 +54,9 @@ public:
     }
   }
 
-  vector(vector &&rhs) noexcept { swap(rhs); }
+  constexpr vector(vector &&rhs) noexcept { swap(rhs); }
 
-  vector &operator=(const vector &rhs) {
+  constexpr vector &operator=(const vector &rhs) {
     if (this != &rhs) {
       auto v = rhs;
       swap(v);
@@ -64,7 +64,7 @@ public:
     return *this;
   }
 
-  vector &operator=(vector &&rhs) noexcept {
+  constexpr vector &operator=(vector &&rhs) noexcept {
     if (this != &rhs) {
       auto v = move(rhs);
       swap(v);
@@ -72,26 +72,26 @@ public:
     return *this;
   }
 
-  void push_back(const T &value) {
+  constexpr void push_back(const T &value) {
     reserve(new_capacity(1));
     construct_at(get(m_size), value);
     m_size++;
   }
 
-  template <class... Args> void emplace_back(Args &&...args) {
+  template <class... Args> constexpr void emplace_back(Args &&...args) {
     reserve(new_capacity(1));
     aria::construct_at(get(m_size), ::aria::forward<Args>(args)...);
     m_size++;
   }
 
-  void pop_back() {
+  constexpr void pop_back() {
     if (m_size > 0) {
       m_size--;
       decstuct_at(m_size);
     }
   }
 
-  void reserve(size_type new_cap) {
+  constexpr void reserve(size_type new_cap) {
     if (new_cap > capacity())
       reallocate(new_cap);
   }
@@ -107,19 +107,19 @@ public:
       reallocate(size());
   }
 
-  size_type size() const noexcept { return m_size; }
-  size_type capacity() const noexcept { return m_capacity; }
-  bool empty() const noexcept { return size() == 0; }
-  reference back() noexcept { return *get(m_size - 1); }
-  const_reference back() const noexcept { return *get(m_size - 1); }
+  constexpr size_type size() const noexcept { return m_size; }
+  constexpr size_type capacity() const noexcept { return m_capacity; }
+  constexpr bool empty() const noexcept { return size() == 0; }
+  constexpr reference back() noexcept { return *get(m_size - 1); }
+  constexpr const_reference back() const noexcept { return *get(m_size - 1); }
 
-  reference operator[](size_type i) { return *get(i); }
-  const_reference operator[](size_type i) const { return *get(i); }
-  reference at(size_type i) {
+  constexpr reference operator[](size_type i) { return *get(i); }
+  constexpr const_reference operator[](size_type i) const { return *get(i); }
+  constexpr reference at(size_type i) {
     check_position(i);
     return *get(i);
   }
-  const_reference at(size_type i) const {
+  constexpr const_reference at(size_type i) const {
     check_position(i);
     return *get(i);
   }
@@ -135,10 +135,10 @@ public:
     swap(m_alloc, rhs.m_alloc);
   }
 
-  auto begin() const noexcept { return const_iterator(get(0)); }
-  auto end() const noexcept { return const_iterator(get(m_size)); }
-  auto begin() noexcept { return iterator(get(0)); }
-  auto end() noexcept { return iterator(get(m_size)); }
+  constexpr auto begin() const noexcept { return const_iterator(get(0)); }
+  constexpr auto end() const noexcept { return const_iterator(get(m_size)); }
+  constexpr auto begin() noexcept { return iterator(get(0)); }
+  constexpr auto end() noexcept { return iterator(get(m_size)); }
 
 private:
   Allocator m_alloc;
@@ -146,25 +146,30 @@ private:
   size_type m_size = 0;
   size_type m_capacity = 0;
 
-  pointer get(size_type i) { return m_ptr + i; }
-  const_pointer get(size_type i) const { return m_ptr + i; }
+  constexpr pointer get(size_type i) { return m_ptr + i; }
+  constexpr const_pointer get(size_type i) const { return m_ptr + i; }
 
-  void check_position(size_type i) const {
+  constexpr void check_position(size_type i) const {
     if (i >= m_size)
       throw std::out_of_range("");
   }
 
-  void decstuct_at(size_type i) { destroy_at(get(i)); }
+  constexpr void decstuct_at(size_type i) { destroy_at(get(i)); }
 
-  void reallocate(size_type cap) {
+  constexpr void reallocate(size_type cap) {
     auto p = m_alloc.allocate(cap);
-    memcpy(p, m_ptr, m_size * sizeof(T));
+    for (int i = 0; i < m_size; i++) {
+      construct_at(p + i, move(*(m_ptr + i)));
+    }
+    for (int i = 0; i < m_size; i++) {
+      decstuct_at(i);
+    }
     m_alloc.deallocate(m_ptr, m_capacity);
     m_ptr = p;
     m_capacity = cap;
   }
 
-  size_type new_capacity(size_type add_size) {
+  constexpr size_type new_capacity(size_type add_size) {
     if (capacity() == 0)
       return add_size;
     auto min_capacity = m_size + add_size;
@@ -183,6 +188,6 @@ template <class T, class Alloc> [[nodiscard]] constexpr auto operator<=>(const v
   return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
 }
 
-template <class T, class A> void swap(vector<T, A> &a, vector<T, A> &b) { a.swap(b); }
+template <class T, class A> constexpr void swap(vector<T, A> &a, vector<T, A> &b) { a.swap(b); }
 
 } // namespace aria
