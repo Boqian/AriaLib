@@ -221,4 +221,16 @@ TEST(test_vector, erase) {
     EXPECT_EQ(*it, 3);
     EXPECT_EQ(v, vector({3, 4}));
   }
+  {
+    vector<int> v = {1, 2, 3, 2, 4, 2};
+    auto num_erased = erase(v, 2);
+    EXPECT_EQ(num_erased, 3);
+    EXPECT_EQ(v, vector({1, 3, 4}));
+  }
+  {
+    vector<int> v = {1, 2, 3, 4, 5, 6};
+    auto num_erased = erase_if(v, [](int i) { return i % 2 == 0; });
+    EXPECT_EQ(num_erased, 3);
+    EXPECT_EQ(v, vector({1, 3, 5}));
+  }
 }

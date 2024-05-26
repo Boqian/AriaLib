@@ -218,4 +218,28 @@ template <class T, class Alloc> [[nodiscard]] constexpr auto operator<=>(const v
 
 template <class T, class A> constexpr void swap(vector<T, A> &a, vector<T, A> &b) { a.swap(b); }
 
+template <class T, class Alloc, class U = T> constexpr vector<T, Alloc>::size_type erase(vector<T, Alloc> &v, const U &value) {
+  typename vector<T, Alloc>::size_type i = 0, index = 0;
+  for (; i < v.size(); ++i) {
+    if (v[i] != value) {
+      v[index++] = move(v[i]);
+    }
+  }
+  auto res = v.size() - index;
+  v.erase(begin(v) + index, end(v));
+  return res;
+}
+
+template <class T, class Alloc, class Pred> constexpr vector<T, Alloc>::size_type erase_if(vector<T, Alloc> &v, Pred pred) {
+  typename vector<T, Alloc>::size_type i = 0, index = 0;
+  for (; i < v.size(); ++i) {
+    if (!pred(v[i])) {
+      v[index++] = move(v[i]);
+    }
+  }
+  auto res = v.size() - index;
+  v.erase(begin(v) + index, end(v));
+  return res;
+}
+
 } // namespace aria
