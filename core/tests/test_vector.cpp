@@ -209,8 +209,16 @@ TEST(test_vector, shrink_to_fit) {
 }
 
 TEST(test_vector, erase) {
-  vector<int> v = {1, 2, 3};
-  auto it = v.erase(begin(v) + 1);
-  EXPECT_EQ(*it, 3);
-  EXPECT_EQ(v, vector({1, 3}));
+  {
+    vector<int> v = {1, 2, 3};
+    auto it = v.erase(begin(v) + 1);
+    EXPECT_EQ(*it, 3);
+    EXPECT_EQ(v, vector({1, 3}));
+  }
+  {
+    vector<int> v = {1, 2, 3, 4};
+    auto it = v.erase(begin(v), begin(v) + 2);
+    EXPECT_EQ(*it, 3);
+    EXPECT_EQ(v, vector({3, 4}));
+  }
 }

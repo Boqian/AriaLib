@@ -140,14 +140,28 @@ public:
   constexpr auto begin() noexcept { return iterator(get(0)); }
   constexpr auto end() noexcept { return iterator(get(m_size)); }
 
-  constexpr iterator erase(const_iterator pos) {
+  constexpr iterator erase(const_iterator first, const_iterator last)
+    requires is_move_assignable_v<T>
+  {
+    if (first == end())
+      return end();
+    auto d = distance(first, last);
+    if (d == 0)
+      return last;
+    for (iterator it = last; it != end(); ++it) {
+      *(it - d) = move(*it);
+    }
+    while (d--)
+      pop_back();
+    return first;
+  }
+
+  constexpr iterator erase(const_iterator pos)
+    requires is_move_assignable_v<T>
+  {
     if (pos == end())
       return end();
-    for (iterator it = next(pos); it != end(); ++it) {
-      *prev(it) = *it;
-    }
-    --m_size;
-    return pos;
+    return erase(pos, pos + 1);
   }
 
 private:
