@@ -193,3 +193,16 @@ TEST(test_vector, 2d_vector) {
   EXPECT_EQ(vv[1][0], 3);
   EXPECT_EQ(vv[1][1], 4);
 }
+
+TEST(test_vector, shrink_to_fit) {
+  vector<int> v = {1, 2, 3};
+  v.reserve(100);
+  EXPECT_EQ(v, vector<int>({1, 2, 3}));
+  auto u = v;
+  EXPECT_EQ(u, vector<int>({1, 2, 3}));
+  EXPECT_EQ(v.capacity(), 100);
+  EXPECT_EQ(u.capacity(), 3);
+  v.shrink_to_fit();
+  EXPECT_EQ(v.capacity(), 3);
+  EXPECT_EQ(v, vector<int>({1, 2, 3}));
+}

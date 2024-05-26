@@ -25,7 +25,10 @@ public:
 
   vector() noexcept = default;
 
-  ~vector() { free_and_destruct_all(); }
+  ~vector() {
+    clear();
+    m_alloc.deallocate(m_ptr, m_capacity);
+  }
 
   vector(initializer_list<T> init) {
     reserve(init.size());
@@ -44,7 +47,7 @@ public:
   }
 
   vector(const vector &rhs) {
-    reserve(rhs.capacity());
+    reserve(rhs.size());
     m_size = rhs.size();
     for (int i = 0; i < m_size; i++) {
       construct_at(get(i), rhs[i]);
@@ -89,13 +92,19 @@ public:
   }
 
   void reserve(size_type new_cap) {
-    if (new_cap <= capacity())
-      return;
-    auto new_ptr = m_alloc.allocate(new_cap);
-    memcpy(new_ptr, m_ptr, m_size * sizeof(T));
-    m_alloc.deallocate(m_ptr, m_capacity);
-    m_capacity = new_cap;
-    m_ptr = new_ptr;
+    if (new_cap > capacity())
+      reallocate(new_cap);
+  }
+
+  constexpr void clear() {
+    for (int i = 0; i < m_size; i++)
+      decstuct_at(i);
+    m_size = 0;
+  }
+
+  constexpr void shrink_to_fit() {
+    if (capacity() > size())
+      reallocate(size());
   }
 
   size_type size() const noexcept { return m_size; }
@@ -119,10 +128,11 @@ public:
   constexpr const_pointer data() const noexcept { return m_ptr; }
 
   constexpr void swap(vector &rhs) noexcept {
-    aria::swap(m_size, rhs.m_size);
-    aria::swap(m_capacity, rhs.m_capacity);
-    aria::swap(m_ptr, rhs.m_ptr);
-    aria::swap(m_alloc, rhs.m_alloc);
+    using aria::swap;
+    swap(m_size, rhs.m_size);
+    swap(m_capacity, rhs.m_capacity);
+    swap(m_ptr, rhs.m_ptr);
+    swap(m_alloc, rhs.m_alloc);
   }
 
   auto begin() const noexcept { return const_iterator(get(0)); }
@@ -146,10 +156,12 @@ private:
 
   void decstuct_at(size_type i) { destroy_at(get(i)); }
 
-  void free_and_destruct_all() {
-    for (int i = 0; i < m_size; i++)
-      decstuct_at(i);
+  void reallocate(size_type cap) {
+    auto p = m_alloc.allocate(cap);
+    memcpy(p, m_ptr, m_size * sizeof(T));
     m_alloc.deallocate(m_ptr, m_capacity);
+    m_ptr = p;
+    m_capacity = cap;
   }
 
   size_type new_capacity(size_type add_size) {

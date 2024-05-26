@@ -4,8 +4,8 @@
 
 struct CC {
   CC(int a) : x(a) {}
-  CC(CC &&rhs) : x(rhs.x) { rhs.x = 0; }
-  CC &operator=(CC &&rhs) {
+  CC(CC &&rhs) noexcept : x(rhs.x) { rhs.x = 0; }
+  CC &operator=(CC &&rhs) noexcept {
     x = rhs.x;
     rhs.x = 0;
     return *this;
