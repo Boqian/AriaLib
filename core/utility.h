@@ -145,10 +145,10 @@ template <class... Args> void swap(tuple<Args...> &a, tuple<Args...> &b) { a.swa
 
 //------------------------- integer_sequence -------------------------//
 template <class T, T... Ints> struct integer_sequence {
-  static constexpr std::size_t size() noexcept { return sizeof...(Ints); }
+  static constexpr size_t size() noexcept { return sizeof...(Ints); }
 };
 
-template <size_t... Ints> using index_sequence = integer_sequence<std::size_t, Ints...>;
+template <size_t... Ints> using index_sequence = integer_sequence<size_t, Ints...>;
 
 template <class T, T a, T... Ints> constexpr auto _append_integer_sequence(integer_sequence<T, Ints...> seq) {
   return integer_sequence<T, Ints..., a>();
@@ -164,7 +164,7 @@ template <class T, T N> constexpr auto _integer_sequence_maker() {
 
 template <class T, T N> using make_integer_sequence = decltype(_integer_sequence_maker<T, N>());
 
-template <size_t N> using make_index_sequence = make_integer_sequence<std::size_t, N>;
+template <size_t N> using make_index_sequence = make_integer_sequence<size_t, N>;
 
 //------------------------- unreachable() -------------------------//
 [[noreturn]] inline void unreachable() {
@@ -177,8 +177,8 @@ template <size_t N> using make_index_sequence = make_integer_sequence<std::size_
 
 //------------------------- exchange() -------------------------//
 template <class T, class U = T> constexpr T exchange(T &obj, U &&new_value) {
-  T old_value = std::move(obj);
-  obj = std::forward<U>(new_value);
+  T old_value = move(obj);
+  obj = forward<U>(new_value);
   return old_value;
 }
 
