@@ -140,6 +140,16 @@ public:
   constexpr auto begin() noexcept { return iterator(get(0)); }
   constexpr auto end() noexcept { return iterator(get(m_size)); }
 
+  constexpr iterator erase(const_iterator pos) {
+    if (pos == end())
+      return end();
+    for (iterator it = next(pos); it != end(); ++it) {
+      *prev(it) = *it;
+    }
+    --m_size;
+    return pos;
+  }
+
 private:
   Allocator m_alloc;
   pointer m_ptr = nullptr;

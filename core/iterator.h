@@ -160,6 +160,8 @@ private:
   iter it;
 };
 
+template <class iter> constexpr bool operator==(iter a, basic_const_iterator<iter> b) noexcept { return static_cast<iter>(b) == a; }
+
 // use const iterator type to implement mutable iterator type
 template <class const_iterator> class mutable_iterator {
 public:
