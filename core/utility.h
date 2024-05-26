@@ -44,8 +44,9 @@ public:
   template <class U1, class U2> constexpr pair(const pair<U1, U2> &p) : first(p.first), second(p.second) {}
 
   constexpr void swap(pair &rhs) noexcept {
-    ::aria::swap(first, rhs.first);
-    ::aria::swap(second, rhs.second);
+    using aria::swap;
+    swap(first, rhs.first);
+    swap(second, rhs.second);
   }
 
   const auto operator<=>(const pair &) const = default;
@@ -89,7 +90,8 @@ public:
   constexpr auto operator<=>(const tuple &) const = default;
 
   void swap(tuple &rhs) noexcept {
-    ::aria::swap(value, rhs.value);
+    using aria::swap;
+    swap(value, rhs.value);
     rest.swap(rhs.rest);
   }
 
