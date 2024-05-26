@@ -159,7 +159,11 @@ private:
   constexpr void reallocate(size_type cap) {
     auto p = m_alloc.allocate(cap);
     for (int i = 0; i < m_size; i++) {
-      construct_at(p + i, move(*(m_ptr + i)));
+      if constexpr (is_move_contructible_v<T>) {
+        construct_at(p + i, move(*(m_ptr + i)));
+      } else {
+        construct_at(p + i, *(m_ptr + i));
+      }
     }
     for (int i = 0; i < m_size; i++) {
       decstuct_at(i);

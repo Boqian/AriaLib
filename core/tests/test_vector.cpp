@@ -92,6 +92,7 @@ TEST(test_vector, ctor_and_dtor) {
   int n = 10;
   {
     auto v = vector<A>();
+    v.reserve(10);
     for (int i = 0; i < n; i++) {
       v.emplace_back();
       EXPECT_EQ(A::n_ctor, i + 1);
