@@ -112,9 +112,10 @@ public:
   constexpr bool empty() const noexcept { return size() == 0; }
   constexpr reference back() noexcept { return *get(m_size - 1); }
   constexpr const_reference back() const noexcept { return *get(m_size - 1); }
-
   constexpr reference operator[](size_type i) { return *get(i); }
   constexpr const_reference operator[](size_type i) const { return *get(i); }
+  constexpr allocator_type get_allocator() const noexcept { return m_alloc; }
+
   constexpr reference at(size_type i) {
     check_position(i);
     return *get(i);
@@ -133,6 +134,18 @@ public:
     swap(m_capacity, rhs.m_capacity);
     swap(m_ptr, rhs.m_ptr);
     swap(m_alloc, rhs.m_alloc);
+  }
+
+  void resize(size_type count)
+    requires is_default_constructible_v<T>
+  {
+    resize_helper(count);
+  }
+
+  void resize(size_type count, const value_type &value)
+    requires is_copy_constructible_v<T>
+  {
+    resize_helper(count, value);
   }
 
   constexpr auto begin() const noexcept { return const_iterator(get(0)); }
@@ -183,7 +196,7 @@ private:
   constexpr void reallocate(size_type cap) {
     auto p = m_alloc.allocate(cap);
     for (int i = 0; i < m_size; i++) {
-      if constexpr (is_move_contructible_v<T>) {
+      if constexpr (is_move_constructible_v<T>) {
         construct_at(p + i, move(*(m_ptr + i)));
       } else {
         construct_at(p + i, *(m_ptr + i));
@@ -205,6 +218,19 @@ private:
     while (new_capacity < min_capacity)
       new_capacity *= 2;
     return new_capacity;
+  }
+
+  template <class... Args> void resize_helper(size_type count, Args... args) {
+    if (count == size())
+      return;
+    if (count < size()) {
+      erase(begin() + count, end());
+      return;
+    }
+    auto added_size = count - size();
+    reserve(new_capacity(added_size));
+    while (added_size--)
+      emplace_back(forward<Args>(args)...);
   }
 };
 

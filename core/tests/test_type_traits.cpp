@@ -149,14 +149,14 @@ void test_traits() {
   static_assert(is_same_v<remove_cvref_t<const int &>, int>);
   static_assert(is_same_v<remove_cvref_t<int &>, int>);
 
-  static_assert(!is_copy_contructible_v<CannotCopy>);
-  static_assert(is_copy_contructible_v<AA>);
-  static_assert(is_copy_contructible_v<int>);
-  static_assert(is_move_contructible_v<int>);
-  static_assert(is_move_contructible_v<AA>);
-  static_assert(is_move_contructible_v<CannotCopy>);
-  static_assert(is_copy_contructible_v<CannotMove>);
-  static_assert(!is_move_contructible_v<CannotMove>);
+  static_assert(!is_copy_constructible_v<CannotCopy>);
+  static_assert(is_copy_constructible_v<AA>);
+  static_assert(is_copy_constructible_v<int>);
+  static_assert(is_move_constructible_v<int>);
+  static_assert(is_move_constructible_v<AA>);
+  static_assert(is_move_constructible_v<CannotCopy>);
+  static_assert(is_copy_constructible_v<CannotMove>);
+  static_assert(!is_move_constructible_v<CannotMove>);
 
   static_assert(is_assignable_v<int, int>);
   static_assert(is_assignable_v<int, int &>);

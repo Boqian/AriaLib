@@ -276,9 +276,9 @@ template <class T> inline constexpr bool is_default_constructible_v = is_default
 template <class T, class... Args> struct is_constructible : bool_constant<_constructible<T, Args...>> {};
 template <class T, class... Args> inline constexpr bool is_constructible_v = is_constructible<T, Args...>::value;
 template <class T> struct is_copy_contructible : is_constructible<T, add_lvalue_reference_t<add_const_t<T>>> {};
-template <class T> inline constexpr bool is_copy_contructible_v = is_copy_contructible<T>::value;
+template <class T> inline constexpr bool is_copy_constructible_v = is_copy_contructible<T>::value;
 template <class T> struct is_move_contructible : is_constructible<T, add_rvalue_reference_t<T>> {};
-template <class T> inline constexpr bool is_move_contructible_v = is_move_contructible<T>::value;
+template <class T> inline constexpr bool is_move_constructible_v = is_move_contructible<T>::value;
 
 //----------------- is_assignable -----------------
 template <class T, class U>
@@ -304,7 +304,7 @@ template <class T> inline constexpr bool is_nothrow_destructible_v = is_nothrow_
 
 //-----------------swap, is_swappable -----------------------
 template <class T>
-  requires is_move_contructible_v<T> && is_move_assignable_v<T>
+  requires is_move_constructible_v<T> && is_move_assignable_v<T>
 constexpr void swap(T &a, T &b) noexcept {
   T temp = move(a);
   a = move(b);

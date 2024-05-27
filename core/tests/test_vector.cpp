@@ -234,3 +234,13 @@ TEST(test_vector, erase) {
     EXPECT_EQ(v, vector({1, 3, 5}));
   }
 }
+
+TEST(test_vector, resize) {
+  vector<int> v = {1, 2, 3, 4};
+  v.resize(2);
+  EXPECT_EQ(v, vector({1, 2}));
+  v.resize(3);
+  EXPECT_EQ(v, vector({1, 2, 0}));
+  v.resize(5, 100);
+  EXPECT_EQ(v, vector({1, 2, 0, 100, 100}));
+}
