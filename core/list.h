@@ -165,23 +165,7 @@ public:
   template <class Compare> void merge(list &rhs, Compare cmp) {
     auto p1 = m_first, p2 = rhs.m_first;
     auto end1 = &m_end, end2 = &rhs.m_end;
-    _node_base fake_head{};
-    link(&fake_head, p1);
-    while ((p1 != end1) && (p2 != end2)) {
-      if (cmp(static_cast<node_type *>(p1)->value, static_cast<node_type *>(p2)->value)) {
-        p1 = p1->next;
-      } else {
-        auto next_p2 = p2->next;
-        link(p1->prev, p2);
-        link(p2, p1);
-        p2 = next_p2;
-      }
-    }
-    if (p2 != end2) {
-      link(p1->prev, p2);
-      link(end2->prev, end1);
-    }
-    m_first = fake_head.next;
+    m_first = merge(p1, end1, p2, end2, cmp);
     rhs.m_size = 0;
     rhs.adjust_on_empty();
   }
@@ -245,6 +229,27 @@ private:
       m_end.prev = nullptr;
       m_first = &m_end;
     }
+  }
+
+  // return the head.  the end of merged list is end1
+  template <class Compare> _node_base *merge(_node_base *p1, _node_base *end1, _node_base *p2, _node_base *end2, const Compare &cmp) {
+    _node_base fake_head{};
+    link(&fake_head, p1);
+    while ((p1 != end1) && (p2 != end2)) {
+      if (cmp(static_cast<node_type *>(p1)->value, static_cast<node_type *>(p2)->value)) {
+        p1 = p1->next;
+      } else {
+        auto next_p2 = p2->next;
+        link(p1->prev, p2);
+        link(p2, p1);
+        p2 = next_p2;
+      }
+    }
+    if (p2 != end2) {
+      link(p1->prev, p2);
+      link(end2->prev, end1);
+    }
+    return fake_head.next;
   }
 
   _node_base m_end;
