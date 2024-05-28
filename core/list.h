@@ -172,6 +172,9 @@ public:
 
   void merge(list &rhs) { merge(rhs, less()); }
 
+  template <class Compare> void sort(Compare comp) { m_first = sort(m_first, &m_end, size(), comp); }
+  void sort() { sort(less()); }
+
 private:
   using node_type = node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
@@ -250,6 +253,25 @@ private:
       link(end2->prev, end1);
     }
     return fake_head.next;
+  }
+
+  _node_base *advance(_node_base *p, size_t n) {
+    while (n--)
+      p = p->next;
+    return p;
+  }
+
+  template <class Compare> _node_base *sort(_node_base *start, _node_base *end, size_type n, Compare cmp) {
+    if (n <= 1)
+      return start;
+
+    _node_base fake_end1{};
+
+    auto mid = advance(start, n / 2);
+    auto start1 = sort(start, mid, n / 2, cmp);
+    link(mid->prev, &fake_end1);
+    auto start2 = sort(mid, end, n - (n / 2), cmp);
+    return merge(start2, end, start1, &fake_end1, cmp);
   }
 
   _node_base m_end;

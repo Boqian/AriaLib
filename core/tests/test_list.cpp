@@ -168,6 +168,12 @@ TEST(test_list, reverse) {
 
 TEST(test_list, merge) {
   {
+    list<int> a, b;
+    a.merge(b);
+    EXPECT_EQ(a, list<int>());
+    EXPECT_EQ(b, list<int>());
+  }
+  {
     list<int> a = {1}, b = {1};
     a.merge(b);
     EXPECT_EQ(a, list<int>({1, 1}));
@@ -196,5 +202,28 @@ TEST(test_list, merge) {
     a.merge(b);
     EXPECT_EQ(a, list<int>({1, 1, 3, 4}));
     EXPECT_EQ(b, list<int>());
+  }
+}
+
+TEST(test_list, sort) {
+  {
+    list<int> a;
+    a.sort();
+    EXPECT_EQ(a, list<int>());
+  }
+  {
+    list<int> a = {5};
+    a.sort();
+    EXPECT_EQ(a, list<int>({5}));
+  }
+  {
+    list<int> a = {6, 2};
+    a.sort();
+    EXPECT_EQ(a, list<int>({2, 6}));
+  }
+  {
+    list<int> a = {2, 6, 4, 3, 5, 7, 1};
+    a.sort();
+    EXPECT_EQ(a, list<int>({1, 2, 3, 4, 5, 6, 7}));
   }
 }
