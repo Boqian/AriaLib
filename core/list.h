@@ -134,9 +134,9 @@ public:
     auto lhs_last = m_end.prev;
     auto rhs_last = rhs.m_end.prev;
     if (lhs_last)
-      link(*lhs_last, rhs.m_end);
+      link(lhs_last, &rhs.m_end);
     if (rhs_last)
-      link(*rhs_last, m_end);
+      link(rhs_last, &m_end);
 
     using aria::swap;
     swap(m_first, rhs.m_first);
@@ -154,13 +154,39 @@ public:
     auto last = m_end.prev, first = m_first;
     for (auto p = first, q = first->next; p != last;) {
       auto qq = q->next;
-      link(*q, *p);
+      link(q, p);
       p = q;
       q = qq;
     }
-    link(*first, m_end);
+    link(first, &m_end);
     m_first = last;
   }
+
+  template <class Compare> void merge(list &rhs, Compare cmp) {
+    auto p1 = m_first, p2 = rhs.m_first;
+    auto end1 = &m_end, end2 = &rhs.m_end;
+    _node_base fake_head{};
+    link(&fake_head, p1);
+    while ((p1 != end1) && (p2 != end2)) {
+      if (cmp(static_cast<node_type *>(p1)->value, static_cast<node_type *>(p2)->value)) {
+        p1 = p1->next;
+      } else {
+        auto next_p2 = p2->next;
+        link(p1->prev, p2);
+        link(p2, p1);
+        p2 = next_p2;
+      }
+    }
+    if (p2 != end2) {
+      link(p1->prev, p2);
+      link(end2->prev, end1);
+    }
+    m_first = fake_head.next;
+    rhs.m_size = 0;
+    rhs.adjust_on_empty();
+  }
+
+  void merge(list &rhs) { merge(rhs, less()); }
 
 private:
   using node_type = node<T>;
@@ -171,9 +197,9 @@ private:
   node_type *first() const noexcept { return cast(m_first); }
   static _node_base *get_ptr(const_iterator pos) noexcept { return const_cast<_node_base *>(pos.ptr); }
 
-  static void link(_node_base &first, _node_base &second) noexcept {
-    first.next = &second;
-    second.prev = &first;
+  static void link(_node_base *first, _node_base *second) noexcept {
+    first->next = second;
+    second->prev = first;
   }
 
   node_type *create_node(value_type &&x) {
@@ -184,9 +210,9 @@ private:
 
   _node_base *insert_node(_node_base *pos, _node_base *p) {
     auto prev = pos->prev;
-    link(*p, *pos);
+    link(p, pos);
     if (prev) {
-      link(*prev, *p);
+      link(prev, p);
     } else {
       m_first = p;
     }
@@ -204,7 +230,7 @@ private:
     if (p == m_first) {
       m_first = p->next;
     } else {
-      link(*p->prev, *p->next);
+      link(p->prev, p->next);
     }
 
     auto res = p->next;
