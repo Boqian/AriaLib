@@ -138,9 +138,10 @@ public:
     if (rhs_last)
       link(*rhs_last, m_end);
 
-    aria::swap(m_first, rhs.m_first);
-    aria::swap(m_size, rhs.m_size);
-    aria::swap(m_alloc, rhs.m_alloc);
+    using aria::swap;
+    swap(m_first, rhs.m_first);
+    swap(m_size, rhs.m_size);
+    swap(m_alloc, rhs.m_alloc);
 
     adjust_on_empty();
     rhs.adjust_on_empty();
@@ -214,5 +215,7 @@ private:
 template <class T, class Alloc> constexpr bool operator==(const list<T, Alloc> &a, const list<T, Alloc> &b) noexcept {
   return (&a == &b) || equal(begin(a), end(a), begin(b), end(b));
 }
+
+template <class T, class Alloc> constexpr void swap(list<T, Alloc> &a, list<T, Alloc> &b) noexcept { a.swap(b); }
 
 } // namespace aria
