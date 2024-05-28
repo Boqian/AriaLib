@@ -156,3 +156,12 @@ TEST(test_list, construct) {
     test_iterate(u);
   }
 }
+
+TEST(test_list, reverse) {
+  list<int> v = {1, 2, 3};
+  auto it = begin(v);
+  v.reverse();
+  EXPECT_EQ(v, list<int>({3, 2, 1}));
+  EXPECT_EQ(*it, 1);
+  EXPECT_EQ(*prev(it), 2);
+}

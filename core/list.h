@@ -147,6 +147,21 @@ public:
     rhs.adjust_on_empty();
   }
 
+  void reverse() noexcept {
+    if (size() < 2)
+      return;
+
+    auto last = m_end.prev, first = m_first;
+    for (auto p = first, q = first->next; p != last;) {
+      auto qq = q->next;
+      link(*q, *p);
+      p = q;
+      q = qq;
+    }
+    link(*first, m_end);
+    m_first = last;
+  }
+
 private:
   using node_type = node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
