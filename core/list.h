@@ -109,14 +109,13 @@ public:
   void push_front(value_type value) { insert_node(m_first, move(value)); }
   void pop_back() noexcept { erase_node(last()); }
   void pop_front() noexcept { erase_node(m_first); }
-
   reference front() noexcept { return first()->value; }
   const_reference front() const noexcept { return first()->value; }
   reference back() noexcept { return last()->value; }
   const_reference back() const noexcept { return last()->value; }
-
   bool empty() const noexcept { return m_size == 0; }
   size_type size() const noexcept { return m_size; }
+  allocator_type get_allocator() const { return m_alloc; }
 
   void clear() noexcept {
     while (!empty())
@@ -130,8 +129,6 @@ public:
 
   iterator insert(const_iterator pos, value_type value) { return iterator(insert_node(get_ptr(pos), move(value))); }
   iterator erase(const_iterator pos) { return iterator(erase_node(get_ptr(pos))); }
-
-  bool operator==(const list &rhs) const noexcept { return this == &rhs || equal(begin(), end(), rhs.begin(), rhs.end()); }
 
   void swap(list &rhs) noexcept {
     auto lhs_last = m_end.prev;
@@ -213,5 +210,9 @@ private:
   size_type m_size = 0;
   node_allocator_type m_alloc;
 };
+
+template <class T, class Alloc> constexpr bool operator==(const list<T, Alloc> &a, const list<T, Alloc> &b) noexcept {
+  return (&a == &b) || equal(begin(a), end(a), begin(b), end(b));
+}
 
 } // namespace aria
