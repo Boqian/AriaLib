@@ -175,6 +175,22 @@ public:
   template <class Compare> void sort(Compare comp) { m_first = sort(m_first, &m_end, size(), comp); }
   void sort() { sort(less()); }
 
+  template <class BinaryPredicate> size_type unique(BinaryPredicate pred) {
+    if (size() <= 1)
+      return 0;
+
+    size_type res = 0;
+    for (auto p = begin(), q = next(p); q != end(); p = q, q = next(q)) {
+      if (pred(*p, *q)) {
+        erase(p);
+        res++;
+      }
+    }
+    return res;
+  }
+
+  size_type unique() { return unique(equal_to()); }
+
 private:
   using node_type = node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
@@ -266,7 +282,6 @@ private:
       return start;
 
     _node_base fake_end1{};
-
     auto mid = advance(start, n / 2);
     auto start1 = sort(start, mid, n / 2, cmp);
     link(mid->prev, &fake_end1);

@@ -227,3 +227,26 @@ TEST(test_list, sort) {
     EXPECT_EQ(a, list<int>({1, 2, 3, 4, 5, 6, 7}));
   }
 }
+
+TEST(test_list, unique) {
+  {
+    list<int> a;
+    a.unique();
+    EXPECT_EQ(a, list<int>());
+  }
+  {
+    list<int> a = {5};
+    a.unique();
+    EXPECT_EQ(a, list<int>({5}));
+  }
+  {
+    list<int> a = {5, 5};
+    a.unique();
+    EXPECT_EQ(a, list<int>({5}));
+  }
+  {
+    list<int> a = {2, 6, 6, 6, 2, 2, 5, 5, 5, 7, 1, 1};
+    a.unique();
+    EXPECT_EQ(a, list<int>({2, 6, 2, 5, 7, 1}));
+  }
+}
