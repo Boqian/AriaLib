@@ -11,8 +11,9 @@ struct _node_base {
 };
 
 template <class T> struct node : public _node_base {
-  node() = default;
-  node(T &&x) : value(forward<T>(x)) {}
+  template <class... Args>
+    requires is_constructible_v<T, Args...>
+  node(Args &&...args) : value(forward<Args>(args)...) {}
   _node_base base;
   T value;
 };
@@ -105,8 +106,10 @@ public:
     return *this;
   }
 
-  void push_back(value_type value) { insert_node(&m_end, move(value)); }
-  void push_front(value_type value) { insert_node(m_first, move(value)); }
+  template <class... Args> reference emplace_back(Args &&...args) { return *iterator(insert_value(&m_end, forward<Args>(args)...)); }
+  template <class... Args> reference emplace_front(Args &&...args) { return *iterator(insert_value(m_first, forward<Args>(args)...)); }
+  void push_back(value_type value) { insert_value(&m_end, move(value)); }
+  void push_front(value_type value) { insert_value(m_first, move(value)); }
   void pop_back() noexcept { erase_node(last()); }
   void pop_front() noexcept { erase_node(m_first); }
   reference front() noexcept { return first()->value; }
@@ -127,7 +130,7 @@ public:
   auto begin() noexcept { return iterator(m_first); }
   auto end() noexcept { return iterator(&m_end); }
 
-  iterator insert(const_iterator pos, value_type value) { return iterator(insert_node(get_ptr(pos), move(value))); }
+  iterator insert(const_iterator pos, value_type value) { return iterator(insert_value(get_ptr(pos), move(value))); }
   iterator erase(const_iterator pos) { return iterator(erase_node(get_ptr(pos))); }
 
   void swap(list &rhs) noexcept {
@@ -221,9 +224,9 @@ private:
     second->prev = first;
   }
 
-  node_type *create_node(value_type &&x) {
+  template <class... Args> auto create_node(Args &&...args) {
     auto p = m_alloc.allocate(1);
-    construct_at(p, forward<value_type>(x));
+    construct_at(p, forward<Args>(args)...);
     return p;
   }
 
@@ -239,8 +242,9 @@ private:
     return p;
   }
 
-  _node_base *insert_node(_node_base *pos, value_type &&x) { return insert_node(pos, create_node(forward<value_type>(x))); }
-  _node_base *insert_node(_node_base *pos, const value_type &x) { return insert_node(pos, create_node(forward<value_type>(x))); }
+  template <class... Args> _node_base *insert_value(_node_base *pos, Args &&...args) {
+    return insert_node(pos, create_node(forward<Args>(args)...));
+  }
 
   _node_base *erase_node(_node_base *p) {
     if (p == &m_end)

@@ -267,3 +267,15 @@ TEST(test_list, remove_erase) {
     EXPECT_EQ(b, list<int>({5, 5, 5, 7, 1, 1}));
   }
 }
+
+TEST(test_list, emplace) {
+  {
+    list<pair<int, int>> v;
+    auto &p = v.emplace_back(2, 3);
+    EXPECT_EQ(p, pair(2, 3));
+    EXPECT_EQ(*v.begin(), pair(2, 3));
+    auto &q = v.emplace_front(4, 5);
+    EXPECT_EQ(q, pair(4, 5));
+    EXPECT_EQ(*v.begin(), pair(4, 5));
+  }
+}
