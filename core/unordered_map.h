@@ -44,4 +44,22 @@ public:
 private:
 };
 
+template <class Key, class T, class Hash, class KeyEqual>
+void swap(unordered_map<Key, T, Hash, KeyEqual> &lhs, unordered_map<Key, T, Hash, KeyEqual> &rhs) noexcept {
+  lhs.swap(rhs);
+}
+
+template <class Key, class T, class Hash, class KeyEqual>
+bool operator==(const unordered_map<Key, T, Hash, KeyEqual> &lhs, const unordered_map<Key, T, Hash, KeyEqual> &rhs) {
+  if (&lhs == &rhs)
+    return true;
+  if (lhs.size() != rhs.size())
+    return false;
+  return all_of(begin(lhs), end(lhs), [&](const auto &pr) {
+    const auto &[k, v] = pr;
+    auto it = rhs.find(k);
+    return (it != rhs.end()) && (it->second == v);
+  });
+}
+
 } // namespace aria

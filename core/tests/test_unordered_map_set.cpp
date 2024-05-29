@@ -50,6 +50,13 @@ TEST(test_unordered_map, more) {
     a.clear();
     EXPECT_TRUE(a.empty());
   }
+  {
+    unordered_map<int, int> a = {{1, 2}}, b = {{1, 2}}, c = {{1, 3}};
+    EXPECT_EQ(a, b);
+    EXPECT_NE(a, c);
+    swap(a, c);
+    EXPECT_EQ(c, b);
+  }
 }
 
 TEST(test_unordered_set, basic) {
