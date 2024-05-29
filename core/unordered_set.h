@@ -24,4 +24,18 @@ public:
 private:
 };
 
+template <class Key, class Hash, class KeyEqual>
+void swap(unordered_set<Key, Hash, KeyEqual> &lhs, unordered_set<Key, Hash, KeyEqual> &rhs) noexcept {
+  lhs.swap(rhs);
+}
+
+template <class Key, class Hash, class KeyEqual>
+bool operator==(const unordered_set<Key, Hash, KeyEqual> &lhs, const unordered_set<Key, Hash, KeyEqual> &rhs) {
+  if (&lhs == &rhs)
+    return true;
+  if (lhs.size() != rhs.size())
+    return false;
+  return all_of(begin(lhs), end(lhs), [&](const auto &key) { return rhs.contains(key); });
+}
+
 } // namespace aria

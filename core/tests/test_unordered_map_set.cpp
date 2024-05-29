@@ -87,4 +87,11 @@ TEST(test_unordered_set, basic) {
       sum += x;
     EXPECT_EQ(sum, 6);
   }
+  {
+    unordered_set<int> a = {1, 2, 3}, b = {1, 2, 3}, c = {1, 2, 4};
+    EXPECT_EQ(a, b);
+    EXPECT_NE(a, c);
+    swap(a, c);
+    EXPECT_EQ(c, b);
+  }
 }
