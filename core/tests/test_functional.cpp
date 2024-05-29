@@ -93,3 +93,29 @@ TEST(test_functional, functor) {
   EXPECT_EQ(modulus()(17, 5), 2);
   EXPECT_EQ(negate()(8), -8);
 }
+
+struct callable {
+  int operator()(int x, int y) { return x + y; }
+};
+
+int f1(int x) { return -x; }
+
+struct Foo {
+  int haha(int i) const { return i + x; }
+  int x = 0;
+};
+
+TEST(test_functional, invoke) {
+  {
+    auto f = [](int x) { return x * 2; };
+    EXPECT_EQ(invoke(f, 5), 10);
+    callable c;
+    EXPECT_EQ(invoke(c, 1, 2), 3);
+    EXPECT_EQ(invoke(f1, 1), -1);
+  }
+  {
+    Foo foo{.x = 20};
+    EXPECT_EQ(invoke(&Foo::x, foo), 20);
+    EXPECT_EQ(invoke(&Foo::haha, foo, 4), 24);
+  }
+}

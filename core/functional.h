@@ -119,6 +119,10 @@ template <class T> void ref(const T &&) = delete;
 template <class T> constexpr auto cref(const T &t) noexcept { return reference_wrapper<const T>(t); }
 template <class T> void cref(const T &&) = delete;
 
+template <class T> struct is_reference_wrapper : false_type {};
+template <class T> struct is_reference_wrapper<reference_wrapper<T>> : true_type {};
+template <class T> inline constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
+
 //-----------------------hash-----------------------
 inline constexpr size_t FNV_offset_basis = 14695981039346656037ULL;
 inline constexpr size_t FNV_prime = 1099511628211ULL;
@@ -170,6 +174,42 @@ template <> struct hash<nullptr_t> {
     return Hash_representation(p);
   }
 };
+
+//-----------------------aria::invoke-----------------------
+namespace functional {
+template <class C, class Pointed, class Object, class... Args>
+constexpr decltype(auto) invoke_memptr(Pointed C::*member, Object &&object, Args &&...args) {
+  using object_t = remove_cvref_t<Object>;
+  constexpr bool is_member_function = is_function_v<Pointed>;
+  constexpr bool is_wrapped = is_reference_wrapper_v<object_t>;
+  constexpr bool is_derived_object = is_same_v<C, object_t> || is_base_of_v<C, object_t>;
+
+  if constexpr (is_member_function) {
+    if constexpr (is_derived_object)
+      return (forward<Object>(object).*member)(forward<Args>(args)...);
+    else if constexpr (is_wrapped)
+      return (object.get().*member)(forward<Args>(args)...);
+    else
+      return ((*std::forward<Object>(object)).*member)(forward<Args>(args)...);
+  } else {
+    static_assert(is_object_v<Pointed> && sizeof...(args) == 0);
+    if constexpr (is_derived_object)
+      return forward<Object>(object).*member;
+    else if constexpr (is_wrapped)
+      return object.get().*member;
+    else
+      return (*forward<Object>(object)).*member;
+  }
+}
+
+} // namespace functional
+
+template <class F, class... Args> constexpr auto invoke(F &&f, Args &&...args) {
+  if constexpr (is_member_pointer_v<remove_cvref_t<F>>)
+    return functional::invoke_memptr(f, forward<Args>(args)...);
+  else
+    return forward<F>(f)(forward<Args>(args)...);
+}
 
 //-----------------------aria::function-----------------------
 
