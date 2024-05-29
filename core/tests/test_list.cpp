@@ -250,3 +250,20 @@ TEST(test_list, unique) {
     EXPECT_EQ(a, list<int>({2, 6, 2, 5, 7, 1}));
   }
 }
+
+TEST(test_list, remove_erase) {
+  {
+    list<int> a = {2, 6, 6, 6, 2, 2, 5, 5, 5, 7, 1, 1}, b = a;
+    a.remove(2);
+    EXPECT_EQ(a, list<int>({6, 6, 6, 5, 5, 5, 7, 1, 1}));
+    b.remove_if([](int x) { return x % 2 == 0; });
+    EXPECT_EQ(b, list<int>({5, 5, 5, 7, 1, 1}));
+  }
+  {
+    list<int> a = {2, 6, 6, 6, 2, 2, 5, 5, 5, 7, 1, 1}, b = a;
+    erase(a, 2);
+    EXPECT_EQ(a, list<int>({6, 6, 6, 5, 5, 5, 7, 1, 1}));
+    erase_if(b, [](int x) { return x % 2 == 0; });
+    EXPECT_EQ(b, list<int>({5, 5, 5, 7, 1, 1}));
+  }
+}

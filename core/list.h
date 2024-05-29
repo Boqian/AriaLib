@@ -191,6 +191,22 @@ public:
 
   size_type unique() { return unique(equal_to()); }
 
+  template <class UnaryPredicate> size_type remove_if(UnaryPredicate pred) {
+    size_type res = 0;
+    for (auto it = begin(); it != end();) {
+      if (pred(*it)) {
+        erase(it++);
+        res++;
+      } else
+        it++;
+    }
+    return res;
+  }
+
+  size_type remove(const T &value) {
+    return remove_if([&](auto &x) { return x == value; });
+  }
+
 private:
   using node_type = node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
@@ -300,5 +316,11 @@ template <class T, class Alloc> constexpr bool operator==(const list<T, Alloc> &
 }
 
 template <class T, class Alloc> constexpr void swap(list<T, Alloc> &a, list<T, Alloc> &b) noexcept { a.swap(b); }
+
+template <class T, class Alloc, class U> list<T, Alloc>::size_type erase(list<T, Alloc> &a, const U &value) {
+  return a.remove_if([&](auto &elem) { return elem == value; });
+}
+
+template <class T, class Alloc, class Pred> list<T, Alloc>::size_type erase_if(list<T, Alloc> &a, Pred pred) { return a.remove_if(pred); }
 
 } // namespace aria
