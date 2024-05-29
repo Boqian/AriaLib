@@ -38,4 +38,15 @@ bool operator==(const unordered_set<Key, Hash, KeyEqual> &lhs, const unordered_s
   return all_of(begin(lhs), end(lhs), [&](const auto &key) { return rhs.contains(key); });
 }
 
+template <class Key, class Hash, class KeyEqual, class Pred> size_t erase_if(unordered_set<Key, Hash, KeyEqual> &c, Pred pred) {
+  size_t old_size = c.size();
+  for (auto it = begin(c); it != end(c);) {
+    if (pred(*it)) {
+      it = c.erase(it);
+    } else
+      ++it;
+  }
+  return old_size - c.size();
+}
+
 } // namespace aria

@@ -57,6 +57,11 @@ TEST(test_unordered_map, more) {
     swap(a, c);
     EXPECT_EQ(c, b);
   }
+  {
+    unordered_map<int, int> a = {{1, 2}, {4, 6}, {3, 1}}, b = {{4, 6}};
+    erase_if(a, [](auto &kv) { return kv.first % 2 == 1; });
+    EXPECT_EQ(a, b);
+  }
 }
 
 TEST(test_unordered_set, basic) {
@@ -100,5 +105,10 @@ TEST(test_unordered_set, basic) {
     EXPECT_NE(a, c);
     swap(a, c);
     EXPECT_EQ(c, b);
+  }
+  {
+    unordered_set<int> a = {1, 2, 3, 4, 5, 6}, b = {2, 4, 6};
+    erase_if(a, [](auto &key) { return key % 2 == 1; });
+    EXPECT_EQ(a, b);
   }
 }

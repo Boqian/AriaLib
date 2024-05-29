@@ -55,11 +55,22 @@ bool operator==(const unordered_map<Key, T, Hash, KeyEqual> &lhs, const unordere
     return true;
   if (lhs.size() != rhs.size())
     return false;
-  return all_of(begin(lhs), end(lhs), [&](const auto &pr) {
-    const auto &[k, v] = pr;
+  return all_of(begin(lhs), end(lhs), [&](const auto &kv) {
+    const auto &[k, v] = kv;
     auto it = rhs.find(k);
     return (it != rhs.end()) && (it->second == v);
   });
+}
+
+template <class Key, class T, class Hash, class KeyEqual, class Pred> size_t erase_if(unordered_map<Key, T, Hash, KeyEqual> &c, Pred pred) {
+  size_t old_size = c.size();
+  for (auto it = begin(c); it != end(c);) {
+    if (pred(*it)) {
+      it = c.erase(it);
+    } else
+      ++it;
+  }
+  return old_size - c.size();
 }
 
 } // namespace aria
