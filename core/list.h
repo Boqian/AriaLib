@@ -24,7 +24,7 @@ public:
   using value_type = typename ListType::value_type;
   using pointer = typename ListType::const_pointer;
   using reference = const value_type &;
-  using difference_type = std::ptrdiff_t;
+  using difference_type = ptrdiff_t;
   using node_type = _list::node<value_type>;
   using node_base_type = _list::node_base;
   friend ListType;
