@@ -5,16 +5,16 @@
 #include "utility.h"
 
 namespace aria {
-struct _node_base {
-  _node_base *prev = nullptr;
-  _node_base *next = nullptr;
+struct _list_node_base {
+  _list_node_base *prev = nullptr;
+  _list_node_base *next = nullptr;
 };
 
-template <class T> struct node : public _node_base {
+template <class T> struct list_node : public _list_node_base {
   template <class... Args>
     requires is_constructible_v<T, Args...>
-  node(Args &&...args) : value(forward<Args>(args)...) {}
-  _node_base base;
+  list_node(Args &&...args) : value(forward<Args>(args)...) {}
+  _list_node_base base;
   T value;
 };
 
@@ -24,11 +24,11 @@ public:
   using pointer = typename ListType::const_pointer;
   using reference = const value_type &;
   using difference_type = std::ptrdiff_t;
-  using node_type = node<value_type>;
+  using node_type = list_node<value_type>;
   friend ListType;
 
   list_const_iterator() : ptr(nullptr) {}
-  explicit list_const_iterator(const _node_base *p) : ptr(p) {}
+  explicit list_const_iterator(const _list_node_base *p) : ptr(p) {}
 
   reference operator*() const noexcept { return value(); }
   pointer operator->() const noexcept { return &value(); }
@@ -58,7 +58,7 @@ public:
 
 private:
   reference value() const noexcept { return static_cast<const node_type *>(ptr)->value; }
-  const _node_base *ptr;
+  const _list_node_base *ptr;
 };
 
 template <class T, class Allocator = allocator<T>> class list : public iterable {
@@ -211,15 +211,15 @@ public:
   }
 
 private:
-  using node_type = node<T>;
+  using node_type = list_node<T>;
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
 
-  node_type *cast(_node_base *p) const noexcept { return static_cast<node_type *>(p); }
+  node_type *cast(_list_node_base *p) const noexcept { return static_cast<node_type *>(p); }
   node_type *last() const noexcept { return cast(m_end.prev); }
   node_type *first() const noexcept { return cast(m_first); }
-  static _node_base *get_ptr(const_iterator pos) noexcept { return const_cast<_node_base *>(pos.ptr); }
+  static _list_node_base *get_ptr(const_iterator pos) noexcept { return const_cast<_list_node_base *>(pos.ptr); }
 
-  static void link(_node_base *first, _node_base *second) noexcept {
+  static void link(_list_node_base *first, _list_node_base *second) noexcept {
     first->next = second;
     second->prev = first;
   }
@@ -230,7 +230,7 @@ private:
     return p;
   }
 
-  _node_base *insert_node(_node_base *pos, _node_base *p) {
+  _list_node_base *insert_node(_list_node_base *pos, _list_node_base *p) {
     auto prev = pos->prev;
     link(p, pos);
     if (prev) {
@@ -242,11 +242,11 @@ private:
     return p;
   }
 
-  template <class... Args> _node_base *insert_value(_node_base *pos, Args &&...args) {
+  template <class... Args> _list_node_base *insert_value(_list_node_base *pos, Args &&...args) {
     return insert_node(pos, create_node(forward<Args>(args)...));
   }
 
-  _node_base *erase_node(_node_base *p) {
+  _list_node_base *erase_node(_list_node_base *p) {
     if (p == &m_end)
       return p;
 
@@ -271,8 +271,9 @@ private:
   }
 
   // return the head.  the end of merged list is end1
-  template <class Compare> _node_base *merge(_node_base *p1, _node_base *end1, _node_base *p2, _node_base *end2, const Compare &cmp) {
-    _node_base fake_head{};
+  template <class Compare>
+  _list_node_base *merge(_list_node_base *p1, _list_node_base *end1, _list_node_base *p2, _list_node_base *end2, const Compare &cmp) {
+    _list_node_base fake_head{};
     link(&fake_head, p1);
     while ((p1 != end1) && (p2 != end2)) {
       if (cmp(static_cast<node_type *>(p1)->value, static_cast<node_type *>(p2)->value)) {
@@ -291,17 +292,17 @@ private:
     return fake_head.next;
   }
 
-  _node_base *advance(_node_base *p, size_t n) {
+  _list_node_base *advance(_list_node_base *p, size_t n) {
     while (n--)
       p = p->next;
     return p;
   }
 
-  template <class Compare> _node_base *sort(_node_base *start, _node_base *end, size_type n, Compare cmp) {
+  template <class Compare> _list_node_base *sort(_list_node_base *start, _list_node_base *end, size_type n, Compare cmp) {
     if (n <= 1)
       return start;
 
-    _node_base fake_end1{};
+    _list_node_base fake_end1{};
     auto mid = advance(start, n / 2);
     auto start1 = sort(start, mid, n / 2, cmp);
     link(mid->prev, &fake_end1);
@@ -309,8 +310,8 @@ private:
     return merge(start2, end, start1, &fake_end1, cmp);
   }
 
-  _node_base m_end;
-  _node_base *m_first = &m_end;
+  _list_node_base m_end;
+  _list_node_base *m_first = &m_end;
   size_type m_size = 0;
   node_allocator_type m_alloc;
 };
