@@ -103,31 +103,39 @@ public:
   auto begin() noexcept { return iterator(m_first); }
   auto end() noexcept { return iterator(m_end); }
 
-  const_iterator find(const key_type &key) const {
-    auto p = *find(&m_root, key);
-    if (p == nullptr)
-      p = m_end;
-    return const_iterator(const_cast<node_base_type *>(p));
-  }
+  const_iterator find(const key_type &key) const { return const_iterator(const_cast<node_base_type *>(find(m_root, key))); }
 
 private:
   using node_type = _bst::node<value_type>;
   using node_base_type = _bst::node_base;
 
+  enum class InsertPosition { self, parent, left, right };
+
   static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
 
-  const node_base_type *const *find(const node_base_type *const *root, const key_type &key) const {
-    if (*root == nullptr || *root == m_end) {
-      return root;
-    }
-    if (m_compare(key, get_key(*root))) {
-      return find(&(*root)->left, key);
-    } else if (m_compare(get_key(*root), key)) {
-      return find(&(*root)->right, key);
+  const node_base_type *find(const node_base_type *root, const key_type &key) const {
+    if (!root || root == m_end)
+      return m_end;
+    if (m_compare(key, get_key(root))) {
+      return find(root->left, key);
+    } else if (m_compare(get_key(root), key)) {
+      return find(root->right, key);
     } else {
       return root;
     }
   }
+
+  // pair<node_base_type *, InsertPosition> insert(const node_base_type *root, const node_base_type *parent, const key_type &key) const {
+  //   if (!root) {
+  //   }
+  //   if (m_compare(key, get_key(*root))) {
+  //     return find(&(*root)->left, key);
+  //   } else if (m_compare(get_key(*root), key)) {
+  //     return find(&(*root)->right, key);
+  //   } else {
+  //     return root;
+  //   }
+  // }
 
   node_base_type m_end_node;
   node_base_type *const m_end = &m_end_node;
