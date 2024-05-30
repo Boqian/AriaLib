@@ -3,7 +3,7 @@
 
 namespace aria {
 
-template <class Key, class Hash = aria::hash<Key>, class KeyEqual = aria::equal_to<Key>>
+template <class Key, class Hash = hash<Key>, class KeyEqual = equal_to<Key>>
 class unordered_set : public hash_table<Key, void, Hash, KeyEqual> {
 public:
   using Base = hash_table<Key, void, Hash, KeyEqual>;
