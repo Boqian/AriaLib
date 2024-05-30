@@ -108,9 +108,9 @@ public:
     return *this;
   }
 
-  template <class... Args> reference emplace_back(Args &&...args) { return *iterator(insert_value(&m_end, forward<Args>(args)...)); }
+  template <class... Args> reference emplace_back(Args &&...args) { return *iterator(insert_value(m_end, forward<Args>(args)...)); }
   template <class... Args> reference emplace_front(Args &&...args) { return *iterator(insert_value(m_first, forward<Args>(args)...)); }
-  void push_back(value_type value) { insert_value(&m_end, move(value)); }
+  void push_back(value_type value) { insert_value(m_end, move(value)); }
   void push_front(value_type value) { insert_value(m_first, move(value)); }
   void pop_back() noexcept { erase_node(last()); }
   void pop_front() noexcept { erase_node(m_first); }
@@ -128,20 +128,20 @@ public:
   }
 
   auto begin() const noexcept { return const_iterator(m_first); }
-  auto end() const noexcept { return const_iterator(&m_end); }
+  auto end() const noexcept { return const_iterator(m_end); }
   auto begin() noexcept { return iterator(m_first); }
-  auto end() noexcept { return iterator(&m_end); }
+  auto end() noexcept { return iterator(m_end); }
 
   iterator insert(const_iterator pos, value_type value) { return iterator(insert_value(get_ptr(pos), move(value))); }
   iterator erase(const_iterator pos) { return iterator(erase_node(get_ptr(pos))); }
 
   void swap(list &rhs) noexcept {
-    auto lhs_last = m_end.prev;
-    auto rhs_last = rhs.m_end.prev;
+    auto lhs_last = m_end->prev;
+    auto rhs_last = rhs.m_end->prev;
     if (lhs_last)
-      link(lhs_last, &rhs.m_end);
+      link(lhs_last, rhs.m_end);
     if (rhs_last)
-      link(rhs_last, &m_end);
+      link(rhs_last, m_end);
 
     using aria::swap;
     swap(m_first, rhs.m_first);
@@ -156,28 +156,26 @@ public:
     if (size() < 2)
       return;
 
-    auto last = m_end.prev, first = m_first;
+    auto last = m_end->prev, first = m_first;
     for (auto p = first, q = first->next; p != last;) {
       auto qq = q->next;
       link(q, p);
       p = q;
       q = qq;
     }
-    link(first, &m_end);
+    link(first, m_end);
     m_first = last;
   }
 
   template <class Compare> void merge(list &rhs, Compare cmp) {
-    auto p1 = m_first, p2 = rhs.m_first;
-    auto end1 = &m_end, end2 = &rhs.m_end;
-    m_first = merge(p1, end1, p2, end2, cmp);
+    m_first = merge(m_first, m_end, rhs.m_first, rhs.m_end, cmp);
     rhs.m_size = 0;
     rhs.adjust_on_empty();
   }
 
   void merge(list &rhs) { merge(rhs, less()); }
 
-  template <class Compare> void sort(Compare comp) { m_first = sort(m_first, &m_end, size(), comp); }
+  template <class Compare> void sort(Compare comp) { m_first = sort(m_first, m_end, size(), comp); }
   void sort() { sort(less()); }
 
   template <class BinaryPredicate> size_type unique(BinaryPredicate pred) {
@@ -218,7 +216,7 @@ private:
   using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
 
   node_type *cast(node_base_type *p) const noexcept { return static_cast<node_type *>(p); }
-  node_type *last() const noexcept { return cast(m_end.prev); }
+  node_type *last() const noexcept { return cast(m_end->prev); }
   node_type *first() const noexcept { return cast(m_first); }
   static node_base_type *get_ptr(const_iterator pos) noexcept { return const_cast<node_base_type *>(pos.ptr); }
 
@@ -250,7 +248,7 @@ private:
   }
 
   node_base_type *erase_node(node_base_type *p) {
-    if (p == &m_end)
+    if (p == m_end)
       return p;
 
     if (p == m_first) {
@@ -268,8 +266,8 @@ private:
 
   void adjust_on_empty() noexcept {
     if (m_size == 0) {
-      m_end.prev = nullptr;
-      m_first = &m_end;
+      m_end->prev = nullptr;
+      m_first = m_end;
     }
   }
 
@@ -313,8 +311,9 @@ private:
     return merge(start2, end, start1, &fake_end1, cmp);
   }
 
-  node_base_type m_end;
-  node_base_type *m_first = &m_end;
+  node_base_type m_end_node;
+  node_base_type *m_end = &m_end_node;
+  node_base_type *m_first = m_end;
   size_type m_size = 0;
   node_allocator_type m_alloc;
 };
