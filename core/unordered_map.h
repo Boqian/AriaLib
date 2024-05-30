@@ -1,5 +1,5 @@
 #pragma once
-#include "myhash.h"
+#include "hash_table.h"
 
 namespace aria {
 
