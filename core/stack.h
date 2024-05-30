@@ -23,6 +23,8 @@ public:
 
   void swap(stack &rhs) noexcept { swap(m_container, rhs.m_container); }
 
+  bool operator==(stack &rhs) const noexcept { return m_container == rhs.m_container; }
+
 private:
   container_type m_container;
 };
