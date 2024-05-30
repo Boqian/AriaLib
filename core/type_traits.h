@@ -22,14 +22,14 @@ template <class T, class U> struct is_same : false_type {};
 template <class T> struct is_same<T, T> : true_type {};
 template <class T, class U> inline constexpr bool is_same_v = is_same<T, U>::value;
 
-namespace detail {
+namespace _traits {
 template <class To> inline void foo(To) {}
 
 template <typename From, typename To>
 concept convertible = requires(From f) { foo<To>(f); };
-} // namespace detail
+} // namespace _traits
 
-template <class From, class To> struct is_convertible : bool_constant<detail::convertible<From, To>> {};
+template <class From, class To> struct is_convertible : bool_constant<_traits::convertible<From, To>> {};
 template <class From, class To> inline constexpr bool is_convertible_v = is_convertible<From, To>::value;
 
 template <class T, class U> struct is_base_of : bool_constant<!is_same_v<T, void> && is_convertible_v<U *, T *>> {};
@@ -37,7 +37,7 @@ template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U
 
 template <class T, class... Args> inline constexpr bool is_any_of_v = (is_same_v<T, Args> || ...);
 
-namespace detail {
+namespace _traits {
 template <class T, class U>
 concept same_as = is_same_v<T, U> && is_same_v<U, T>;
 
@@ -49,11 +49,11 @@ concept invocable_r = requires(Fn fn, Args... args) {
   { fn(forward<Args>(args)...) } -> same_as<R>;
 };
 
-} // namespace detail
+} // namespace _traits
 
-template <class Fn, class... Args> struct is_invocable : bool_constant<detail::invocable<Fn, Args...>> {};
+template <class Fn, class... Args> struct is_invocable : bool_constant<_traits::invocable<Fn, Args...>> {};
 template <class Fn, class... Args> inline constexpr bool is_invocable_v = is_invocable<Fn, Args...>::value;
-template <class Fn, class R, class... Args> struct is_invocable_r : bool_constant<detail::invocable_r<Fn, R, Args...>> {};
+template <class Fn, class R, class... Args> struct is_invocable_r : bool_constant<_traits::invocable_r<Fn, R, Args...>> {};
 template <class Fn, class R, class... Args> inline constexpr bool is_invocable_r_v = is_invocable_r<Fn, R, Args...>::value;
 
 template <class Fn, class... Args> struct invoke_result {};
@@ -101,15 +101,15 @@ template <class T> struct remove_cv<const volatile T> : type_identity<T> {};
 template <class T> using remove_cv_t = remove_cv<T>::type;
 
 //----------------- reference -----------------------
-namespace detail {
+namespace _traits {
 template <class T> auto try_add_lvalue_ref(int) -> type_identity<T &>;
 template <class T> auto try_add_lvalue_ref(...) -> type_identity<T>;
 template <class T> auto try_add_rvalue_ref(int) -> type_identity<T &&>;
 template <class T> auto try_add_rvalue_ref(...) -> type_identity<T>;
-} // namespace detail
+} // namespace _traits
 
-template <class T> struct add_lvalue_reference : decltype(detail::try_add_lvalue_ref<T>(0)) {};
-template <class T> struct add_rvalue_reference : decltype(detail::try_add_rvalue_ref<T>(0)) {};
+template <class T> struct add_lvalue_reference : decltype(_traits::try_add_lvalue_ref<T>(0)) {};
+template <class T> struct add_rvalue_reference : decltype(_traits::try_add_rvalue_ref<T>(0)) {};
 template <class T> using add_lvalue_reference_t = add_lvalue_reference<T>::type;
 template <class T> using add_rvalue_reference_t = add_rvalue_reference<T>::type;
 
@@ -135,12 +135,12 @@ template <class T> struct is_rvalue_reference<T &&> : true_type {};
 template <class T> inline constexpr bool is_rvalue_reference_v = is_rvalue_reference<T>::value;
 
 //----------------- pointer -----------------------
-namespace detail {
+namespace _traits {
 template <class T> auto try_add_pointer(int) -> type_identity<remove_reference_t<T> *>;
 template <class T> auto try_add_pointer(...) -> type_identity<T>;
-} // namespace detail
+} // namespace _traits
 
-template <class T> struct add_pointer : decltype(detail::try_add_pointer<T>(0)) {};
+template <class T> struct add_pointer : decltype(_traits::try_add_pointer<T>(0)) {};
 template <class T> using add_pointer_t = typename add_pointer<T>::type;
 
 template <class T> struct remove_pointer : type_identity<T> {};
