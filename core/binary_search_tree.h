@@ -47,7 +47,7 @@ public:
   friend BSTType;
 
   bst_iterator() : ptr(nullptr) {}
-  explicit bst_iterator(const node_base_type *p) : ptr(p) {}
+  explicit bst_iterator(node_base_type *p) : ptr(p) {}
 
   reference operator*() const noexcept { return value(); }
   pointer operator->() const noexcept { return &value(); }
@@ -74,10 +74,11 @@ private:
   node_base_type *ptr;
 };
 
-template <class Key, class T, class Compare = less<Key>> class binary_search_tree {
+template <class Key, class T, class Compare = less<Key>> class binary_search_tree : public iterable {
 public:
   using key_type = Key;
   using value_type = typename _bst::KeyVal<Key, T>::type;
+  using pointer = value_type *;
   using mapped_type = T;
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -97,25 +98,40 @@ public:
 
   void swap(binary_search_tree &rhs) noexcept {}
 
+  auto begin() const noexcept { return const_iterator(m_first); }
+  auto end() const noexcept { return const_iterator(m_end); }
+  auto begin() noexcept { return iterator(m_first); }
+  auto end() noexcept { return iterator(m_end); }
+
+  const_iterator find(const key_type &key) {
+    auto p = *find(&m_root, key);
+    if (p == nullptr)
+      p = m_end;
+    return const_iterator(p);
+  }
+
 private:
-  using node_type = _bst::node;
+  using node_type = _bst::node<value_type>;
   using node_base_type = _bst::node_base;
 
-  node_base_type **find(node_base_type **root, const_reference value) const {
+  static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
+
+  auto find(node_base_type **root, const key_type &key) {
     if (*root == nullptr || *root == m_end) {
       return root;
     }
-    if (Compare(value, static_cast<node_type *>(root)->value)) {
-      return find(*root->left, value);
+    if (m_compare(key, get_key(*root))) {
+      return find(&(*root)->left, key);
     } else {
-      return find(*root->right, value);
+      return find(&(*root)->right, key);
     }
   }
 
   node_base_type m_end_node;
   node_base_type *const m_end = &m_end_node;
   node_base_type *m_root = m_end;
-  node_base_type *m_begin = m_end;
+  node_base_type *m_first = m_end;
+  key_compare m_compare;
 };
 
 } // namespace aria
