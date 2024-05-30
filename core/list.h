@@ -14,7 +14,6 @@ template <class T> struct list_node : public _list_node_base {
   template <class... Args>
     requires is_constructible_v<T, Args...>
   list_node(Args &&...args) : value(forward<Args>(args)...) {}
-  _list_node_base base;
   T value;
 };
 
