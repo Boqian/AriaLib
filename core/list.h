@@ -312,7 +312,7 @@ private:
   }
 
   node_base_type m_end_node;
-  node_base_type *m_end = &m_end_node;
+  node_base_type *const m_end = &m_end_node;
   node_base_type *m_first = m_end;
   size_type m_size = 0;
   node_allocator_type m_alloc;
