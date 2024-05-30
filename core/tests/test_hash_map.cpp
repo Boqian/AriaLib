@@ -3,16 +3,16 @@
 
 using namespace aria;
 
-static_assert(bidirectional_iterator<my_hash<int, int>::iterator>);
-static_assert(bidirectional_iterator<my_hash<int, int>::const_iterator>);
+static_assert(bidirectional_iterator<hash_table<int, int>::iterator>);
+static_assert(bidirectional_iterator<hash_table<int, int>::const_iterator>);
 
 TEST(test_hash_map, _KeyVal) {
   auto kv = pair(1, 2);
-  EXPECT_EQ(ns_myhash::get_key(kv), 1);
+  EXPECT_EQ(_hash_table::get_key(kv), 1);
 }
 
 TEST(test_hash_map, basic) {
-  my_hash<int, int> m;
+  hash_table<int, int> m;
   EXPECT_TRUE(m.empty());
 
   const int n = 70;
@@ -46,7 +46,7 @@ TEST(test_hash_map, basic) {
 }
 
 TEST(test_hash_map, more_test) {
-  my_hash<int, int> m = {{1, 2}, {3, 4}};
+  hash_table<int, int> m = {{1, 2}, {3, 4}};
   EXPECT_EQ(m.size(), 2);
   m.clear();
   EXPECT_EQ(m.size(), 0);

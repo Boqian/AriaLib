@@ -8,7 +8,7 @@
 
 namespace aria {
 
-namespace ns_myhash {
+namespace _hash_table {
 template <class Key, class T> struct KeyVal {
   using type = pair<const Key, T>;
 };
@@ -23,12 +23,12 @@ template <class T> const auto &get_key(const T &x) {
   } else
     return x;
 }
-} // namespace ns_myhash
+} // namespace _hash_table
 
-template <class Key, class T, class Hash = aria::hash<Key>, class KeyEqual = aria::equal_to<Key>> class my_hash : iterable {
+template <class Key, class T, class Hash = hash<Key>, class KeyEqual = equal_to<Key>> class hash_table : iterable {
 public:
   using key_type = Key;
-  using value_type = typename ns_myhash::KeyVal<Key, T>::type;
+  using value_type = typename _hash_table::KeyVal<Key, T>::type;
   using mapped_type = T;
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -39,28 +39,28 @@ public:
   using iterator = list<value_type>::iterator;
   using const_iterator = list<value_type>::const_iterator;
 
-  my_hash() = default;
-  ~my_hash() = default;
+  hash_table() = default;
+  ~hash_table() = default;
 
-  explicit my_hash(size_type bucket_count) : m_table(bucket_count) {}
+  explicit hash_table(size_type bucket_count) : m_table(bucket_count) {}
 
-  my_hash(initializer_list<value_type> ilist) : m_table(ilist.size()) {
+  hash_table(initializer_list<value_type> ilist) : m_table(ilist.size()) {
     for (auto &x : ilist)
       insert(x);
   }
 
-  template <class InputIt> my_hash(InputIt first, InputIt last) : m_table(16) {
+  template <class InputIt> hash_table(InputIt first, InputIt last) : m_table(16) {
     for (; first != last; ++first)
       insert(*first);
   }
 
-  my_hash(const my_hash &rhs)
+  hash_table(const hash_table &rhs)
       : m_max_load_factor(rhs.m_max_load_factor), m_list(rhs.m_list), m_table(rhs.m_table), m_hasher(rhs.m_hasher),
         m_key_equal(rhs.m_key_equal) {}
 
-  my_hash(my_hash &&rhs) noexcept { swap(rhs); }
+  hash_table(hash_table &&rhs) noexcept { swap(rhs); }
 
-  my_hash &operator=(const my_hash &rhs) {
+  hash_table &operator=(const hash_table &rhs) {
     if (&rhs != this) {
       auto temp = rhs;
       swap(temp);
@@ -68,7 +68,7 @@ public:
     return *this;
   }
 
-  my_hash &operator=(my_hash &&rhs) noexcept {
+  hash_table &operator=(hash_table &&rhs) noexcept {
     if (&rhs != this) {
       auto temp = aria::move(rhs);
       swap(temp);
@@ -99,9 +99,9 @@ public:
   pair<iterator, bool> insert(const_reference value) {
     resize_if_needed(1);
 
-    auto &bucket = get_bucket(ns_myhash::get_key(value));
+    auto &bucket = get_bucket(_hash_table::get_key(value));
 
-    if (auto it = find(bucket, ns_myhash::get_key(value)); it != m_list.end())
+    if (auto it = find(bucket, _hash_table::get_key(value)); it != m_list.end())
       return {it, false};
 
     auto insert_pos = m_list.insert(bucket ? bucket.first : m_list.end(), value);
@@ -125,7 +125,7 @@ public:
     if (pos == m_list.end())
       return pos;
 
-    auto &bucket = get_bucket(ns_myhash::get_key(*pos));
+    auto &bucket = get_bucket(_hash_table::get_key(*pos));
     iterator res;
     if (bucket.first == pos) {
       res = bucket.first = m_list.erase(pos);
@@ -145,9 +145,9 @@ public:
     return 0;
   }
 
-  void clear() noexcept { my_hash().swap(*this); }
+  void clear() noexcept { hash_table().swap(*this); }
 
-  void swap(my_hash &rhs) noexcept {
+  void swap(hash_table &rhs) noexcept {
     using aria::swap;
     swap(m_max_load_factor, rhs.m_max_load_factor);
     swap(m_list, rhs.m_list);
@@ -174,7 +174,7 @@ protected:
   iterator find(const bucket_type &bucket, const key_type &key) const {
     auto it = bucket.first;
     for (int j = 0; j < bucket.size; j++, it++) {
-      if (m_key_equal(ns_myhash::get_key(*it), key))
+      if (m_key_equal(_hash_table::get_key(*it), key))
         return it;
     }
     return m_list.end();

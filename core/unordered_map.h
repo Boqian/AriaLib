@@ -4,9 +4,9 @@
 namespace aria {
 
 template <class Key, class T, class Hash = aria::hash<Key>, class KeyEqual = aria::equal_to<Key>>
-class unordered_map : public my_hash<Key, T, Hash, KeyEqual> {
+class unordered_map : public hash_table<Key, T, Hash, KeyEqual> {
 public:
-  using Base = my_hash<Key, T, Hash, KeyEqual>;
+  using Base = hash_table<Key, T, Hash, KeyEqual>;
   using key_type = Key;
   using value_type = typename Base::value_type;
   using mapped_type = T;
