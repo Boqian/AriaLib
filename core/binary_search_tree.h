@@ -103,11 +103,11 @@ public:
   auto begin() noexcept { return iterator(m_first); }
   auto end() noexcept { return iterator(m_end); }
 
-  const_iterator find(const key_type &key) {
+  const_iterator find(const key_type &key) const {
     auto p = *find(&m_root, key);
     if (p == nullptr)
       p = m_end;
-    return const_iterator(p);
+    return const_iterator(const_cast<node_base_type *>(p));
   }
 
 private:
@@ -116,14 +116,16 @@ private:
 
   static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
 
-  auto find(node_base_type **root, const key_type &key) {
+  const node_base_type *const *find(const node_base_type *const *root, const key_type &key) const {
     if (*root == nullptr || *root == m_end) {
       return root;
     }
     if (m_compare(key, get_key(*root))) {
       return find(&(*root)->left, key);
-    } else {
+    } else if (m_compare(get_key(*root), key)) {
       return find(&(*root)->right, key);
+    } else {
+      return root;
     }
   }
 
