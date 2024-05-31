@@ -53,13 +53,30 @@ public:
   reference operator*() const noexcept { return value(); }
   pointer operator->() const noexcept { return &value(); }
 
-  bst_iterator &operator++() noexcept { return *this; }
+  bst_iterator &operator++() noexcept {
+    if (ptr->right) {
+      ptr = ptr->right;
+      while (ptr->left)
+        ptr = ptr->left;
+    } else {
+      ptr = ptr->parent;
+    }
+    return *this;
+  }
   bst_iterator operator++(int) noexcept {
     auto temp = *this;
     operator++();
     return temp;
   }
-  bst_iterator &operator--() noexcept { return *this; }
+  bst_iterator &operator--() noexcept {
+    node_base_type *visited = nullptr;
+    while (!ptr->left || ptr->left == visited) {
+      visited = ptr;
+      ptr = ptr->parent;
+    }
+    ptr = ptr->left;
+    return *this;
+  }
   bst_iterator operator--(int) noexcept {
     auto temp = *this;
     operator--();
@@ -92,6 +109,11 @@ public:
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
 
   binary_search_tree() = default;
+
+  binary_search_tree(initializer_list<value_type> init, const Compare &comp = Compare()) : m_compare(comp) {
+    for (auto &x : init)
+      insert(x);
+  }
 
   ~binary_search_tree() {}
 
@@ -187,7 +209,7 @@ private:
   node_base_type *const m_end = &m_end_node;
   node_base_type *m_root{};
   node_base_type *m_first = m_end;
-  key_compare m_compare{};
+  key_compare m_compare;
   size_type m_size{};
   allocator<node_type> m_alloc;
 };
