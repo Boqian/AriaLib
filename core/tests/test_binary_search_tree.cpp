@@ -42,7 +42,7 @@ TEST(test_binary_search_tree, basic) {
     EXPECT_EQ(*(--it2), 2);
     auto it3 = tree.rbegin();
     EXPECT_EQ(*it3, 4);
-    EXPECT_EQ(*(--it3), 2);
+    EXPECT_EQ(*(++it3), 2);
   }
   {
     binary_search_tree<int, void> tree = {2, 4, 6, 1, 3, 5, 7, 0};
@@ -51,6 +51,6 @@ TEST(test_binary_search_tree, basic) {
     vector<int> ans = {0, 1, 2, 3, 4, 5, 6, 7};
     EXPECT_EQ(vector<int>(tree.begin(), tree.end()), ans);
     vector<int> ans2 = {7, 6, 5, 4, 3, 2, 1, 0};
-    // EXPECT_EQ(vector<int>(tree.rbegin(), tree.rend()), ans2);
+    EXPECT_EQ(vector<int>(tree.rbegin(), tree.rend()), ans2);
   }
 }
