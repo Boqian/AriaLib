@@ -53,4 +53,12 @@ TEST(test_binary_search_tree, basic) {
     vector<int> ans2 = {7, 6, 5, 4, 3, 2, 1, 0};
     EXPECT_EQ(vector<int>(tree.rbegin(), tree.rend()), ans2);
   }
+  {
+    binary_search_tree<int, void> tree = {2, 4, 6, 1, 3, 5, 7, 0};
+    for (auto x : tree) {
+      auto [it, flag] = tree.insert(x);
+      EXPECT_EQ(*it, x);
+      EXPECT_FALSE(flag);
+    }
+  }
 }
