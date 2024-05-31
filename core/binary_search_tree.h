@@ -69,12 +69,14 @@ public:
     return temp;
   }
   bst_iterator &operator--() noexcept {
-    node_base_type *visited = nullptr;
-    while (!ptr->left || ptr->left == visited) {
-      visited = ptr;
+    if (ptr->left) {
+      ptr = ptr->left;
+      while (ptr->right)
+        ptr = ptr->right;
+    } else {
       ptr = ptr->parent;
     }
-    ptr = ptr->left;
+
     return *this;
   }
   bst_iterator operator--(int) noexcept {
@@ -169,6 +171,7 @@ private:
         m_first = p;
     } else if (parent->right == m_end) {
       p->right = m_end;
+      m_end->parent = p;
     }
     pos = p;
     p->parent = parent;
@@ -179,6 +182,7 @@ private:
     if (!m_root) {
       m_root = create_node(value);
       m_root->right = m_end;
+      m_end->parent = m_root;
       m_first = m_root;
       m_size++;
       return {m_root, true};

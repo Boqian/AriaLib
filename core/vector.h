@@ -46,6 +46,15 @@ public:
     }
   }
 
+  template <input_or_output_iterator InputIt> constexpr vector(InputIt first, InputIt last) {
+    const int cap = distance(first, last);
+    reserve(cap);
+    m_size = cap;
+    for (int i = 0; first != last; ++first, ++i) {
+      construct_at(get(i), *first);
+    }
+  }
+
   constexpr vector(const vector &rhs) {
     reserve(rhs.size());
     m_size = rhs.size();
