@@ -56,7 +56,8 @@ public:
   bst_iterator &operator++() noexcept {
     if (ptr->right) {
       ptr = ptr->right;
-      down_to_smallest();
+      while (ptr->left)
+        ptr = ptr->left;
     } else {
       while (ptr->parent->right == ptr) {
         ptr = ptr->parent;
@@ -73,7 +74,8 @@ public:
   bst_iterator &operator--() noexcept {
     if (ptr->left) {
       ptr = ptr->left;
-      down_to_biggest();
+      while (ptr->right)
+        ptr = ptr->right;
     } else {
       while (ptr->parent->left == ptr) {
         ptr = ptr->parent;
@@ -96,15 +98,6 @@ public:
 private:
   auto &value() const noexcept { return static_cast<node_type *>(ptr)->value; }
   node_base_type *ptr;
-
-  void down_to_smallest() {
-    while (ptr->left)
-      ptr = ptr->left;
-  }
-  void down_to_biggest() {
-    while (ptr->right)
-      ptr = ptr->right;
-  }
 };
 
 template <class Key, class T, class Compare = less<Key>> class binary_search_tree : public iterable {
