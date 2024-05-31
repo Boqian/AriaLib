@@ -39,7 +39,7 @@ template <class T> const auto &get_key(const T &x) {
 template <class BSTType> class bst_iterator {
 public:
   using value_type = typename BSTType::value_type;
-  using pointer = typename BSTType::pointer;
+  using pointer = value_type *;
   using reference = value_type &;
   using difference_type = ptrdiff_t;
   using node_type = _bst::node<value_type>;
@@ -48,6 +48,7 @@ public:
 
   bst_iterator() : ptr(nullptr) {}
   explicit bst_iterator(node_base_type *p) : ptr(p) {}
+  explicit bst_iterator(const node_base_type *p) : ptr(const_cast<node_base_type *>(p)) {}
 
   reference operator*() const noexcept { return value(); }
   pointer operator->() const noexcept { return &value(); }
@@ -70,7 +71,7 @@ public:
   operator bool() const noexcept { return ptr; }
 
 private:
-  reference value() const noexcept { return static_cast<const node_type *>(ptr)->value; }
+  auto &value() const noexcept { return static_cast<node_type *>(ptr)->value; }
   node_base_type *ptr;
 };
 
@@ -96,6 +97,9 @@ public:
 
   binary_search_tree(const binary_search_tree &rhs) {}
 
+  constexpr size_type size() const noexcept { return m_size; }
+  constexpr bool empty() const noexcept { return m_size == 0; }
+
   void swap(binary_search_tree &rhs) noexcept {}
 
   auto begin() const noexcept { return const_iterator(m_first); }
@@ -103,45 +107,89 @@ public:
   auto begin() noexcept { return iterator(m_first); }
   auto end() noexcept { return iterator(m_end); }
 
-  const_iterator find(const key_type &key) const { return const_iterator(const_cast<node_base_type *>(find(m_root, key))); }
+  const_iterator find(const key_type &key) const { return const_iterator(find(m_root, key)); }
+  bool contains(const key_type &key) const { return find(key) != end(); }
+
+  pair<iterator, bool> insert(const value_type &value) {
+    auto [p, flag] = insert(m_root, value);
+    return {iterator(p), flag};
+  }
 
 private:
   using node_type = _bst::node<value_type>;
   using node_base_type = _bst::node_base;
 
-  enum class InsertPosition { self, parent, left, right };
+  template <class... Args> node_base_type *create_node(Args &&...args) {
+    auto p = m_alloc.allocate(1);
+    construct_at(p, forward<Args>(args)...);
+    return p;
+  }
 
   static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
+  bool compare(const key_type &key, const node_base_type *p) const { return (p == m_end) || m_compare(key, get_key(p)); }
+  bool compare(const node_base_type *p, const key_type &key) const { return (p != m_end) && m_compare(get_key(p), key); }
 
   const node_base_type *find(const node_base_type *root, const key_type &key) const {
     if (!root || root == m_end)
       return m_end;
-    if (m_compare(key, get_key(root))) {
+    if (compare(key, root)) {
       return find(root->left, key);
-    } else if (m_compare(get_key(root), key)) {
+    } else if (compare(root, key)) {
       return find(root->right, key);
     } else {
       return root;
     }
   }
 
-  // pair<node_base_type *, InsertPosition> insert(const node_base_type *root, const node_base_type *parent, const key_type &key) const {
-  //   if (!root) {
-  //   }
-  //   if (m_compare(key, get_key(*root))) {
-  //     return find(&(*root)->left, key);
-  //   } else if (m_compare(get_key(*root), key)) {
-  //     return find(&(*root)->right, key);
-  //   } else {
-  //     return root;
-  //   }
-  // }
+  void insert_at(node_base_type *parent, node_base_type *&pos, node_base_type *p) {
+    if (pos == parent->left) {
+      if (m_first == parent)
+        m_first = p;
+    } else if (parent->right == m_end) {
+      p->right = m_end;
+    }
+    pos = p;
+    p->parent = parent;
+    m_size++;
+  }
 
-  node_base_type m_end_node;
+  pair<node_base_type *, bool> insert(node_base_type *root, const_reference value) {
+    if (!m_root) {
+      m_root = create_node(value);
+      m_root->right = m_end;
+      m_first = m_root;
+      m_size++;
+      return {m_root, true};
+    }
+
+    if (compare(_bst::get_key(value), root)) {
+      if (root->left) {
+        return insert(root->left, value);
+      } else {
+        auto p = create_node(value);
+        insert_at(root, root->left, p);
+        return {p, true};
+      }
+    } else if (compare(root, _bst::get_key(value))) {
+      if (root->right && root->right != m_end) {
+        return insert(root->right, value);
+      } else {
+        auto p = create_node(value);
+        insert_at(root, root->right, p);
+        return {p, true};
+      }
+    } else {
+      return {root, false};
+    }
+  }
+
+  node_base_type m_end_node{};
   node_base_type *const m_end = &m_end_node;
-  node_base_type *m_root = m_end;
+  node_base_type *m_root{};
   node_base_type *m_first = m_end;
-  key_compare m_compare;
+  key_compare m_compare{};
+  size_type m_size{};
+  allocator<node_type> m_alloc;
 };
 
 } // namespace aria
