@@ -66,11 +66,13 @@ public:
     }
     return *this;
   }
+
   bst_iterator operator++(int) noexcept {
     auto temp = *this;
     operator++();
     return temp;
   }
+
   bst_iterator &operator--() noexcept {
     if (ptr->left) {
       ptr = ptr->left;
@@ -85,6 +87,7 @@ public:
 
     return *this;
   }
+
   bst_iterator operator--(int) noexcept {
     auto temp = *this;
     operator--();
@@ -92,7 +95,6 @@ public:
   }
 
   bool operator==(const bst_iterator &rhs) const noexcept { return ptr == rhs.ptr; }
-
   operator bool() const noexcept { return ptr; }
 
 private:
@@ -145,6 +147,30 @@ public:
     return {iterator(p), flag};
   }
 
+  // todo
+  // iterator erase(iterator pos) {
+  //  auto res = next(pos);
+  //  auto p = pos.ptr;
+  //  if (m_first == p)
+  //    m_first = res.ptr;
+  //  if (m_first->right == m_end) {
+  //    auto pre = prev(pos);
+  //    pre.ptr->right = m_end;
+  //    m_end->parent = pre.ptr;
+  //  }
+
+  //  if (p == m_root) {
+  //  }
+
+  //  if (!p->left && !p->right) {
+  //  }
+
+  //  if (p->left && !p->right) {
+  //  }
+
+  //  return res;
+  //}
+
 private:
   using node_type = _bst::node<value_type>;
   using node_base_type = _bst::node_base;
@@ -155,9 +181,18 @@ private:
     return p;
   }
 
+  // p->parent must exist
+  node_base_type *&get_ref(node_base_type *p) { return (p == p->parent->left) ? p->parent->left : p->parent->right; }
+
   static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
   bool compare(const key_type &key, const node_base_type *p) const { return (p == m_end) || m_compare(key, get_key(p)); }
   bool compare(const node_base_type *p, const key_type &key) const { return (p != m_end) && m_compare(get_key(p), key); }
+
+  void destroy_node(node_base_type *p) {
+    auto q = static_cast<node_type *>(p);
+    destroy_at(q);
+    m_alloc.deallocate(q, 1);
+  }
 
   const node_base_type *find(const node_base_type *root, const key_type &key) const {
     if (!root || root == m_end)
