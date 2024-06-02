@@ -46,6 +46,31 @@ void link(node_base *parent, node_base *&pos, node_base *child) {
   child->parent = parent;
 }
 
+// p->parent must exist
+node_base *&parent_ref(node_base *p) { return (p == p->parent->left) ? p->parent->left : p->parent->right; }
+
+void left_rotate(node_base *p) {
+  if (!p->left)
+    return;
+  auto par = p->parent, l = p->left, lr = l->right;
+  if (lr)
+    link(p, p->left, lr);
+  if (par)
+    link(par, parent_ref(p), l);
+  link(l, l->right, p);
+}
+
+void right_rotate(node_base *p) {
+  if (!p->right)
+    return;
+  auto par = p->parent, r = p->right, rl = r->left;
+  if (rl)
+    link(p, p->right, rl);
+  if (par)
+    link(par, parent_ref(p), r);
+  link(r, r->left, p);
+}
+
 template <class T> struct node : public node_base {
   template <class... Args>
     requires is_constructible_v<T, Args...>
@@ -249,9 +274,6 @@ private:
     construct_at(p, forward<Args>(args)...);
     return p;
   }
-
-  // p->parent must exist
-  node_base_type *&get_ref(node_base_type *p) { return (p == p->parent->left) ? p->parent->left : p->parent->right; }
 
   static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
   bool compare(const key_type &key, const node_base_type *p) const { return (p == m_end) || m_compare(key, get_key(p)); }

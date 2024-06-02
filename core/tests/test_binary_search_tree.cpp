@@ -120,4 +120,10 @@ TEST(test_binary_search_tree, rule5) {
     EXPECT_EQ(b, a1);
     EXPECT_EQ(a, b);
   }
+  {
+    binary_search_tree<int, void> a = {3, 2, 1}, a1 = a, b = {4, 5}, empty;
+    b = move(a);
+    EXPECT_EQ(a, empty);
+    EXPECT_EQ(b, a1);
+  }
 }
