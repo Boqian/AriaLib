@@ -46,10 +46,10 @@ void link(node_base *parent, node_base *&pos, node_base *child) {
   child->parent = parent;
 }
 
-// p->parent must exist
+// p and p->parent must exist
 node_base *&parent_ref(node_base *p) { return (p == p->parent->left) ? p->parent->left : p->parent->right; }
 
-void left_rotate(node_base *p) {
+void right_rotate(node_base *p) {
   if (!p->left)
     return;
   auto par = p->parent, l = p->left, lr = l->right;
@@ -60,7 +60,7 @@ void left_rotate(node_base *p) {
   link(l, l->right, p);
 }
 
-void right_rotate(node_base *p) {
+void left_rotate(node_base *p) {
   if (!p->right)
     return;
   auto par = p->parent, r = p->right, rl = r->left;
@@ -69,6 +69,13 @@ void right_rotate(node_base *p) {
   if (par)
     link(par, parent_ref(p), r);
   link(r, r->left, p);
+}
+
+void swap(node_base &a, node_base &b) {
+  using aria::swap;
+  swap(a.parent, b.parent);
+  swap(a.left, b.left);
+  swap(a.right, b.right);
 }
 
 template <class T> struct node : public node_base {
@@ -194,8 +201,7 @@ public:
   constexpr bool empty() const noexcept { return m_size == 0; }
 
   void clear() noexcept {
-    destroy_tree(m_root);
-    m_size = 0;
+    destroy_tree(root());
     adjust_on_empty();
   }
 
@@ -209,17 +215,16 @@ public:
   }
 
   void swap(binary_search_tree &rhs) noexcept {
-    auto lhs_last = m_end->parent;
-    auto rhs_last = rhs.m_end->parent;
+    auto lhs_root = root();
+    auto rhs_root = rhs.root();
 
-    if (lhs_last)
-      link(lhs_last, lhs_last->right, rhs.m_end);
-    if (rhs_last)
-      link(rhs_last, rhs_last->right, m_end);
+    if (lhs_root)
+      link(rhs.m_root_end, rhs.m_root_end->left, lhs_root);
+    if (rhs_root)
+      link(m_root_end, m_root_end->left, rhs_root);
 
     using aria::swap;
     swap(m_first, rhs.m_first);
-    swap(m_root, rhs.m_root);
     swap(m_size, rhs.m_size);
     swap(m_compare, rhs.m_compare);
     swap(m_alloc, rhs.m_alloc);
@@ -229,37 +234,57 @@ public:
   }
 
   auto begin() const noexcept { return const_iterator(m_first); }
-  auto end() const noexcept { return const_iterator(m_end); }
+  auto end() const noexcept { return const_iterator(m_root_end); }
   auto begin() noexcept { return iterator(m_first); }
-  auto end() noexcept { return iterator(m_end); }
+  auto end() noexcept { return iterator(m_root_end); }
 
-  const_iterator find(const key_type &key) const { return const_iterator(find(m_root, key)); }
+  const_iterator find(const key_type &key) const { return const_iterator(find(root(), key)); }
   bool contains(const key_type &key) const { return find(key) != end(); }
 
   pair<iterator, bool> insert(const value_type &value) {
-    auto [p, flag] = insert(m_root, value);
+    auto [p, flag] = insert(m_root_end, value);
     return {iterator(p), flag};
   }
 
-  // todo
   // iterator erase(iterator pos) {
-  //   auto res = next(pos);
   //   auto p = pos.ptr;
-  //   if (m_first == p)
-  //     m_first = res.ptr;
-  //   if (m_first->right == m_end) {
-  //     auto pre = prev(pos);
-  //     pre.ptr->right = m_end;
-  //     m_end->parent = pre.ptr;
+  //   if (p == m_root) {
+  //     if (size() == 1) {
+  //       destroy_node(p);
+  //       adjust_on_empty();
+  //       return end();
+  //     } else if (p->left) {
+  //       m_root = p->left;
+  //       _bst::right_rotate(p);
+  //       return erase(pos);
+  //     } else {
+  //       m_root = p->right;
+  //       _bst::left_rotate(p);
+  //       return erase(pos);
+  //     }
   //   }
 
-  //  if (p == m_root) {
+  //  auto res = next(pos);
+  //  if (m_first == p)
+  //    m_first = next(p);
+  //  if (p->right == m_end) {
+  //    auto prev_p = prev(p);
+  //    link(prev_p, prev_p->right, m_end);
   //  }
 
   //  if (!p->left && !p->right) {
-  //  }
-
-  //  if (p->left && !p->right) {
+  //    _bst::parent_ref(p) = nullptr;
+  //    destroy_node(p);
+  //  } else if (p->left && !p->right) {
+  //    link(p->parent, _bst::parent_ref(p), p->left);
+  //    destroy_node(p);
+  //  } else if (p->right && !p->left) {
+  //    link(p->parent, _bst::parent_ref(p), p->right);
+  //    destroy_node(p);
+  //  } else {
+  //    auto prev_p = prev(p);
+  //    _bst::swap(*prev_p, *p);
+  //    return erase(iterator(p));
   //  }
 
   //  return res;
@@ -276,17 +301,18 @@ private:
   }
 
   static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
-  bool compare(const key_type &key, const node_base_type *p) const { return (p == m_end) || m_compare(key, get_key(p)); }
-  bool compare(const node_base_type *p, const key_type &key) const { return (p != m_end) && m_compare(get_key(p), key); }
+  bool compare(const key_type &key, const node_base_type *p) const { return (p == m_root_end) || m_compare(key, get_key(p)); }
+  bool compare(const node_base_type *p, const key_type &key) const { return (p != m_root_end) && m_compare(get_key(p), key); }
 
   void destroy_node(node_base_type *p) {
     auto q = static_cast<node_type *>(p);
     destroy_at(q);
     m_alloc.deallocate(q, 1);
+    m_size--;
   }
 
   void destroy_tree(node_base_type *p) {
-    if (!p || p == m_end)
+    if (!p)
       return;
     destroy_tree(p->left);
     destroy_tree(p->right);
@@ -295,15 +321,17 @@ private:
 
   void adjust_on_empty() noexcept {
     if (m_size == 0) {
-      m_end->parent = nullptr;
-      m_first = m_end;
-      m_root = m_end;
+      m_root_end->left = nullptr;
+      m_first = m_root_end;
     }
   }
 
+  node_base_type *root() { return m_root_end->left; }
+  const node_base_type *root() const { return m_root_end->left; }
+
   const node_base_type *find(const node_base_type *root, const key_type &key) const {
-    if (!root || root == m_end)
-      return m_end;
+    if (!root)
+      return m_root_end;
     if (compare(key, root)) {
       return find(root->left, key);
     } else if (compare(root, key)) {
@@ -314,26 +342,14 @@ private:
   }
 
   void insert_at(node_base_type *parent, node_base_type *&pos, node_base_type *p) {
-    if (pos == parent->left) {
-      if (m_first == parent)
-        m_first = p;
-    } else if (parent->right == m_end) {
-      link(p, p->right, m_end);
+    if (&pos == &parent->left && m_first == parent) {
+      m_first = p;
     }
     link(parent, pos, p);
     m_size++;
   }
 
   pair<node_base_type *, bool> insert(node_base_type *root, const_reference value) {
-    if (!m_root) {
-      m_root = create_node(value);
-      m_root->right = m_end;
-      m_end->parent = m_root;
-      m_first = m_root;
-      m_size++;
-      return {m_root, true};
-    }
-
     if (compare(_bst::get_key(value), root)) {
       if (root->left) {
         return insert(root->left, value);
@@ -343,7 +359,7 @@ private:
         return {p, true};
       }
     } else if (compare(root, _bst::get_key(value))) {
-      if (root->right && root->right != m_end) {
+      if (root->right) {
         return insert(root->right, value);
       } else {
         auto p = create_node(value);
@@ -355,10 +371,9 @@ private:
     }
   }
 
-  node_base_type m_end_node{};
-  node_base_type *const m_end = &m_end_node;
-  node_base_type *m_root{};
-  node_base_type *m_first = m_end;
+  node_base_type m_root_node{};
+  node_base_type *const m_root_end = &m_root_node;
+  node_base_type *m_first = m_root_end;
   key_compare m_compare;
   size_type m_size{};
   allocator<node_type> m_alloc;

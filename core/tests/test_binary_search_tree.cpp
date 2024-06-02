@@ -45,6 +45,13 @@ TEST(test_binary_search_tree, basic) {
     EXPECT_EQ(*(++it3), 2);
   }
   {
+    binary_search_tree<int, void> tree = {4};
+    tree.insert(6);
+    auto it = tree.begin();
+    EXPECT_EQ(*it, 4);
+    EXPECT_EQ(*(++it), 6);
+  }
+  {
     binary_search_tree<int, void> tree = {2, 4, 6, 1, 3, 5, 7, 0};
     auto d = distance(tree.begin(), tree.end());
     EXPECT_EQ(d, tree.size());
@@ -127,3 +134,18 @@ TEST(test_binary_search_tree, rule5) {
     EXPECT_EQ(b, a1);
   }
 }
+
+// TEST(test_binary_search_tree, erase) {
+//   const binary_search_tree<int, void> empty;
+//   {
+//     binary_search_tree<int, void> a = {1};
+//     a.erase(a.begin());
+//     EXPECT_EQ(a, empty);
+//     EXPECT_TRUE(a.empty());
+//   }
+//   {
+//     binary_search_tree<int, void> a = {1, 2}, b = {2};
+//     a.erase(a.begin());
+//     EXPECT_EQ(a, b);
+//   }
+// }
