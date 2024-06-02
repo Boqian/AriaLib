@@ -62,3 +62,62 @@ TEST(test_binary_search_tree, basic) {
     }
   }
 }
+
+struct A {
+  static inline int n_ctor = 0;
+  static inline int n_dtor = 0;
+  static void reset() {
+    n_ctor = 0;
+    n_dtor = 0;
+  }
+  A(int a) : x(a) { n_ctor++; }
+  A(const A &) { n_ctor++; }
+  A(A &&) = default;
+  ~A() { n_dtor++; }
+
+  int x;
+
+  auto operator<=>(const A &) const = default;
+};
+
+TEST(test_binary_search_tree, rule5) {
+  {
+    binary_search_tree<A, void> tree = {A(1), A(2), A(3)};
+    A::reset();
+    tree.clear();
+    EXPECT_EQ(A::n_dtor, 3);
+  }
+  {
+    {
+      binary_search_tree<A, void> tree = {A(1), A(2), A(3)};
+      A::reset();
+    }
+    EXPECT_EQ(A::n_dtor, 3);
+  }
+  {
+    binary_search_tree<int, void> a = {3, 2, 1}, b = {5, 4}, a1 = a, b1 = b;
+    a.swap(b);
+    EXPECT_EQ(a, b1);
+    EXPECT_EQ(b, a1);
+  }
+  {
+    binary_search_tree<int, void> a = {3, 2, 1}, a1 = a, b, b1 = b;
+    a.swap(b);
+    EXPECT_EQ(a, b1);
+    EXPECT_EQ(b, a1);
+  }
+  {
+    binary_search_tree<int, void> a = {3, 2, 1}, a1 = a, empty;
+    EXPECT_EQ(a, a1);
+    auto b = move(a);
+    EXPECT_EQ(b, a1);
+    EXPECT_EQ(a, empty);
+  }
+  {
+    binary_search_tree<int, void> a = {3, 2, 1}, a1 = a, b = {4, 5};
+    b = a;
+    EXPECT_EQ(a, a1);
+    EXPECT_EQ(b, a1);
+    EXPECT_EQ(a, b);
+  }
+}

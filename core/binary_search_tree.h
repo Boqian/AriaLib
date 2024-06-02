@@ -140,12 +140,48 @@ public:
       insert(x);
   }
 
-  ~binary_search_tree() {}
+  ~binary_search_tree() { clear(); }
 
-  binary_search_tree(const binary_search_tree &rhs) {}
+  binary_search_tree(const binary_search_tree &rhs) {
+    for (auto &value : rhs)
+      insert(value);
+  }
+
+  binary_search_tree(binary_search_tree &&rhs) noexcept { swap(rhs); }
+
+  binary_search_tree &operator=(const binary_search_tree &rhs) {
+    if (this != &rhs) {
+      auto tmp = rhs;
+      swap(tmp);
+    }
+    return *this;
+  }
+
+  binary_search_tree &operator=(binary_search_tree &&rhs) noexcept {
+    if (this != &rhs) {
+      auto tmp = move(rhs);
+      swap(tmp);
+    }
+    return *this;
+  }
 
   constexpr size_type size() const noexcept { return m_size; }
   constexpr bool empty() const noexcept { return m_size == 0; }
+
+  void clear() noexcept {
+    destroy_tree(m_root);
+    m_size = 0;
+    adjust_on_empty();
+  }
+
+  bool operator==(const binary_search_tree &rhs) const noexcept {
+    if (this == &rhs)
+      return true;
+    if (size() != rhs.size())
+      return false;
+
+    return equal(begin(), end(), rhs.begin());
+  }
 
   void swap(binary_search_tree &rhs) noexcept {
     auto lhs_last = m_end->parent;
@@ -227,9 +263,17 @@ private:
     m_alloc.deallocate(q, 1);
   }
 
+  void destroy_tree(node_base_type *p) {
+    if (!p || p == m_end)
+      return;
+    destroy_tree(p->left);
+    destroy_tree(p->right);
+    destroy_node(p);
+  }
+
   void adjust_on_empty() noexcept {
     if (m_size == 0) {
-      m_end->prev = nullptr;
+      m_end->parent = nullptr;
       m_first = m_end;
       m_root = m_end;
     }
