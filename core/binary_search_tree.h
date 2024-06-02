@@ -13,6 +13,39 @@ struct node_base {
   node_base *right{};
 };
 
+node_base *next(node_base *p) {
+  if (p->right) {
+    p = p->right;
+    while (p->left)
+      p = p->left;
+  } else {
+    while (p->parent->right == p) {
+      p = p->parent;
+    }
+    p = p->parent;
+  }
+  return p;
+}
+
+node_base *prev(node_base *p) {
+  if (p->left) {
+    p = p->left;
+    while (p->right)
+      p = p->right;
+  } else {
+    while (p->parent->left == p) {
+      p = p->parent;
+    }
+    p = p->parent;
+  }
+  return p;
+}
+
+void link(node_base *parent, node_base *&pos, node_base *child) {
+  pos = child;
+  child->parent = parent;
+}
+
 template <class T> struct node : public node_base {
   template <class... Args>
     requires is_constructible_v<T, Args...>
@@ -34,6 +67,7 @@ template <class T> const auto &get_key(const T &x) {
   } else
     return x;
 }
+
 } // namespace _bst
 
 template <class BSTType> class bst_iterator {
@@ -54,16 +88,7 @@ public:
   pointer operator->() const noexcept { return &value(); }
 
   bst_iterator &operator++() noexcept {
-    if (ptr->right) {
-      ptr = ptr->right;
-      while (ptr->left)
-        ptr = ptr->left;
-    } else {
-      while (ptr->parent->right == ptr) {
-        ptr = ptr->parent;
-      }
-      ptr = ptr->parent;
-    }
+    ptr = next(ptr);
     return *this;
   }
 
@@ -74,17 +99,7 @@ public:
   }
 
   bst_iterator &operator--() noexcept {
-    if (ptr->left) {
-      ptr = ptr->left;
-      while (ptr->right)
-        ptr = ptr->right;
-    } else {
-      while (ptr->parent->left == ptr) {
-        ptr = ptr->parent;
-      }
-      ptr = ptr->parent;
-    }
-
+    ptr = prev(ptr);
     return *this;
   }
 
@@ -132,7 +147,25 @@ public:
   constexpr size_type size() const noexcept { return m_size; }
   constexpr bool empty() const noexcept { return m_size == 0; }
 
-  void swap(binary_search_tree &rhs) noexcept {}
+  void swap(binary_search_tree &rhs) noexcept {
+    auto lhs_last = m_end->parent;
+    auto rhs_last = rhs.m_end->parent;
+
+    if (lhs_last)
+      link(lhs_last, lhs_last->right, rhs.m_end);
+    if (rhs_last)
+      link(rhs_last, rhs_last->right, m_end);
+
+    using aria::swap;
+    swap(m_first, rhs.m_first);
+    swap(m_root, rhs.m_root);
+    swap(m_size, rhs.m_size);
+    swap(m_compare, rhs.m_compare);
+    swap(m_alloc, rhs.m_alloc);
+
+    adjust_on_empty();
+    rhs.adjust_on_empty();
+  }
 
   auto begin() const noexcept { return const_iterator(m_first); }
   auto end() const noexcept { return const_iterator(m_end); }
@@ -149,15 +182,15 @@ public:
 
   // todo
   // iterator erase(iterator pos) {
-  //  auto res = next(pos);
-  //  auto p = pos.ptr;
-  //  if (m_first == p)
-  //    m_first = res.ptr;
-  //  if (m_first->right == m_end) {
-  //    auto pre = prev(pos);
-  //    pre.ptr->right = m_end;
-  //    m_end->parent = pre.ptr;
-  //  }
+  //   auto res = next(pos);
+  //   auto p = pos.ptr;
+  //   if (m_first == p)
+  //     m_first = res.ptr;
+  //   if (m_first->right == m_end) {
+  //     auto pre = prev(pos);
+  //     pre.ptr->right = m_end;
+  //     m_end->parent = pre.ptr;
+  //   }
 
   //  if (p == m_root) {
   //  }
@@ -192,6 +225,14 @@ private:
     auto q = static_cast<node_type *>(p);
     destroy_at(q);
     m_alloc.deallocate(q, 1);
+  }
+
+  void adjust_on_empty() noexcept {
+    if (m_size == 0) {
+      m_end->prev = nullptr;
+      m_first = m_end;
+      m_root = m_end;
+    }
   }
 
   const node_base_type *find(const node_base_type *root, const key_type &key) const {
