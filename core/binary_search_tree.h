@@ -296,11 +296,9 @@ private:
       if (m_first == parent)
         m_first = p;
     } else if (parent->right == m_end) {
-      p->right = m_end;
-      m_end->parent = p;
+      link(p, p->right, m_end);
     }
-    pos = p;
-    p->parent = parent;
+    link(parent, pos, p);
     m_size++;
   }
 
