@@ -185,4 +185,16 @@ TEST(test_binary_search_tree, erase) {
     EXPECT_EQ(*it, 3);
     EXPECT_EQ(a, b);
   }
+  {
+    binary_search_tree<int, void> a = {6, 4, 2, 5, 1, 3, 9, 0, 7, 11, 8, 10}, b = a;
+    for (auto x : b) {
+      auto it = a.erase(a.find(x));
+      if (x == 11)
+        EXPECT_EQ(it, a.end());
+      else
+        EXPECT_EQ(*it, x + 1);
+      a.insert(x);
+      EXPECT_EQ(a, b);
+    }
+  }
 }
