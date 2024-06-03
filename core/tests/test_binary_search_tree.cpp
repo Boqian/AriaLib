@@ -135,17 +135,54 @@ TEST(test_binary_search_tree, rule5) {
   }
 }
 
-// TEST(test_binary_search_tree, erase) {
-//   const binary_search_tree<int, void> empty;
-//   {
-//     binary_search_tree<int, void> a = {1};
-//     a.erase(a.begin());
-//     EXPECT_EQ(a, empty);
-//     EXPECT_TRUE(a.empty());
-//   }
-//   {
-//     binary_search_tree<int, void> a = {1, 2}, b = {2};
-//     a.erase(a.begin());
-//     EXPECT_EQ(a, b);
-//   }
-// }
+TEST(test_binary_search_tree, erase) {
+  const binary_search_tree<int, void> empty;
+  {
+    binary_search_tree<int, void> a = {1};
+    a.erase(a.begin());
+    EXPECT_EQ(a, empty);
+    EXPECT_TRUE(a.empty());
+  }
+  {
+    binary_search_tree<int, void> a = {1, 2}, b = {2};
+    auto it = a.erase(a.begin());
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(*it, 2);
+  }
+  {
+    binary_search_tree<int, void> a = {1, 2, 3}, b = {1, 3};
+    auto it = a.erase(a.find(2));
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(*it, 3);
+  }
+  {
+    binary_search_tree<int, void> a = {1, 2, 3}, b = {2, 3};
+    auto it = a.erase(a.find(1));
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(*it, 2);
+  }
+  {
+    binary_search_tree<int, void> a = {1, 2, 3}, b = {1, 2};
+    auto it = a.erase(a.find(3));
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(it, a.end());
+  }
+  {
+    binary_search_tree<int, void> a = {2, 1, 3}, b = {2, 3};
+    auto it = a.erase(a.find(1));
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(*it, 2);
+  }
+  {
+    binary_search_tree<int, void> a = {2, 1, 3}, b = {1, 2};
+    auto it = a.erase(a.find(3));
+    EXPECT_EQ(a, b);
+    EXPECT_EQ(it, a.end());
+  }
+  {
+    binary_search_tree<int, void> a = {2, 1, 3}, b = {1, 3};
+    auto it = a.erase(a.find(2));
+    EXPECT_EQ(*it, 3);
+    EXPECT_EQ(a, b);
+  }
+}

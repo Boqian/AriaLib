@@ -71,11 +71,52 @@ void left_rotate(node_base *p) {
   link(r, r->left, p);
 }
 
+void swap_parent(node_base *a, node_base *b) {
+  auto pa = a->parent, pb = b->parent;
+  bool is_pa_left = pa->left == a, is_pb_left = pb->left == b;
+  a->parent = pb;
+  b->parent = pa;
+  (is_pa_left ? pa->left : pa->right) = b;
+  (is_pb_left ? pb->left : pb->right) = a;
+}
+
+void swap_left(node_base *a, node_base *b) {
+  auto la = a->left, lb = b->left;
+  a->left = lb;
+  b->left = la;
+  if (la)
+    la->parent = b;
+  if (lb)
+    lb->parent = a;
+}
+
+void swap_right(node_base *a, node_base *b) {
+  auto ra = a->right, rb = b->right;
+  a->right = rb;
+  b->right = ra;
+  if (ra)
+    ra->parent = b;
+  if (rb)
+    rb->parent = a;
+}
+
 void swap(node_base &a, node_base &b) {
-  using aria::swap;
-  swap(a.parent, b.parent);
-  swap(a.left, b.left);
-  swap(a.right, b.right);
+  if (a.parent == &b)
+    return swap(b, a);
+
+  const bool is_left = a.left == &b, is_right = a.right == &b;
+
+  swap_parent(&a, &b);
+  swap_left(&a, &b);
+  swap_right(&a, &b);
+
+  if (is_left) {
+    a.parent = &b;
+    b.left = &a;
+  } else if (is_right) {
+    a.parent = &b;
+    b.right = &a;
+  }
 }
 
 template <class T> struct node : public node_base {
@@ -246,49 +287,14 @@ public:
     return {iterator(p), flag};
   }
 
-  // iterator erase(iterator pos) {
-  //   auto p = pos.ptr;
-  //   if (p == m_root) {
-  //     if (size() == 1) {
-  //       destroy_node(p);
-  //       adjust_on_empty();
-  //       return end();
-  //     } else if (p->left) {
-  //       m_root = p->left;
-  //       _bst::right_rotate(p);
-  //       return erase(pos);
-  //     } else {
-  //       m_root = p->right;
-  //       _bst::left_rotate(p);
-  //       return erase(pos);
-  //     }
-  //   }
-
-  //  auto res = next(pos);
-  //  if (m_first == p)
-  //    m_first = next(p);
-  //  if (p->right == m_end) {
-  //    auto prev_p = prev(p);
-  //    link(prev_p, prev_p->right, m_end);
-  //  }
-
-  //  if (!p->left && !p->right) {
-  //    _bst::parent_ref(p) = nullptr;
-  //    destroy_node(p);
-  //  } else if (p->left && !p->right) {
-  //    link(p->parent, _bst::parent_ref(p), p->left);
-  //    destroy_node(p);
-  //  } else if (p->right && !p->left) {
-  //    link(p->parent, _bst::parent_ref(p), p->right);
-  //    destroy_node(p);
-  //  } else {
-  //    auto prev_p = prev(p);
-  //    _bst::swap(*prev_p, *p);
-  //    return erase(iterator(p));
-  //  }
-
-  //  return res;
-  //}
+  iterator erase(iterator pos) {
+    auto p = pos.ptr;
+    auto res = next(pos);
+    if (m_first == p)
+      m_first = next(p);
+    erase_node(p);
+    return res;
+  }
 
 private:
   using node_type = _bst::node<value_type>;
@@ -368,6 +374,23 @@ private:
       }
     } else {
       return {root, false};
+    }
+  }
+
+  void erase_node(node_base_type *p) {
+    if (!p->left && !p->right) {
+      _bst::parent_ref(p) = nullptr;
+      destroy_node(p);
+    } else if (p->left && !p->right) {
+      link(p->parent, _bst::parent_ref(p), p->left);
+      destroy_node(p);
+    } else if (p->right && !p->left) {
+      link(p->parent, _bst::parent_ref(p), p->right);
+      destroy_node(p);
+    } else {
+      auto prev_p = prev(p);
+      _bst::swap(*prev_p, *p);
+      erase_node(p);
     }
   }
 
