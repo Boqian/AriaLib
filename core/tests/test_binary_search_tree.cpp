@@ -197,4 +197,9 @@ TEST(test_binary_search_tree, erase) {
       EXPECT_EQ(a, b);
     }
   }
+  {
+    binary_search_tree<int, void> a = {2, 1, 3}, b = {1, 3};
+    auto it = a.erase(2);
+    EXPECT_EQ(a, b);
+  }
 }

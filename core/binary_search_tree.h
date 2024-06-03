@@ -288,12 +288,22 @@ public:
   }
 
   iterator erase(iterator pos) {
+    if (pos == end())
+      return pos;
     auto p = pos.ptr;
     auto res = next(pos);
     if (m_first == p)
       m_first = next(p);
     erase_node(p);
     return res;
+  }
+
+  size_type erase(const Key &key) {
+    if (auto it = find(key); it != end()) {
+      erase(it);
+      return 1;
+    }
+    return 0;
   }
 
 private:
