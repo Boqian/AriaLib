@@ -285,8 +285,11 @@ public:
   auto begin() noexcept { return iterator(m_first); }
   auto end() noexcept { return iterator(m_root_end); }
 
-  iterator find(const key_type &key) { return iterator(find(root(), key)); }
-  const_iterator find(const key_type &key) const { return const_iterator(find(root(), key)); }
+  const_iterator find(const key_type &key) const {
+    auto [p, par] = find(root(), m_root_end, key);
+    return const_iterator(p ? p : m_root_end);
+  }
+  iterator find(const key_type &key) { return as_const(*this).find(key); }
   bool contains(const key_type &key) const { return find(key) != end(); }
 
   pair<iterator, bool> insert(const_reference value) {
@@ -312,6 +315,28 @@ public:
     }
     return 0;
   }
+
+  const_iterator lower_bound(const Key &key) const {
+    auto [p, par] = find(root(), m_root_end, key);
+    if (p)
+      return const_iterator(p);
+    else if (compare(key, par))
+      return const_iterator(par);
+    else
+      return const_iterator(_bst::next(const_cast<node_base_type *>(par)));
+  }
+  iterator lower_bound(const Key &key) { return as_const(*this).lower_bound(key); }
+
+  const_iterator upper_bound(const Key &key) const {
+    auto [p, par] = find(root(), m_root_end, key);
+    if (p)
+      return const_iterator(_bst::next(const_cast<node_base_type *>(p)));
+    else if (compare(key, par))
+      return const_iterator(par);
+    else
+      return const_iterator(_bst::next(const_cast<node_base_type *>(par)));
+  }
+  iterator upper_bound(const Key &key) { return as_const(*this).upper_bound(key); }
 
 private:
   using node_type = _bst::node<value_type>;
@@ -352,15 +377,16 @@ private:
   node_base_type *root() { return m_root_end->left; }
   const node_base_type *root() const { return m_root_end->left; }
 
-  const node_base_type *find(const node_base_type *root, const key_type &key) const {
-    if (!root)
-      return m_root_end;
-    if (compare(key, root)) {
-      return find(root->left, key);
-    } else if (compare(root, key)) {
-      return find(root->right, key);
+  pair<const node_base_type *, const node_base_type *> find(const node_base_type *p, const node_base_type *parent,
+                                                            const key_type &key) const {
+    if (!p)
+      return {p, parent};
+    if (compare(key, p)) {
+      return find(p->left, p, key);
+    } else if (compare(p, key)) {
+      return find(p->right, p, key);
     } else {
-      return root;
+      return {p, parent};
     }
   }
 

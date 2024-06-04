@@ -115,3 +115,21 @@ TEST(test_set, basic) {
     EXPECT_EQ(a, b);
   }
 }
+
+TEST(test_set, lower_upper_bound) {
+  {
+    set<int> a = {4, 2};
+    EXPECT_EQ(*a.lower_bound(3), 4);
+    EXPECT_EQ(*a.upper_bound(2), 4);
+  }
+  {
+    set<int> a = {12, 8, 4, 10, 2, 6, 18, 0, 14, 16, 20};
+    EXPECT_EQ(*a.lower_bound(3), 4);
+    for (auto x : {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}) {
+      EXPECT_EQ(*a.lower_bound(x * 2), x * 2);
+      EXPECT_EQ(*a.lower_bound(x * 2 - 1), x * 2);
+      EXPECT_EQ(*a.upper_bound(x * 2 - 1), x * 2);
+      EXPECT_EQ(*a.upper_bound(x * 2 - 2), x * 2);
+    }
+  }
+}
