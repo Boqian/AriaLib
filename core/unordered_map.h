@@ -39,7 +39,7 @@ public:
 
   T &at(const Key &key) { return const_cast<T &>(as_const(*this).at(key)); }
 
-  template <class M> std::pair<iterator, bool> insert_or_assign(const Key &k, M &&obj) { auto res = insert(k, obj); }
+  template <class M> pair<iterator, bool> insert_or_assign(const Key &k, M &&obj) { auto res = insert(k, obj); }
 
 private:
 };

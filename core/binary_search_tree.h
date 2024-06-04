@@ -186,7 +186,7 @@ public:
   operator bool() const noexcept { return ptr; }
 
 private:
-  auto &value() const noexcept { return static_cast<node_type *>(ptr)->value; }
+  value_type &value() const noexcept { return static_cast<node_type *>(ptr)->value; }
   node_base_type *ptr;
 };
 
@@ -211,6 +211,12 @@ public:
   binary_search_tree(initializer_list<value_type> init, const Compare &comp = Compare()) : m_compare(comp) {
     for (auto &x : init)
       insert(x);
+  }
+
+  template <input_or_output_iterator InputIt>
+  binary_search_tree(InputIt first, InputIt last, const Compare &comp = Compare()) : m_compare(comp) {
+    for (; first != last; ++first)
+      insert(*first);
   }
 
   ~binary_search_tree() { clear(); }
@@ -279,10 +285,11 @@ public:
   auto begin() noexcept { return iterator(m_first); }
   auto end() noexcept { return iterator(m_root_end); }
 
+  iterator find(const key_type &key) { return iterator(find(root(), key)); }
   const_iterator find(const key_type &key) const { return const_iterator(find(root(), key)); }
   bool contains(const key_type &key) const { return find(key) != end(); }
 
-  pair<iterator, bool> insert(const value_type &value) {
+  pair<iterator, bool> insert(const_reference value) {
     auto [p, flag] = insert(m_root_end, value);
     return {iterator(p), flag};
   }
