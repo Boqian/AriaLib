@@ -17,6 +17,7 @@ tuple, tupe_element, get(), tupe_size
 unreachable()
 exchange
 in_place_t
+addressof
 pointer_traits
 */
 
@@ -189,8 +190,52 @@ struct in_place_t {
 };
 inline constexpr in_place_t in_place{};
 
+//------------------------- addressof -------------------------//
+template <class T> auto addressof(T &x) noexcept {
+  if constexpr (is_object_v<T>)
+    return reinterpret_cast<T *>(&const_cast<char &>(reinterpret_cast<const volatile char &>(x)));
+  else
+    return &x;
+}
+
 //------------------------- pointer_traits -------------------------//
-// todo
-template <class Ptr> struct pointer_traits {};
+template <class T> struct _get_difference_type : type_identity<ptrdiff_t> {};
+template <class T>
+  requires requires { typename T::difference_type; }
+struct _get_difference_type<T> : type_identity<typename T::difference_type> {};
+
+template <class Ptr> struct pointer_traits {
+  using pointer = Ptr;
+  using difference_type = typename _get_difference_type<Ptr>::type;
+  // todo using element_type = ...
+};
+
+template <class T> struct pointer_traits<T *> {
+  using pointer = T *;
+  using element_type = T;
+  using difference_type = ptrdiff_t;
+
+  template <class U> using rebind = U *;
+  static pointer pointer_to(element_type &val) noexcept { return std::addressof(val); }
+};
+
+template <class T>
+concept _has_to_address = requires(const T &val) {
+  typename pointer_traits<T>;
+  pointer_traits<T>::to_address(val);
+};
+
+template <class T> constexpr T *to_address(T *const val) noexcept {
+  static_assert(!is_function_v<T>);
+  return val;
+}
+
+template <class Ptr> constexpr auto to_address(const Ptr &val) noexcept {
+  if constexpr (_has_to_address<Ptr>) {
+    return pointer_traits<Ptr>::to_address(val);
+  } else {
+    return to_address(val.operator->());
+  }
+}
 
 } // namespace aria
