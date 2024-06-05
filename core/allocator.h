@@ -75,6 +75,13 @@ template <class Alloc>
   requires requires { typename Alloc::difference_type; }
 struct _get_difference_type<Alloc> : type_identity<typename Alloc::difference_type> {};
 
+template <class Alloc, class difference_type> struct _get_size_type {
+  using type = make_unsigned_t<difference_type>;
+};
+template <class Alloc, class difference_type>
+  requires requires { typename Alloc::size_type; }
+struct _get_size_type<Alloc, difference_type> : type_identity<typename Alloc::size_type> {};
+
 template <class Alloc> struct allocator_traits {
   using allocator_type = Alloc;
   using value_type = Alloc::value_type;
@@ -83,6 +90,7 @@ template <class Alloc> struct allocator_traits {
   using void_pointer = typename _get_void_pointer_type<Alloc>::type;
   using const_void_pointer = typename _get_const_void_pointer_type<Alloc>::type;
   using difference_type = typename _get_difference_type<Alloc>::type;
+  using size_type = typename _get_size_type<Alloc, difference_type>::type;
 };
 
 } // namespace aria
