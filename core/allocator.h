@@ -33,7 +33,12 @@ template <class Alloc>
   requires requires { typename Alloc::pointer; }
 struct _get_pointer_type<Alloc> : type_identity<typename Alloc::pointer> {};
 
-template <class Alloc> struct _get_const_pointer_type : type_identity<typename const Alloc::value_type *> {};
+template <class Alloc> struct _get_const_pointer_type {
+  using value_type = typename Alloc::value_type;
+  using pointer = typename _get_pointer_type<Alloc>::type;
+  using pointer_traits = pointer_traits<pointer>;
+  using type = typename pointer_traits::template rebind<const value_type>;
+};
 template <class Alloc>
   requires requires { typename Alloc::const_pointer; }
 struct _get_const_pointer_type<Alloc> : type_identity<typename Alloc::const_pointer> {};
