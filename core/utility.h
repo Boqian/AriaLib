@@ -17,6 +17,7 @@ tuple, tupe_element, get(), tupe_size
 unreachable()
 exchange
 in_place_t
+pointer_traits
 */
 
 namespace aria {
@@ -187,5 +188,9 @@ struct in_place_t {
   explicit in_place_t() = default;
 };
 inline constexpr in_place_t in_place{};
+
+//------------------------- pointer_traits -------------------------//
+// todo
+template <class Ptr> struct pointer_traits {};
 
 } // namespace aria

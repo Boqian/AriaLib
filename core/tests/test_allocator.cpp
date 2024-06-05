@@ -57,3 +57,17 @@ TEST(test_allocator, rebind) {
   using alloc_A = allocator<A>;
   static_assert(is_same_v<alloc_int::rebind_alloc<A>, alloc_A>);
 }
+
+struct B {
+  using value_type = int;
+  using pointer = int;
+};
+
+struct C {
+  using value_type = int;
+};
+
+TEST(test_allocator, allocator_traits) {
+  static_assert(is_same_v<_get_pointer_type<B>::type, int>);
+  static_assert(is_same_v<_get_pointer_type<C>::type, int *>);
+}
