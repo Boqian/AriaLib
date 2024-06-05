@@ -82,6 +82,21 @@ template <class Alloc, class difference_type>
   requires requires { typename Alloc::size_type; }
 struct _get_size_type<Alloc, difference_type> : type_identity<typename Alloc::size_type> {};
 
+template <class Alloc> struct propagate_on_copy : type_identity<false_type> {};
+template <class Alloc>
+  requires requires { typename Alloc::propagate_on_container_copy_assignment; }
+struct propagate_on_copy<Alloc> : type_identity<typename Alloc::propagate_on_container_copy_assignment> {};
+
+template <class Alloc> struct propagate_on_move : type_identity<false_type> {};
+template <class Alloc>
+  requires requires { typename Alloc::propagate_on_container_move_assignment; }
+struct propagate_on_move<Alloc> : type_identity<typename Alloc::propagate_on_container_move_assignment> {};
+
+template <class Alloc> struct propagate_on_swap : type_identity<false_type> {};
+template <class Alloc>
+  requires requires { typename Alloc::propagate_on_container_swap; }
+struct propagate_on_swap<Alloc> : type_identity<typename Alloc::propagate_on_container_swap> {};
+
 template <class Alloc> struct allocator_traits {
   using allocator_type = Alloc;
   using value_type = Alloc::value_type;
@@ -91,6 +106,9 @@ template <class Alloc> struct allocator_traits {
   using const_void_pointer = typename _get_const_void_pointer_type<Alloc>::type;
   using difference_type = typename _get_difference_type<Alloc>::type;
   using size_type = typename _get_size_type<Alloc, difference_type>::type;
+  using propagate_on_container_copy_assignment = typename propagate_on_copy<Alloc>::type;
+  using propagate_on_container_move_assignment = typename propagate_on_move<Alloc>::type;
+  using propagate_on_container_swap = typename propagate_on_swap<Alloc>::type;
 };
 
 } // namespace aria
