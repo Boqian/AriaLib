@@ -60,8 +60,8 @@ TEST(test_allocator, rebind) {
 
 struct B {
   using value_type = int;
-  using pointer = int;
-  using const_pointer = double;
+  using pointer = float *;
+  using const_pointer = double *;
 };
 
 struct C {
@@ -72,13 +72,13 @@ TEST(test_allocator, allocator_traits) {
   using traitB = allocator_traits<B>;
   using traitC = allocator_traits<C>;
 
-  static_assert(is_same_v<_get_pointer_type<B>::type, int>);
+  static_assert(is_same_v<_get_pointer_type<B>::type, float *>);
   static_assert(is_same_v<_get_pointer_type<C>::type, int *>);
   static_assert(is_same_v<_get_pointer_type<C>::type, int *>);
 
   static_assert(is_same_v<traitB::value_type, int>);
-  static_assert(is_same_v<traitB::pointer, int>);
-  static_assert(is_same_v<traitB::const_pointer, double>);
+  static_assert(is_same_v<traitB::pointer, float *>);
+  static_assert(is_same_v<traitB::const_pointer, double *>);
   static_assert(is_same_v<traitC::pointer, int *>);
   static_assert(is_same_v<traitC::const_pointer, const int *>);
 }
