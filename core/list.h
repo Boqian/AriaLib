@@ -71,8 +71,8 @@ public:
   using reference = value_type &;
   using const_reference = const value_type &;
   using allocator_type = Allocator;
-  using pointer = typename allocator_type::pointer;
-  using const_pointer = typename allocator_type::const_pointer;
+  using pointer = typename allocator_traits<Allocator>::pointer;
+  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
   using const_iterator = list_const_iterator<list<T, Allocator>>;
   using iterator = mutable_iterator<const_iterator>;
   using reverse_iterator = reverse_iterator<iterator>;

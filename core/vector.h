@@ -16,8 +16,8 @@ public:
   using reference = value_type &;
   using const_reference = const value_type &;
   using allocator_type = Allocator;
-  using pointer = typename allocator_type::pointer;
-  using const_pointer = typename allocator_type::const_pointer;
+  using pointer = typename allocator_traits<Allocator>::pointer;
+  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
   using iterator = array_iterator<T>;
   using const_iterator = basic_const_iterator<iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;

@@ -17,17 +17,16 @@ concept allocatable = !is_const_v<T> && !is_function_v<T> && !is_reference_v<T>;
 //------------------------- aria::allocator -------------------------//
 
 template <allocatable T> struct allocator {
-  using size_type = unsigned int;
   using value_type = T;
-  using pointer = value_type *;
-  using const_pointer = const value_type *;
-
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using propagate_on_container_move_assignment = true_type;
   template <class U> using rebind_alloc = allocator<U>;
 
   constexpr allocator() noexcept = default;
 
   // todo operator new is not constexpr
-  [[nodiscard]] constexpr pointer allocate(size_type n) { return static_cast<pointer>(::operator new(n * sizeof(T))); }
+  [[nodiscard]] constexpr T *allocate(size_type n) { return static_cast<T *>(::operator new(n * sizeof(T))); }
 
   constexpr void deallocate(T *p, size_type n) { ::operator delete(p, n); }
 };
@@ -97,6 +96,11 @@ template <class Alloc>
   requires requires { typename Alloc::propagate_on_container_swap; }
 struct propagate_on_swap<Alloc> : type_identity<typename Alloc::propagate_on_container_swap> {};
 
+template <class Alloc> struct is_always_equal : type_identity<typename is_empty<Alloc>::type> {};
+template <class Alloc>
+  requires requires { typename Alloc::is_always_equal; }
+struct is_always_equal<Alloc> : type_identity<typename Alloc::is_always_equal> {};
+
 template <class Alloc> struct allocator_traits {
   using allocator_type = Alloc;
   using value_type = Alloc::value_type;
@@ -109,6 +113,7 @@ template <class Alloc> struct allocator_traits {
   using propagate_on_container_copy_assignment = typename propagate_on_copy<Alloc>::type;
   using propagate_on_container_move_assignment = typename propagate_on_move<Alloc>::type;
   using propagate_on_container_swap = typename propagate_on_swap<Alloc>::type;
+  using is_always_equal = typename is_always_equal<Alloc>::type;
 };
 
 } // namespace aria
