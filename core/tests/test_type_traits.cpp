@@ -181,6 +181,11 @@ void test_traits() {
   static_assert(is_same_v<add_pointer_t<int &>, int *>);
   static_assert(is_same_v<remove_pointer_t<int *>, int>);
   static_assert(is_same_v<remove_pointer_t<int *const>, int>);
+
+  static_assert(is_same_v<make_signed_t<unsigned int>, int>);
+  static_assert(is_same_v<make_unsigned_t<unsigned int>, unsigned int>);
+  static_assert(is_same_v<make_signed_t<int>, int>);
+  static_assert(is_same_v<make_unsigned_t<int>, unsigned int>);
 }
 
 TEST(test_type_traits, swap) {

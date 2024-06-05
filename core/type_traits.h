@@ -265,6 +265,29 @@ template <class T> struct is_unbounded_array : false_type {};
 template <class T> struct is_unbounded_array<T[]> : true_type {};
 template <class T> inline constexpr bool is_unbounded_array_v = is_unbounded_array<T>::value;
 
+//----------------- Sign modifiers -----------------------
+template <class T> struct make_unsigned {};
+template <class T>
+  requires is_unsigned_v<T>
+struct make_unsigned<T> : type_identity<T> {};
+template <> struct make_unsigned<char> : type_identity<unsigned char> {};
+template <> struct make_unsigned<short> : type_identity<unsigned short> {};
+template <> struct make_unsigned<int> : type_identity<unsigned int> {};
+template <> struct make_unsigned<long> : type_identity<unsigned long> {};
+template <> struct make_unsigned<long long> : type_identity<unsigned long long> {};
+template <class T> using make_unsigned_t = make_unsigned<T>::type;
+
+template <class T> struct make_signed {};
+template <class T>
+  requires is_signed_v<T>
+struct make_signed<T> : type_identity<T> {};
+template <> struct make_signed<unsigned char> : type_identity<char> {};
+template <> struct make_signed<unsigned short> : type_identity<short> {};
+template <> struct make_signed<unsigned int> : type_identity<int> {};
+template <> struct make_signed<unsigned long> : type_identity<long> {};
+template <> struct make_signed<unsigned long long> : type_identity<long long> {};
+template <class T> using make_signed_t = make_signed<T>::type;
+
 //----------------- is_constructible -----------------------
 template <class T>
 concept _default_construct = requires { T(); } && requires { T{}; } && requires { ::new T; };
