@@ -199,14 +199,14 @@ template <class T> auto addressof(T &x) noexcept {
 }
 
 //------------------------- pointer_traits -------------------------//
-template <class T> struct _get_difference_type : type_identity<ptrdiff_t> {};
+template <class T> struct _get_ptr_difference_type : type_identity<ptrdiff_t> {};
 template <class T>
   requires requires { typename T::difference_type; }
-struct _get_difference_type<T> : type_identity<typename T::difference_type> {};
+struct _get_ptr_difference_type<T> : type_identity<typename T::difference_type> {};
 
 template <class Ptr> struct pointer_traits {
   using pointer = Ptr;
-  using difference_type = typename _get_difference_type<Ptr>::type;
+  using difference_type = typename _get_ptr_difference_type<Ptr>::type;
   // todo using element_type = ...
 };
 

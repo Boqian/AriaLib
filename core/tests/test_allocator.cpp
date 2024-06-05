@@ -81,4 +81,5 @@ TEST(test_allocator, allocator_traits) {
   static_assert(is_same_v<traitB::const_pointer, double *>);
   static_assert(is_same_v<traitC::pointer, int *>);
   static_assert(is_same_v<traitC::const_pointer, const int *>);
+  static_assert(is_same_v<traitC::difference_type, ptrdiff_t>);
 }
