@@ -207,11 +207,12 @@ public:
   iterator end() noexcept { return iterator(&m_buckets.back(), m_end); }
 
   void swap(deque &rhs) noexcept {
-    aria::swap(m_buckets, rhs.m_buckets);
-    aria::swap(m_start, rhs.m_start);
-    aria::swap(m_end, rhs.m_end);
-    aria::swap(m_bucket_start_index, rhs.m_bucket_start_index);
-    aria::swap(m_alloc, rhs.m_alloc);
+    using aria::swap;
+    swap(m_buckets, rhs.m_buckets);
+    swap(m_start, rhs.m_start);
+    swap(m_end, rhs.m_end);
+    swap(m_bucket_start_index, rhs.m_bucket_start_index);
+    swap(m_alloc, rhs.m_alloc);
   }
 
 private:
