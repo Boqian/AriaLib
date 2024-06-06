@@ -31,6 +31,8 @@ template <allocatable T> struct allocator {
   constexpr void deallocate(T *p, size_type n) { ::operator delete(p, n); }
 };
 
+template <class T1, class T2> constexpr bool operator==(const allocator<T1> &lhs, const allocator<T2> &rhs) noexcept { return true; }
+
 //------------------------- allocator_traits -------------------------//
 
 template <class Alloc> struct _get_pointer_type : type_identity<typename Alloc::value_type *> {};
@@ -114,6 +116,27 @@ template <class Alloc> struct allocator_traits {
   using propagate_on_container_move_assignment = typename propagate_on_move<Alloc>::type;
   using propagate_on_container_swap = typename propagate_on_swap<Alloc>::type;
   using is_always_equal = typename is_always_equal<Alloc>::type;
+
+  template <class U> using rebind_alloc = Alloc::rebind_alloc<U>;
+
+  [[nodiscard]] static constexpr pointer allocate(Alloc &a, size_type n) { return a.allocate(n); }
+  static constexpr void deallocate(Alloc &a, pointer p, size_type n) { a.deallicate(p, n); }
+
+  template <class T, class... Args> static constexpr void construct(Alloc &a, T *p, Args &&...args) {
+    if constexpr (requires { a.construct(p, std::forward<Args>(args)...); }) {
+      a.construct(p, forward<Args>(args)...);
+    } else {
+      construct_at(p, forward<Args>(args)...);
+    }
+  }
+
+  template <class T, class... Args> static constexpr void destroy(Alloc &a, T *p) {
+    if constexpr (requires { a.destory(p); }) {
+      a.destory(p);
+    } else {
+      destory_at(p);
+    }
+  }
 };
 
 } // namespace aria
