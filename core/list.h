@@ -213,7 +213,7 @@ public:
 private:
   using node_type = _list::node<value_type>;
   using node_base_type = _list::node_base;
-  using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
+  using node_allocator_type = typename allocator_traits<Allocator>::template rebind_alloc<node_type>;
 
   node_type *cast(node_base_type *p) const noexcept { return static_cast<node_type *>(p); }
   node_type *last() const noexcept { return cast(m_end->prev); }

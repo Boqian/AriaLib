@@ -21,7 +21,6 @@ template <allocatable T> struct allocator {
   using size_type = size_t;
   using difference_type = ptrdiff_t;
   using propagate_on_container_move_assignment = true_type;
-  template <class U> using rebind_alloc = allocator<U>;
 
   constexpr allocator() noexcept = default;
 
@@ -103,6 +102,17 @@ template <class Alloc>
   requires requires { typename Alloc::is_always_equal; }
 struct is_always_equal<Alloc> : type_identity<typename Alloc::is_always_equal> {};
 
+template <class Newfirst, class T> struct _replace_first_parameter;
+template <class Newfirst, template <class, class...> class T, class First, class... Rest>
+struct _replace_first_parameter<Newfirst, T<First, Rest...>> {
+  using type = T<Newfirst, Rest...>;
+};
+
+template <class Newfirst, class Alloc> struct _get_rebind_type : type_identity<typename _replace_first_parameter<Newfirst, Alloc>::type> {};
+template <class Newfirst, class Alloc>
+  requires requires { typename Alloc::template rebind_alloc<Newfirst>; }
+struct _get_rebind_type<Newfirst, Alloc> : type_identity<typename Alloc::template rebind_alloc<Newfirst>> {};
+
 template <class Alloc> struct allocator_traits {
   using allocator_type = Alloc;
   using value_type = Alloc::value_type;
@@ -116,8 +126,7 @@ template <class Alloc> struct allocator_traits {
   using propagate_on_container_move_assignment = typename propagate_on_move<Alloc>::type;
   using propagate_on_container_swap = typename propagate_on_swap<Alloc>::type;
   using is_always_equal = typename is_always_equal<Alloc>::type;
-
-  template <class U> using rebind_alloc = Alloc::rebind_alloc<U>;
+  template <class U> using rebind_alloc = typename _get_rebind_type<U, Alloc>::type;
 
   [[nodiscard]] static constexpr pointer allocate(Alloc &a, size_type n) { return a.allocate(n); }
   static constexpr void deallocate(Alloc &a, pointer p, size_type n) { a.deallicate(p, n); }

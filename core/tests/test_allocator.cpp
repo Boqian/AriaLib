@@ -52,10 +52,9 @@ TEST(test_allocator, construct) {
 }
 
 TEST(test_allocator, rebind) {
-
   using alloc_int = allocator<int>;
   using alloc_A = allocator<A>;
-  static_assert(is_same_v<alloc_int::rebind_alloc<A>, alloc_A>);
+  static_assert(is_same_v<allocator_traits<alloc_int>::rebind_alloc<A>, alloc_A>);
 }
 
 struct B {
