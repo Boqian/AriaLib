@@ -133,4 +133,11 @@ TEST(test_algorithm, lower_bound) {
     it = lower_bound(begin(a), end(a), 5);
     EXPECT_EQ(*it, 6);
   }
+  {
+    vector<int> a = {1, 2, 3, 4, 6, 7};
+    auto it = upper_bound(begin(a), end(a), 4);
+    EXPECT_EQ(*it, 6);
+    it = upper_bound(begin(a), end(a), 5);
+    EXPECT_EQ(*it, 6);
+  }
 }

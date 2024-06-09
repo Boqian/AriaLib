@@ -236,4 +236,13 @@ template <class ForwardIt, class T> constexpr ForwardIt lower_bound(ForwardIt fi
   return lower_bound(first, last, value, less{});
 }
 
+template <class ForwardIt, class T, class Compare>
+constexpr ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+  return partition_point(first, last, [&](const auto &x) { return !comp(value, x); });
+}
+
+template <class ForwardIt, class T> constexpr ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T &value) {
+  return upper_bound(first, last, value, less{});
+}
+
 } // namespace aria
