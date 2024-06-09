@@ -36,17 +36,21 @@ template <class InputIt, class UnaryPred> constexpr bool none_of(InputIt first, 
 }
 
 template <class InputIt, class T> constexpr InputIt find(InputIt first, InputIt last, const T &value) {
-  auto it = first;
-  for (; it != last && *it != value; ++it) {
+  for (; first != last && *first != value; ++first) {
   }
-  return it;
+  return first;
 }
 
 template <class InputIt, class UnaryPred> constexpr InputIt find_if(InputIt first, InputIt last, UnaryPred p) {
-  auto it = first;
-  for (; it != last && !p(*it); ++it) {
+  for (; first != last && !p(*first); ++first) {
   }
-  return it;
+  return first;
+}
+
+template <class InputIt, class UnaryPred> constexpr InputIt find_if_not(InputIt first, InputIt last, UnaryPred p) {
+  for (; first != last && p(*first); ++first) {
+  }
+  return first;
 }
 
 template <class InputIt, class T> size_t count(InputIt first, InputIt last, const T &x) {
@@ -190,9 +194,21 @@ template <class Iter> void reverse(Iter first, Iter last) {
 
 //-----------------------Partitioning operations-----------------------
 template <class InputIt, class UnaryPred> bool is_partitioned(InputIt first, InputIt last, UnaryPred p) {
-  for (; first != last && p(*first); ++first) {
-  }
+  first = find_if_not(first, last, p);
   return none_of(first, last, p);
+}
+
+template <class InputIt, class UnaryPred> InputIt partition(InputIt first, InputIt last, UnaryPred p) {
+  first = find_if_not(first, last, p);
+  if (first == last)
+    return first;
+  for (auto i = next(first); i != last; ++i) {
+    if (p(*i)) {
+      iter_swap(i, first);
+      ++first;
+    }
+  }
+  return first;
 }
 
 } // namespace aria

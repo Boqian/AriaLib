@@ -115,5 +115,9 @@ TEST(test_algorithm, partition) {
     vector<int> a = {1, 2, 3, 4, 5, 6}, b = {2, 4, 6, 1, 3, 5};
     EXPECT_TRUE(is_partitioned(begin(b), end(b), is_even));
     EXPECT_FALSE(is_partitioned(begin(a), end(a), is_even));
+
+    auto it = partition(begin(a), end(a), is_even);
+    EXPECT_TRUE(is_partitioned(begin(a), end(a), is_even));
+    EXPECT_EQ(distance(begin(a), it), 3);
   }
 }
