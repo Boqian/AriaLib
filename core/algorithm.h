@@ -254,4 +254,13 @@ template <class ForwardIt, class T> constexpr pair<ForwardIt, ForwardIt> equal_r
   return equal_range(first, last, value, less{});
 }
 
+template <class ForwardIt, class T, class Compare> bool binary_search(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+  const auto it = lower_bound(first, last, value, comp);
+  return (it != last and !(comp(value, *it)));
+}
+
+template <class ForwardIt, class T> bool binary_search(ForwardIt first, ForwardIt last, const T &value) {
+  return binary_search(first, last, value, less{});
+}
+
 } // namespace aria

@@ -146,4 +146,9 @@ TEST(test_algorithm, lower_upper_bound) {
     EXPECT_EQ(distance(begin(a), l), 2);
     EXPECT_EQ(distance(begin(a), r), 4);
   }
+  {
+    vector<int> a = {1, 2, 3, 3, 4, 6, 7};
+    EXPECT_TRUE(binary_search(begin(a), end(a), 4));
+    EXPECT_FALSE(binary_search(begin(a), end(a), 5));
+  }
 }
