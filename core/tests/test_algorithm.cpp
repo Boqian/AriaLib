@@ -108,3 +108,12 @@ TEST(test_algorithm, copy) {
     EXPECT_EQ(d, vector({1, 2, 3}));
   }
 }
+
+TEST(test_algorithm, partition) {
+  {
+    auto is_even = [](auto x) { return x % 2 == 0; };
+    vector<int> a = {1, 2, 3, 4, 5, 6}, b = {2, 4, 6, 1, 3, 5};
+    EXPECT_TRUE(is_partitioned(begin(b), end(b), is_even));
+    EXPECT_FALSE(is_partitioned(begin(a), end(a), is_even));
+  }
+}

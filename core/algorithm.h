@@ -188,4 +188,11 @@ template <class Iter> void reverse(Iter first, Iter last) {
     iter_swap(first, last);
 }
 
+//-----------------------Partitioning operations-----------------------
+template <class InputIt, class UnaryPred> bool is_partitioned(InputIt first, InputIt last, UnaryPred p) {
+  for (; first != last && p(*first); ++first) {
+  }
+  return none_of(first, last, p);
+}
+
 } // namespace aria
