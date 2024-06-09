@@ -14,6 +14,7 @@ template <class InputIt, class UnaryFunc> UnaryFunc for_each(InputIt first, Inpu
 }
 
 //---------------------Search operations---------------------
+// all_of any_of none_of find, fine_if count count_if equal
 template <class InputIt, class UnaryPred> constexpr bool all_of(InputIt first, InputIt last, UnaryPred p) {
   for (; first != last; ++first) {
     if (!p(*first))
@@ -82,7 +83,6 @@ template <class InputIt1, class InputIt2> constexpr bool equal(InputIt1 first1, 
 }
 
 //-----------------------Minimum/maximum operations-----------------------
-
 template <class ForwardIt, class Compare> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last, Compare cmp) {
   if (first == last)
     return last;
@@ -123,6 +123,7 @@ template <class T, class Compare> const T &min(const T &a, const T &b, Compare c
 template <class T> constexpr T min(std::initializer_list<T> ilist) { return *min_element(ilist.begin(), ilist.end()); }
 
 //-----------------------Modifying sequence operations-----------------------
+// copy copy_if copy_n
 template <class InputIt, class OutputIt> constexpr OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
   for (; first != last; ++first, ++d_first)
     *d_first = *first;
@@ -144,6 +145,33 @@ template <class InputIt, class Size, class OutputIt> constexpr OutputIt copy_n(I
     *d_first = *first;
   }
   return d_first;
+}
+
+template <class InputIt, class OutputIt, class UnaryOp>
+constexpr OutputIt transform(InputIt first1, InputIt last1, OutputIt d_first, UnaryOp unary_op) {
+  for (; first1 != last1; ++d_first, ++first1) {
+    *d_first = unary_op(*first1);
+  }
+  return d_first;
+}
+
+template <class InputIt1, class InputIt2, class OutputIt, class BinaryOp>
+constexpr OutputIt transform(InputIt1 first1, InputIt1 last1, InputIt2 first2, OutputIt d_first, BinaryOp binary_op) {
+  for (; first1 != last1; ++d_first, ++first1, ++first2) {
+    *d_first = binary_op(*first1, *first2);
+  }
+  return d_first;
+}
+
+template <class ForwardIt, class T> constexpr void fill(ForwardIt first, ForwardIt last, const T &value) {
+  for (; first != last; ++first)
+    *first = value;
+}
+
+template <class OutputIt, class Size, class T> constexpr OutputIt fill_n(OutputIt first, Size count, const T &value) {
+  for (Size i = 0; i < count; i++)
+    *first++ = value;
+  return first;
 }
 
 //-----------------------Order-changing operations-----------------------
