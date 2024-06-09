@@ -124,3 +124,13 @@ TEST(test_algorithm, partition) {
     EXPECT_EQ(it2, it);
   }
 }
+
+TEST(test_algorithm, lower_bound) {
+  {
+    vector<int> a = {1, 2, 3, 4, 6, 7};
+    auto it = lower_bound(begin(a), end(a), 4);
+    EXPECT_EQ(*it, 4);
+    it = lower_bound(begin(a), end(a), 5);
+    EXPECT_EQ(*it, 6);
+  }
+}

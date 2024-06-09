@@ -193,6 +193,7 @@ template <class Iter> void reverse(Iter first, Iter last) {
 }
 
 //-----------------------Partitioning operations-----------------------
+// is_partitioned partition partition_point
 template <class InputIt, class UnaryPred> bool is_partitioned(InputIt first, InputIt last, UnaryPred p) {
   first = find_if_not(first, last, p);
   return none_of(first, last, p);
@@ -223,6 +224,16 @@ template <class InputIt, class UnaryPred> InputIt partition_point(InputIt first,
     }
   }
   return first;
+}
+
+//-----------------------Binary search operations-----------------------
+template <class ForwardIt, class T, class Compare>
+constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+  return partition_point(first, last, [&](const auto &x) { return comp(x, value); });
+}
+
+template <class ForwardIt, class T> constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T &value) {
+  return lower_bound(first, last, value, less{});
 }
 
 } // namespace aria
