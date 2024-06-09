@@ -119,5 +119,8 @@ TEST(test_algorithm, partition) {
     auto it = partition(begin(a), end(a), is_even);
     EXPECT_TRUE(is_partitioned(begin(a), end(a), is_even));
     EXPECT_EQ(distance(begin(a), it), 3);
+
+    auto it2 = partition_point(begin(a), end(a), is_even);
+    EXPECT_EQ(it2, it);
   }
 }

@@ -211,4 +211,18 @@ template <class InputIt, class UnaryPred> InputIt partition(InputIt first, Input
   return first;
 }
 
+template <class InputIt, class UnaryPred> InputIt partition_point(InputIt first, InputIt last, UnaryPred p) {
+  for (auto d = distance(first, last); d > 0;) {
+    auto half = d / 2;
+    auto mid = advance(first, half);
+    if (p(*mid)) {
+      first = next(mid);
+      d -= half + 1;
+    } else {
+      d = half;
+    }
+  }
+  return first;
+}
+
 } // namespace aria
