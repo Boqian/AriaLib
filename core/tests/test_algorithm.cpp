@@ -125,7 +125,7 @@ TEST(test_algorithm, partition) {
   }
 }
 
-TEST(test_algorithm, lower_bound) {
+TEST(test_algorithm, lower_upper_bound) {
   {
     vector<int> a = {1, 2, 3, 4, 6, 7};
     auto it = lower_bound(begin(a), end(a), 4);
@@ -139,5 +139,11 @@ TEST(test_algorithm, lower_bound) {
     EXPECT_EQ(*it, 6);
     it = upper_bound(begin(a), end(a), 5);
     EXPECT_EQ(*it, 6);
+  }
+  {
+    vector<int> a = {1, 2, 3, 3, 4, 6, 7};
+    auto [l, r] = equal_range(begin(a), end(a), 3);
+    EXPECT_EQ(distance(begin(a), l), 2);
+    EXPECT_EQ(distance(begin(a), r), 4);
   }
 }

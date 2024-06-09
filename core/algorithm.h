@@ -245,4 +245,13 @@ template <class ForwardIt, class T> constexpr ForwardIt upper_bound(ForwardIt fi
   return upper_bound(first, last, value, less{});
 }
 
+template <class ForwardIt, class T, class Compare>
+constexpr pair<ForwardIt, ForwardIt> equal_range(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+  return make_pair(lower_bound(first, last, value, comp), upper_bound(first, last, value, comp));
+}
+
+template <class ForwardIt, class T> constexpr pair<ForwardIt, ForwardIt> equal_range(ForwardIt first, ForwardIt last, const T &value) {
+  return equal_range(first, last, value, less{});
+}
+
 } // namespace aria
