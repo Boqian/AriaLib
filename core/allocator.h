@@ -11,6 +11,17 @@ template <class T, class... Args> constexpr T *construct_at(T *p, Args &&...args
 
 template <class T> constexpr void destroy_at(T *p) { p->~T(); }
 
+template <class ForwardIt> constexpr void destroy(ForwardIt first, ForwardIt last) {
+  for (; first != last; ++first)
+    destroy_at(addressof(*first));
+}
+
+template <class ForwardIt, class Size> constexpr ForwardIt destroy_n(ForwardIt first, Size n) {
+  for (; n > 0; (void)++first, --n)
+    destroy_at(addressof(*first));
+  return first;
+}
+
 template <class T>
 concept allocatable = !is_const_v<T> && !is_function_v<T> && !is_reference_v<T>;
 

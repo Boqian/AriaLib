@@ -227,6 +227,7 @@ template <class InputIt, class UnaryPred> InputIt partition_point(InputIt first,
 }
 
 //-----------------------Binary search operations-----------------------
+// lower_bound upper_bound equal_range binary_search
 template <class ForwardIt, class T, class Compare>
 constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
   return partition_point(first, last, [&](const auto &x) { return comp(x, value); });
