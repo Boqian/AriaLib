@@ -10,7 +10,8 @@
         "${env.INCLUDE}",
         "${workspaceRoot}\\**"
       ],
-      "intelliSenseMode": "windows-msvc-x64"
+      "intelliSenseMode": "windows-msvc-x64",
+      "compilerSwitches": "/std:c++latest"
     },
     {
       "inheritEnvironments": [
@@ -22,7 +23,8 @@
         "${env.INCLUDE}",
         "${workspaceRoot}\\**"
       ],
-      "intelliSenseMode": "windows-msvc-x64"
+      "intelliSenseMode": "windows-msvc-x64",
+      "compilerSwitches": "/std:c++latest"
     }
   ],
   "version": 4
