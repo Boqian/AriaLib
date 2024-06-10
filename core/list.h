@@ -210,10 +210,16 @@ public:
     return remove_if([&](auto &x) { return x == value; });
   }
 
+  void splice(const_iterator pos, list &other, const_iterator it) {
+    auto p = other.extract_node(const_cast<node_base_type *>(it.ptr));
+    insert_node(const_cast<node_base_type *>(pos.ptr), p);
+  }
+
 private:
   using node_type = _list::node<value_type>;
   using node_base_type = _list::node_base;
-  using node_allocator_type = typename allocator_traits<Allocator>::template rebind_alloc<node_type>;
+  // using node_allocator_type = typename allocator_traits<Allocator>::template rebind_alloc<node_type>;
+  using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
 
   node_type *cast(node_base_type *p) const noexcept { return static_cast<node_type *>(p); }
   node_type *last() const noexcept { return cast(m_end->prev); }
@@ -243,6 +249,22 @@ private:
     return p;
   }
 
+  node_base_type *extract_node(node_base_type *p) {
+    if (p == m_end || !p)
+      return p;
+
+    if (p == m_first) {
+      m_first = p->next;
+      p->next->prev = nullptr;
+    } else {
+      link(p->prev, p->next);
+    }
+
+    m_size--;
+    p->next = p->prev = nullptr;
+    return p;
+  }
+
   template <class... Args> node_base_type *insert_value(node_base_type *pos, Args &&...args) {
     return insert_node(pos, create_node(forward<Args>(args)...));
   }
@@ -253,6 +275,7 @@ private:
 
     if (p == m_first) {
       m_first = p->next;
+      p->next->prev = nullptr;
     } else {
       link(p->prev, p->next);
     }

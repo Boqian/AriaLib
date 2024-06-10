@@ -33,6 +33,8 @@ template <allocatable T> struct allocator {
   using difference_type = ptrdiff_t;
   using propagate_on_container_move_assignment = true_type;
 
+  template <allocatable U> using rebind_alloc = allocator<U>;
+
   constexpr allocator() noexcept = default;
 
   // todo operator new is not constexpr

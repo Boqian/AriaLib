@@ -279,3 +279,12 @@ TEST(test_list, emplace) {
     EXPECT_EQ(*v.begin(), pair(4, 5));
   }
 }
+
+TEST(test_list, splice) {
+  {
+    list<int> v = {1, 2, 3, 4, 5};
+    auto it = advance(begin(v), 2); // value = 3
+    v.splice(v.end(), v, it);
+    EXPECT_EQ(v, list<int>({1, 2, 4, 5, 3}));
+  }
+}
