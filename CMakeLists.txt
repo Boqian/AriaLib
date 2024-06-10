@@ -15,6 +15,7 @@ enable_testing()
 
 add_subdirectory(core)
 add_subdirectory(concurrent)
+add_subdirectory(expand)
 
 find_package(fmt CONFIG REQUIRED)
 

@@ -211,6 +211,9 @@ public:
   }
 
   void splice(const_iterator pos, list &other, const_iterator it) {
+    if (&other == this && pos == it)
+      return;
+
     auto p = other.extract_node(const_cast<node_base_type *>(it.ptr));
     insert_node(const_cast<node_base_type *>(pos.ptr), p);
   }
@@ -261,6 +264,8 @@ private:
     }
 
     m_size--;
+    adjust_on_empty();
+
     p->next = p->prev = nullptr;
     return p;
   }
