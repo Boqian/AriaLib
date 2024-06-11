@@ -11,7 +11,7 @@ public:
 
   void update(const Key &key, const T &value) {
     if (auto it = m_map.find(key); it != m_map.end()) {
-      move_node_to_front(it);
+      move_node_to_front(it->second);
       it->second->second = value;
     } else {
       if (m_capacity == m_list.size())
@@ -26,18 +26,14 @@ public:
     if (it == m_map.end())
       return {};
 
-    move_node_to_front(it);
-    return m_list.begin()->second;
+    move_node_to_front(it->second);
+    return it->second->second;
   }
 
 private:
   using iter = list<pair<Key, T>>::iterator;
 
-  void move_node_to_front(unordered_map<Key, iter>::iterator it) {
-    auto list_it = it->second;
-    m_list.splice(m_list.begin(), m_list, list_it);
-    it->second = m_list.begin();
-  }
+  void move_node_to_front(iter it) { m_list.splice(m_list.begin(), m_list, it); }
 
   void erase_lru() {
     auto &key = m_list.rbegin()->first;
