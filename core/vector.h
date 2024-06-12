@@ -25,6 +25,8 @@ public:
 
   constexpr vector() noexcept = default;
 
+  explicit vector(const Allocator &alloc) noexcept : m_alloc(alloc) {}
+
   constexpr ~vector() {
     clear();
     m_alloc.deallocate(m_ptr, m_capacity);
