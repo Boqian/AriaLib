@@ -98,8 +98,8 @@ public:
   using type = T;
 
   template <class U>
-    requires !is_same_v<remove_cvref_t<U>, reference_wrapper>
-             constexpr reference_wrapper(U && x) noexcept {
+    requires not_same<remove_cvref_t<U>, reference_wrapper>
+  constexpr reference_wrapper(U &&x) noexcept {
     T &ref = static_cast<U &&>(x);
     ptr = &ref;
   }

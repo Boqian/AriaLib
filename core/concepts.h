@@ -126,4 +126,8 @@ concept equality_comparable = weakly_equality_comparable_with<T, T>;
 template <class T>
 concept regular = semiregular<T> && equality_comparable<T>;
 
+//----------------- custom concepts -----------------------
+template <class T, class U>
+concept not_same = !is_same_v<T, U>;
+
 } // namespace aria

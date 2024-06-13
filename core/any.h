@@ -21,7 +21,7 @@ public:
   }
 
   template <class T>
-    requires negation_v<is_same<remove_cvref_t<T>, any>>
+    requires not_same<remove_cvref_t<T>, any>
   any(T &&value) : m_ptr(make_unique<storage<remove_cvref_t<T>>>(value)) {}
 
   constexpr bool has_value() const noexcept { return m_ptr; }
