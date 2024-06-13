@@ -9,7 +9,7 @@ TEST(any, basic) {
   EXPECT_EQ(y, 1);
   try {
     auto z = any_cast<double>(x);
-  } catch (const char *msg) {
-    std::cout << msg << std::endl;
+  } catch (bad_any_cast ex) {
+    EXPECT_STREQ(ex.what(), "bad any cast");
   }
 }
