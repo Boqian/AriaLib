@@ -97,19 +97,19 @@ template <class T> T any_cast(any &&x) {
 }
 
 template <class T> const T *any_cast(const any *x) noexcept {
+  if (!x || !x->has_value())
+    return nullptr;
   using U = remove_cvref_t<T>;
   auto p = dynamic_cast<any::storage<U> *>(x->m_ptr.get());
-  if (!p)
-    return nullptr;
-  return addressof(p->value);
+  return p ? addressof(p->value) : nullptr;
 }
 
 template <class T> T *any_cast(any *x) noexcept {
+  if (!x || !x->has_value())
+    return nullptr;
   using U = remove_cvref_t<T>;
   auto p = dynamic_cast<any::storage<U> *>(x->m_ptr.get());
-  if (!p)
-    return nullptr;
-  return addressof(p->value);
+  return p ? addressof(p->value) : nullptr;
 }
 
 } // namespace aria
