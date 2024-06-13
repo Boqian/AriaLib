@@ -1,8 +1,8 @@
 #pragma once
-#include "concepts.h"
 #include "exception.h"
-#include "unique_ptr.h"
+#include "memory.h"
 #include <typeinfo>
+#include <utility.h>
 
 namespace aria {
 
@@ -52,13 +52,14 @@ public:
   }
 
   constexpr bool has_value() const noexcept { return m_ptr; }
-
-  template <class T> friend T any_cast(const any &x);
-
   constexpr void swap(any &rhs) noexcept { m_ptr.swap(rhs.m_ptr); }
   constexpr void reset() noexcept { m_ptr.reset(); }
-
   const std::type_info &type() const noexcept { return m_ptr ? m_ptr->type() : typeid(void); }
+
+  template <class T> friend T any_cast(const any &x);
+  template <class T> friend T any_cast(any &&x);
+  template <class T> friend const T *any_cast(const any *x) noexcept;
+  template <class T> friend T *any_cast(any *x) noexcept;
 
 private:
   struct storage_base {
@@ -77,11 +78,38 @@ private:
   unique_ptr<storage_base> m_ptr;
 };
 
+void swap(any &lhs, any &rhs) noexcept { lhs.swap(rhs); }
+
 template <class T> T any_cast(const any &x) {
-  auto p = dynamic_cast<any::storage<T> *>(x.m_ptr.get());
+  using U = remove_cvref_t<T>;
+  auto p = dynamic_cast<any::storage<U> *>(x.m_ptr.get());
   if (!p)
     throw bad_any_cast();
-  return p->value;
+  return static_cast<T>(p->value);
+}
+
+template <class T> T any_cast(any &&x) {
+  using U = remove_cvref_t<T>;
+  auto p = dynamic_cast<any::storage<U> *>(x.m_ptr.get());
+  if (!p)
+    throw bad_any_cast();
+  return static_cast<T>(move(p->value));
+}
+
+template <class T> const T *any_cast(const any *x) noexcept {
+  using U = remove_cvref_t<T>;
+  auto p = dynamic_cast<any::storage<U> *>(x->m_ptr.get());
+  if (!p)
+    return nullptr;
+  return addressof(p->value);
+}
+
+template <class T> T *any_cast(any *x) noexcept {
+  using U = remove_cvref_t<T>;
+  auto p = dynamic_cast<any::storage<U> *>(x->m_ptr.get());
+  if (!p)
+    return nullptr;
+  return addressof(p->value);
 }
 
 } // namespace aria

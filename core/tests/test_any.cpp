@@ -1,4 +1,5 @@
 #include "any.h"
+#include "vector.h"
 #include "gtest/gtest.h"
 
 using namespace aria;
@@ -13,6 +14,24 @@ TEST(any, basic) {
     } catch (bad_any_cast ex) {
       EXPECT_STREQ(ex.what(), "bad any cast");
     }
+  }
+  {
+    const any x = 1;
+    auto p = any_cast<int>(&x);
+    EXPECT_EQ(*p, 1);
+  }
+  {
+    any x = 1;
+    auto p = any_cast<int>(&x);
+    EXPECT_EQ(*p, 1);
+    *p = 99;
+    EXPECT_EQ(any_cast<int>(x), 99);
+  }
+  {
+    any x = vector<int>{1, 2, 3};
+    auto v = any_cast<vector<int>>(move(x));
+    EXPECT_EQ(v, (vector<int>{1, 2, 3}));
+    EXPECT_EQ(any_cast<vector<int>>(x), (vector<int>{})); // moved
   }
 }
 
