@@ -1,6 +1,6 @@
 #pragma once
+#include "concepts.h"
 #include "exception.h"
-#include "type_traits.h"
 #include "unique_ptr.h"
 
 namespace aria {
@@ -21,8 +21,8 @@ public:
   }
 
   template <class T>
-    requires !is_same_v<remove_cvref_t<T>, any>
-             any(T && value) : m_ptr(make_unique<storage<remove_cvref_t<T>>>(value)) {}
+    requires negation_v<is_same<remove_cvref_t<T>, any>>
+  any(T &&value) : m_ptr(make_unique<storage<remove_cvref_t<T>>>(value)) {}
 
   constexpr bool has_value() const noexcept { return m_ptr; }
 

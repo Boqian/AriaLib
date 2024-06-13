@@ -228,6 +228,10 @@ template <class T> inline constexpr bool is_object_v = is_object<T>::value;
 template <class T> constexpr bool is_member_pointer_v = is_member_object_pointer_v<T> || is_member_function_pointer_v<T>;
 template <class T> struct is_member_pointer : bool_constant<is_member_pointer_v<T>> {};
 
+//----------------- Operations on traits -----------------------
+template <class B> struct negation : bool_constant<!bool(B::value)> {};
+template <class B> inline constexpr bool negation_v = negation<B>::value;
+
 //----------------- type properties -----------------------
 using std::has_unique_object_representations_v;
 using std::is_abstract;
