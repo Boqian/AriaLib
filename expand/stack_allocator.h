@@ -1,6 +1,6 @@
 #pragma once
 #include "cstddef.h"
-#include "exception.h"
+#include "stdexcept.h"
 
 namespace aria {
 
@@ -12,7 +12,7 @@ template <size_t N = DEFAULT_STACK_ALLOCATOR_SIZE> struct StackBuffer {
   template <class T> T *allocate(size_t size) {
     const auto offset = get_offset<T>();
     if (pos + offset + size > N)
-      throw std::bad_alloc();
+      throw bad_alloc();
 
     auto p = buffer + pos + offset;
     pos += offset + size * sizeof(T);

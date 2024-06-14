@@ -32,7 +32,7 @@ public:
   const T &at(const Key &key) const {
     auto it = Base::find(key);
     if (it == Base::end())
-      throw std::out_of_range("unordered_map::at() key is not found");
+      throw out_of_range("unordered_map::at() key is not found");
     else
       return it->second;
   }

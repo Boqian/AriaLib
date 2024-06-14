@@ -1,6 +1,6 @@
 #pragma once
-#include "exception.h"
 #include "memory.h"
+#include "stdexcept.h"
 #include "utility.h"
 #include <typeinfo>
 

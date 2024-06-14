@@ -1,5 +1,5 @@
 #pragma once
-#include "exception.h"
+#include "stdexcept.h"
 #include "utility.h"
 
 namespace aria {
@@ -10,7 +10,7 @@ struct nullopt_t {
 };
 inline constexpr auto nullopt = nullopt_t{nullopt_t::Tag{}};
 
-class bad_optional_access : public std::exception {
+class bad_optional_access : public exception {
 public:
   [[no_discard]] const char *what() const noexcept override { return "Bad optional access"; }
 };

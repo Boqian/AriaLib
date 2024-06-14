@@ -9,7 +9,9 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <stdexcept>
+#include <exception.h>
+
+#include <algorithm> //std::lexicographical_compare_three_way
 
 namespace aria {
 
@@ -107,9 +109,9 @@ public:
 
   basic_string substr(size_type pos = 0, size_type count = npos) const {
     if (pos >= size())
-      throw std::out_of_range("basic_string::substr pos >= size()");
+      throw exception("basic_string::substr pos >= size()");
 
-    count = std::min(count, size() - pos);
+    count = min(count, size() - pos);
     return basic_string(m_ptr + pos, count, count);
   }
 
@@ -173,7 +175,7 @@ private:
 
   void reserve_more(size_type added_size) {
     const size_type new_size = size() + added_size;
-    size_type cap = std::max(s_stack_cap, m_capacity);
+    size_type cap = max(s_stack_cap, m_capacity);
     if (new_size + 1 <= cap)
       return;
 
@@ -220,10 +222,10 @@ template <class T, class CFunc> T _to_int(CFunc cfunc, const string &str, size_t
   errno_ref = 0;
   const auto ans = cfunc(ptr, &end_ptr, base);
   if (ptr == end_ptr) {
-    throw std::invalid_argument("invalid stoi argument");
+    throw exception("invalid stoi argument");
   }
   if (errno_ref == ERANGE) {
-    throw std::out_of_range("stoi argument out of range");
+    throw exception("stoi argument out of range");
   }
   if (pos) {
     *pos = static_cast<size_t>(end_ptr - ptr);
@@ -238,10 +240,10 @@ template <class T, class CFunc> T _to_float(CFunc cfunc, const string &str, size
   errno_ref = 0;
   const auto ans = cfunc(ptr, &end_ptr);
   if (ptr == end_ptr) {
-    throw std::invalid_argument("invalid stoi argument");
+    throw exception("invalid stoi argument");
   }
   if (errno_ref == ERANGE) {
-    throw std::out_of_range("stoi argument out of range");
+    throw exception("stoi argument out of range");
   }
   if (pos) {
     *pos = static_cast<size_t>(end_ptr - ptr);

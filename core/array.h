@@ -1,8 +1,11 @@
 #pragma once
+
 #include "algorithm.h"
-#include "exception.h"
 #include "iterator.h"
+#include "stdexcept.h"
 #include "utility.h"
+
+#include <algorithm> //std::lexicographical_compare_three_way
 
 namespace aria {
 
@@ -24,7 +27,7 @@ public:
 
   constexpr const_reference at(size_t i) const {
     if (i >= N)
-      throw std::out_of_range("");
+      throw out_of_range("aria::array::at() out of range");
     return arr[i];
   }
   constexpr reference at(size_t i) { return const_cast<reference>(as_const(*this).at(i)); }

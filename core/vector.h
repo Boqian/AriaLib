@@ -2,9 +2,11 @@
 
 #include "algorithm.h"
 #include "allocator.h"
-#include "exception.h"
 #include "iterator.h"
+#include "stdexcept.h"
 #include "utility.h"
+
+#include <algorithm> //std::lexicographical_compare_three_way
 
 namespace aria {
 
@@ -199,7 +201,7 @@ private:
 
   constexpr void check_position(size_type i) const {
     if (i >= m_size)
-      throw std::out_of_range("");
+      throw out_of_range("");
   }
 
   constexpr void decstuct_at(size_type i) { destroy_at(get(i)); }

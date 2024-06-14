@@ -1,6 +1,6 @@
 #pragma once
 #include "binary_search_tree.h"
-#include "exception.h"
+#include "stdexcept.h"
 
 namespace aria {
 
@@ -31,7 +31,7 @@ public:
 
   const T &at(const Key &key) const {
     if (auto it = Base::find(key); it == Base::end())
-      throw std::out_of_range("aria::map::at() key is not found");
+      throw out_of_range("aria::map::at() key is not found");
     else
       return it->second;
   }

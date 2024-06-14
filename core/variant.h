@@ -1,6 +1,6 @@
 #pragma once
 #include "allocator.h"
-#include "exception.h"
+#include "stdexcept.h"
 #include "type_list.h"
 #include "utility.h"
 
@@ -8,7 +8,7 @@ namespace aria {
 
 inline constexpr size_t variant_npos = -1;
 
-class bad_variant_access : public std::exception {
+class bad_variant_access : public exception {
 public:
   bad_variant_access() noexcept = default;
   const char *what() const noexcept override { return "bad variant access"; }
