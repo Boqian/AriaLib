@@ -27,7 +27,7 @@ public:
   explicit any(in_place_type_t<T>, Args &&...args) : m_ptr(make_unique<storage<T>>(forward<Args>(args)...)) {}
 
   template <class T, class U = remove_cvref_t<T>>
-    requires not_same<U, any> and not_in_place<U>::value
+    requires aria::conjunction_v<negation<is_same<U, any>>, not_in_place<U>>
   any(T &&value) : m_ptr(make_unique<storage<U>>(value)) {}
 
   template <class T>

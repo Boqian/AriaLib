@@ -186,6 +186,9 @@ void test_traits() {
   static_assert(is_same_v<make_unsigned_t<unsigned int>, unsigned int>);
   static_assert(is_same_v<make_signed_t<int>, int>);
   static_assert(is_same_v<make_unsigned_t<int>, unsigned int>);
+
+  static_assert(conjunction_v<>);
+  static_assert(conjunction_v<true_type, true_type, true_type>);
 }
 
 TEST(test_type_traits, swap) {

@@ -232,6 +232,16 @@ template <class T> struct is_member_pointer : bool_constant<is_member_pointer_v<
 template <class B> struct negation : bool_constant<!bool(B::value)> {};
 template <class B> inline constexpr bool negation_v = negation<B>::value;
 
+template <class...> struct conjunction : std::true_type {};
+template <class B1> struct conjunction<B1> : B1 {};
+template <class B1, class... Bn> struct conjunction<B1, Bn...> : conditional_t<bool(B1::value), conjunction<Bn...>, B1> {};
+template <class... B> inline constexpr bool conjunction_v = conjunction<B...>::value;
+
+template <class... B> struct disjunction : false_type {};
+template <class B1> struct disjunction<B1> : B1 {};
+template <class B1, class... Bn> struct disjunction<B1, Bn...> : conditional_t<bool(B1::value), B1, disjunction<Bn...>> {};
+template <class... B> inline constexpr bool disjunction_v = conjunction<B...>::value;
+
 //----------------- type properties -----------------------
 using std::has_unique_object_representations_v;
 using std::is_abstract;
