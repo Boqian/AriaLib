@@ -8,7 +8,6 @@ class logic_error : public exception {
 public:
   using base = exception;
   explicit logic_error(const char *msg) : base(msg) {}
-  explicit logic_error() : base() {}
 };
 
 class domain_error : public logic_error {
@@ -32,7 +31,6 @@ public:
 class out_of_range : public logic_error {
 public:
   using base = logic_error;
-  //  explicit out_of_range(const string &msg) : base(msg.c_str()) {}
   explicit out_of_range(const char *msg) : base(msg) {}
 };
 
