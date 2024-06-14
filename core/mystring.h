@@ -2,14 +2,13 @@
 
 #include "algorithm.h"
 #include "allocator.h"
-#include "array.h"
 #include "iterator.h"
 #include "type_list.h"
 #include "utility.h"
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <exception.h>
+#include <stdexcept.h>
 
 namespace aria {
 
@@ -107,7 +106,7 @@ public:
 
   basic_string substr(size_type pos = 0, size_type count = npos) const {
     if (pos >= size())
-      throw exception("basic_string::substr pos >= size()");
+      throw out_of_range("basic_string::substr pos >= size()");
 
     count = min(count, size() - pos);
     return basic_string(m_ptr + pos, count, count);
@@ -220,10 +219,10 @@ template <class T, class CFunc> T _to_int(CFunc cfunc, const string &str, size_t
   errno_ref = 0;
   const auto ans = cfunc(ptr, &end_ptr, base);
   if (ptr == end_ptr) {
-    throw exception("invalid stoi argument");
+    throw invalid_argument("invalid stoi argument");
   }
   if (errno_ref == ERANGE) {
-    throw exception("stoi argument out of range");
+    throw out_of_range("stoi argument out of range");
   }
   if (pos) {
     *pos = static_cast<size_t>(end_ptr - ptr);
@@ -238,10 +237,10 @@ template <class T, class CFunc> T _to_float(CFunc cfunc, const string &str, size
   errno_ref = 0;
   const auto ans = cfunc(ptr, &end_ptr);
   if (ptr == end_ptr) {
-    throw exception("invalid stoi argument");
+    throw invalid_argument("invalid stoi argument");
   }
   if (errno_ref == ERANGE) {
-    throw exception("stoi argument out of range");
+    throw out_of_range("stoi argument out of range");
   }
   if (pos) {
     *pos = static_cast<size_t>(end_ptr - ptr);
