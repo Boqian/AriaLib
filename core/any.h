@@ -87,7 +87,7 @@ private:
 
 void swap(any &lhs, any &rhs) noexcept { lhs.swap(rhs); }
 
-// template <class T, class... Args> any make_any(Args &&...args) {}
+template <class T, class... Args> any make_any(Args &&...args) { return any(in_place_type<T>, forward<Args>(args)...); }
 
 template <class T> T any_cast(const any &x) {
   using U = remove_cvref_t<T>;

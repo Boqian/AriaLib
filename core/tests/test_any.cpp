@@ -33,6 +33,10 @@ TEST(any, basic) {
     EXPECT_EQ(v, (vector<int>{1, 2, 3}));
     EXPECT_EQ(any_cast<vector<int>>(x), (vector<int>{})); // moved
   }
+  {
+    auto p = make_any<pair<int, int>>(3, 4);
+    EXPECT_EQ((any_cast<pair<int, int>>(p)), (pair(3, 4)));
+  }
 }
 
 TEST(any, rule5) {
