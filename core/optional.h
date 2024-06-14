@@ -12,7 +12,7 @@ inline constexpr auto nullopt = nullopt_t{nullopt_t::Tag{}};
 
 class bad_optional_access : public exception {
 public:
-  [[no_discard]] const char *what() const noexcept override { return "Bad optional access"; }
+  [[nodiscard]] const char *what() const noexcept override { return "Bad optional access"; }
 };
 
 template <class T> class optional;

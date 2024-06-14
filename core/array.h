@@ -5,8 +5,6 @@
 #include "stdexcept.h"
 #include "utility.h"
 
-#include <algorithm> //std::lexicographical_compare_three_way
-
 namespace aria {
 
 template <class T, size_t N> class array {
@@ -68,7 +66,7 @@ template <class T, size_t N> [[nodiscard]] constexpr bool operator==(const array
 }
 
 template <class T, size_t N> [[nodiscard]] constexpr auto operator<=>(const array<T, N> &a, const array<T, N> &b) {
-  return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+  return lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
 }
 
 template <class T, size_t N> void swap(array<T, N> &a, array<T, N> &b) { a.swap(b); }

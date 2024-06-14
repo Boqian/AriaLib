@@ -5,6 +5,7 @@
 #include "list.h"
 #include "utility.h"
 #include "vector.h"
+#include <cmath> //ceil
 
 namespace aria {
 

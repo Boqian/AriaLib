@@ -11,8 +11,6 @@
 #include <cstdlib>
 #include <exception.h>
 
-#include <algorithm> //std::lexicographical_compare_three_way
-
 namespace aria {
 
 template <class CharT, class Allocator = allocator<CharT>> class basic_string : public iterable {
@@ -212,7 +210,7 @@ template <class CharT, class Alloc> void swap(basic_string<CharT, Alloc> &a, bas
 
 template <class CharT, class Alloc>
 [[nodiscard]] constexpr auto operator<=>(const basic_string<CharT, Alloc> &a, const basic_string<CharT, Alloc> &b) {
-  return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+  return lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
 }
 
 template <class T, class CFunc> T _to_int(CFunc cfunc, const string &str, size_t *pos = nullptr, int base = 10) {

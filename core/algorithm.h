@@ -86,6 +86,27 @@ template <class InputIt1, class InputIt2> constexpr bool equal(InputIt1 first1, 
   return equal(first1, last1, first2);
 }
 
+template <class InputIt1, class InputIt2, class Cmp>
+constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Cmp comp)
+    -> decltype(comp(*first1, *first2)) {
+  for (;; ++first1, ++first2) {
+    if (first1 == last1) {
+      return first2 == last2 ? std::strong_ordering::equal : std::strong_ordering::less;
+    } else if (first2 == last2) {
+      return std::strong_ordering::greater;
+    } else {
+      if (auto res = comp(*first1, *first2); res != 0) {
+        return res;
+      }
+    }
+  }
+}
+
+template <class InputIt1, class InputIt2>
+constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) {
+  return aria::lexicographical_compare_three_way(first1, last1, first2, last2, std::compare_three_way());
+}
+
 //-----------------------Minimum/maximum operations-----------------------
 template <class ForwardIt, class Compare> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last, Compare cmp) {
   if (first == last)

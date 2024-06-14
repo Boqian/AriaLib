@@ -256,7 +256,7 @@ template <class T, class Alloc> [[nodiscard]] constexpr bool operator==(const de
 }
 
 template <class T, class Alloc> [[nodiscard]] constexpr auto operator<=>(const deque<T, Alloc> &a, const deque<T, Alloc> &b) {
-  return std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+  return lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
 }
 
 } // namespace aria

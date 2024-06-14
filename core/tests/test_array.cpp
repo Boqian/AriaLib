@@ -30,6 +30,7 @@ TEST(test_array, compare) {
   array<int, 2> a = {1, 2}, b = {1, 3}, c = {1, 2};
   EXPECT_EQ(a, c);
   EXPECT_TRUE(a < b);
+  EXPECT_TRUE(b > a);
 }
 
 TEST(test_array, swap) {
