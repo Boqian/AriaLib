@@ -3,12 +3,12 @@
 #include "algorithm.h"
 #include "allocator.h"
 #include "iterator.h"
+#include "stdexcept.h"
 #include "type_list.h"
 #include "utility.h"
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <stdexcept.h>
 
 namespace aria {
 
