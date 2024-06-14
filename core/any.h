@@ -1,8 +1,8 @@
 #pragma once
 #include "exception.h"
 #include "memory.h"
+#include "utility.h"
 #include <typeinfo>
-#include <utility.h>
 
 namespace aria {
 
@@ -11,19 +11,24 @@ public:
   [[no_discard]] const char *what() const noexcept override { return "bad any cast"; }
 };
 
+template <class T> struct not_in_place : true_type {};
+template <class T> struct not_in_place<in_place_type_t<T>> : false_type {};
+
 class any {
 public:
-  constexpr any() noexcept = default;
-  ~any() = default;
+  any() noexcept = default;
 
   any(const any &rhs) {
-    if (rhs.has_value())
+    if (rhs.m_ptr)
       m_ptr = rhs.m_ptr->clone();
   }
 
-  template <class T>
-    requires not_same<remove_cvref_t<T>, any>
-  any(T &&value) : m_ptr(make_unique<storage<remove_cvref_t<T>>>(value)) {}
+  template <class T, class... Args>
+  explicit any(in_place_type_t<T>, Args &&...args) : m_ptr(make_unique<storage<T>>(forward<Args>(args)...)) {}
+
+  template <class T, class U = remove_cvref_t<T>>
+    requires not_same<U, any> and not_in_place<U>::value
+  any(T &&value) : m_ptr(make_unique<storage<U>>(value)) {}
 
   template <class T>
     requires not_same<remove_cvref_t<T>, any>
@@ -70,6 +75,8 @@ private:
 
   template <class T> struct storage : storage_base {
     storage(const T &x) : value(x) {}
+    template <class... Args> storage(Args... args) : value(forward<Args>(args)...) {}
+
     unique_ptr<storage_base> clone() const override { return make_unique<storage<T>>(value); }
     const std::type_info &type() const override { return typeid(T); }
     T value;
@@ -79,6 +86,8 @@ private:
 };
 
 void swap(any &lhs, any &rhs) noexcept { lhs.swap(rhs); }
+
+// template <class T, class... Args> any make_any(Args &&...args) {}
 
 template <class T> T any_cast(const any &x) {
   using U = remove_cvref_t<T>;

@@ -50,4 +50,10 @@ TEST(any, rule5) {
     EXPECT_EQ(x.type(), typeid(double));
     EXPECT_DOUBLE_EQ(any_cast<double>(x), 1.5);
   }
+  {
+    any x(in_place_type<int>);
+    EXPECT_EQ(any_cast<int>(x), 0);
+    any y(in_place_type<pair<int, int>>, 3, 4);
+    EXPECT_EQ((any_cast<pair<int, int>>(y)), (pair(3, 4)));
+  }
 }

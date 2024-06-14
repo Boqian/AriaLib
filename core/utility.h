@@ -190,6 +190,11 @@ struct in_place_t {
 };
 inline constexpr in_place_t in_place{};
 
+template <class T> struct in_place_type_t {
+  explicit in_place_type_t() = default;
+};
+template <class T> inline constexpr in_place_type_t<T> in_place_type{};
+
 //------------------------- addressof -------------------------//
 template <class T> auto addressof(T &x) noexcept {
   if constexpr (is_object_v<T>)
