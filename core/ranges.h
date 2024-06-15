@@ -63,5 +63,13 @@ template <_end::has_end T> constexpr auto end(T &&val) {
   }
 }
 
+template <class T>
+concept range = requires(T &t) {
+  ranges::begin(t);
+  ranges::end(t);
+};
+
+template <range R> using sentinel_t = decltype(ranges::end(declval<R &>()));
+
 } // namespace ranges
 } // namespace aria
