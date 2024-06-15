@@ -34,17 +34,19 @@ template <_begin::has_begin T> constexpr auto begin(T &&val) {
   }
 }
 
+template <class T> using iterator_t = decltype(ranges::begin(declval<T &>()));
+
 namespace _end {
 void end() = delete; // Block unqualified name lookup
 
 template <class T>
 concept has_member = requires(T t) {
-  { t.end() } -> input_or_output_iterator;
+  { t.end() } -> sentinel_for<iterator_t<T>>;
 };
 
 template <class T>
 concept has_adl = has_class_or_enumTpe<T> && requires(T t) {
-  { end(t) } -> input_or_output_iterator;
+  { end(t) } -> sentinel_for<iterator_t<T>>;
 };
 
 template <class T>

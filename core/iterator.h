@@ -39,6 +39,9 @@ concept random_access_iterator = bidirectional_iterator<I> && requires(I i, I j,
   { i - j } -> same_as<ptrdiff_t>;
 };
 
+template <class S, class I>
+concept sentinel_for = semiregular<S> && input_or_output_iterator<I> && weakly_equality_comparable_with<S, I>;
+
 template <class InputIt> constexpr ptrdiff_t distance(InputIt first, InputIt last) {
   if constexpr (random_access_iterator<InputIt>) {
     return last - first;
