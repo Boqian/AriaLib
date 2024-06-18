@@ -49,12 +49,11 @@ public:
 
   constexpr bool empty() const noexcept { return m_size == 0; }
   constexpr size_type size() const noexcept { return m_size; }
-  constexpr reference front() { return m_data[0]; }
-  constexpr const_reference front() const { return m_data[0]; }
-  constexpr reference back() { return m_data[size() - 1]; }
-  constexpr const_reference back() const { return m_data[size() - 1]; }
-  constexpr pointer data() noexcept { return m_data; }
-  constexpr const_pointer data() const noexcept { return m_data; }
+  constexpr reference front() const { return m_data[0]; }
+  constexpr reference back() const { return m_data[size() - 1]; }
+  constexpr pointer data() const noexcept { return m_data; }
+
+  constexpr reference operator[](size_type idx) const { return *(m_data + idx); }
 
 private:
   using base = _span::extent_type<T, Extent>;
@@ -62,10 +61,8 @@ private:
   using base::m_size;
 };
 
-template <class _Ty, size_t _Extent> span(_Ty (&)[_Extent]) -> span<_Ty, _Extent>;
-
-template <class _Ty, size_t _Size> span(array<_Ty, _Size> &) -> span<_Ty, _Size>;
-
-template <class _Ty, size_t _Size> span(const array<_Ty, _Size> &) -> span<const _Ty, _Size>;
+template <class T, size_t Size> span(T (&)[Size]) -> span<T, Size>;
+template <class T, size_t Size> span(array<T, Size> &) -> span<T, Size>;
+template <class T, size_t Size> span(const array<T, Size> &) -> span<const T, Size>;
 
 } // namespace aria
