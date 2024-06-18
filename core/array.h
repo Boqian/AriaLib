@@ -37,6 +37,8 @@ public:
   constexpr const_reference front() const { return arr[0]; }
   constexpr reference back() { return arr[N - 1]; }
   constexpr const_reference back() const { return arr[N - 1]; }
+  constexpr pointer data() noexcept { return arr; }
+  constexpr const_pointer data() const noexcept { return arr; }
 
   constexpr iterator begin() { return arr; }
   constexpr const_iterator begin() const { return arr; }
