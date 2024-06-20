@@ -92,14 +92,16 @@ template <> struct negate<void> {
 };
 
 //-----------------------reference_wrapper, cref, cref-----------------------
+template <class T> class reference_wrapper;
+template <class T> struct is_reference_wrapper : false_type {};
+template <class T> struct is_reference_wrapper<reference_wrapper<T>> : true_type {};
+template <class T> inline constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
 
 template <class T> class reference_wrapper {
 public:
   using type = T;
 
-  template <class U>
-    requires not_same<remove_cvref_t<U>, reference_wrapper>
-  constexpr reference_wrapper(U &&x) noexcept {
+  template <class U> requires !is_reference_wrapper_v<U> constexpr reference_wrapper(U && x) noexcept {
     T &ref = static_cast<U &&>(x);
     ptr = &ref;
   }
@@ -137,14 +139,14 @@ inline size_t Fnv1a_append_bytes(size_t val, const unsigned char *const p, const
 }
 
 template <class T> size_t Fnv1a_append_range(const size_t val, const T *const first, const T *const last) noexcept {
-  // static_assert(is_trivial_v<T>, "Only trivial types can be directly hashed.");
+  static_assert(is_trivial_v<T>, "Only trivial types can be directly hashed.");
   const auto firstb = reinterpret_cast<const unsigned char *>(first);
   const auto lastb = reinterpret_cast<const unsigned char *>(last);
   return Fnv1a_append_bytes(val, firstb, static_cast<size_t>(lastb - firstb));
 }
 
 template <class T> size_t Fnv1a_append_value(const size_t val, const T &x) noexcept {
-  //  static_assert(is_trivial_v<T>, "Only trivial types can be directly hashed.");
+  static_assert(is_trivial_v<T>, "Only trivial types can be directly hashed.");
   return Fnv1a_append_bytes(val, &reinterpret_cast<const unsigned char &>(x), sizeof(T));
 }
 
@@ -156,15 +158,11 @@ template <class T> size_t Hash_array_representation(const T *const p, const size
 
 template <class T> struct hash {};
 
-template <class T>
-  requires is_integral_v<T> || is_pointer_v<T>
-struct hash<T> {
+template <class T> requires is_integral_v<T> || is_pointer_v<T> struct hash<T> {
   size_t operator()(const T x) const noexcept { return Hash_representation(x); }
 };
 
-template <class T>
-  requires is_floating_point_v<T>
-struct hash<T> {
+template <class T> requires is_floating_point_v<T> struct hash<T> {
   size_t operator()(const T x) const noexcept { return Hash_representation(x == 0.0 ? 0.0 : x); }
 };
 
