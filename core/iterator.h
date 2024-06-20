@@ -21,8 +21,11 @@ template <class T> concept has_member_difference_type = requires { typename T::d
 template <class T> concept has_member_pointer = requires { typename T::pointer; };
 template <class T> concept has_member_reference = requires { typename T::reference; };
 
-// indirectly_readable_traits
-// https://en.cppreference.com/w/cpp/iterator/indirectly_readable_traits
+template <class T> concept dereferenceable = requires {
+  { *declval<T &>() } -> not_void;
+};
+
+//----------------- indirectly_readable_traits -----------------------
 template <class> struct _condition_value_type {};
 template <class T> requires is_object_v<T> struct _condition_value_type<T> : remove_cv<T> {};
 
@@ -30,6 +33,30 @@ template <class T> struct indirectly_readable_traits {};
 template <class T> requires is_array_v<T> struct indirectly_readable_traits<T> : remove_cv<remove_extent_t<T>> {};
 template <class T> struct indirectly_readable_traits<const T> : indirectly_readable_traits<T> {};
 template <class T> struct indirectly_readable_traits<T *> : _condition_value_type<T> {};
+template <has_member_value_type T> struct indirectly_readable_traits<T> : _condition_value_type<typename T::value_type> {};
+template <has_member_element_type T> struct indirectly_readable_traits<T> : _condition_value_type<typename T::value_type> {};
+
+//----------------- incrementable_traits -----------------------
+template <class I> struct incrementable_traits {};
+template <class T> requires is_object_v<T> struct incrementable_traits<T *> {
+  using difference_type = ptrdiff_t;
+};
+template <class T> struct incrementable_traits<const T> : incrementable_traits<T> {};
+template <has_member_difference_type T> struct incrementable_traits<T> {
+  using difference_type = typename T::difference_type;
+};
+template <class T> concept _can_difference = requires(const T &a, const T &b) {
+  { a - b } -> integral;
+};
+template <class T> requires(!has_member_difference_type<T> && _can_difference<T>) struct incrementable_traits<T> {
+  using difference_type = make_signed_t<decltype(declval<T>() - declval<T>())>;
+};
+
+//----------------- iter_value_t, iter_reference_t, ... -----------------------
+// todo use iterator_traits<>
+template <class T> using iter_value_t = indirectly_readable_traits<remove_cvref_t<T>>;
+template <class T> using iter_reference_t = decltype(*declval<T &>());
+template <class T> using iter_difference_t = incrementable_traits<remove_cvref_t<T>>;
 
 template <class I> concept weakly_incrementable = std::movable<I> && requires(I i) {
   { ++i } -> same_as<I &>;
@@ -66,8 +93,8 @@ template <class InputIt> constexpr ptrdiff_t distance(InputIt first, InputIt las
     return last - first;
   } else {
     ptrdiff_t d = 0;
-    for (; first != last; ++first, ++d)
-      ;
+    for (; first != last; ++first, ++d) {
+    }
     return d;
   }
 }
