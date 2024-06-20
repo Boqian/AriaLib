@@ -58,7 +58,17 @@ template <class T> using iter_value_t = indirectly_readable_traits<remove_cvref_
 template <class T> using iter_reference_t = decltype(*declval<T &>());
 template <class T> using iter_difference_t = incrementable_traits<remove_cvref_t<T>>;
 
-template <class I> concept weakly_incrementable = std::movable<I> && requires(I i) {
+//----------------- iterator concept -----------------
+template <class I> concept _indirectly_readable_impl = requires(const I i) {
+  typename iter_value_t<I>;
+  typename iter_reference_t<I>;
+  // typename iter_rvalue_reference_t<_It>;
+  { *i } -> same_as<iter_reference_t<I>>;
+};
+
+template <class I> concept indirectly_readable = _indirectly_readable_impl<remove_cvref_t<I>>;
+
+template <class I> concept weakly_incrementable = movable<I> && requires(I i) {
   { ++i } -> same_as<I &>;
   { i++ };
 };
@@ -67,11 +77,15 @@ template <class I> concept input_or_output_iterator = weakly_incrementable<I> &&
   { *i } -> not_void;
 };
 
-// todo indirect_readable, incrementable
-template <class I> concept forward_iterator = requires(I i) {
-  { ++i } -> same_as<I &>;
-  { i++ };
+template <class S, class I> concept sentinel_for = semiregular<S> && input_or_output_iterator<I> && weakly_equality_comparable_with<S, I>;
+
+template <class I> concept input_iterator = input_or_output_iterator<I> && indirectly_readable<I>;
+
+template <class T> concept incrementable = regular<T> && weakly_incrementable<T> && requires(T t) {
+  { t++ } -> same_as<T>;
 };
+
+template <class I> concept forward_iterator = input_iterator<I> && incrementable<I> && sentinel_for<I, I>;
 
 template <class I> concept bidirectional_iterator = forward_iterator<I> && requires(I i) {
   { i-- } -> same_as<I>;
@@ -85,8 +99,6 @@ template <class I> concept random_access_iterator = bidirectional_iterator<I> &&
   { i - n } -> same_as<I>;
   { i - j } -> same_as<ptrdiff_t>;
 };
-
-template <class S, class I> concept sentinel_for = semiregular<S> && input_or_output_iterator<I> && weakly_equality_comparable_with<S, I>;
 
 template <class InputIt> constexpr ptrdiff_t distance(InputIt first, InputIt last) {
   if constexpr (random_access_iterator<InputIt>) {
