@@ -25,8 +25,7 @@ template <class T, class U> inline constexpr bool is_same_v = is_same<T, U>::val
 namespace _traits {
 template <class To> inline void foo(To) {}
 
-template <typename From, typename To>
-concept convertible = requires(From f) { foo<To>(f); };
+template <typename From, typename To> concept convertible = requires(From f) { foo<To>(f); };
 } // namespace _traits
 
 template <class From, class To> struct is_convertible : bool_constant<_traits::convertible<From, To>> {};
@@ -38,14 +37,11 @@ template <class T, class U> inline constexpr bool is_base_of_v = is_base_of<T, U
 template <class T, class... Args> inline constexpr bool is_any_of_v = (is_same_v<T, Args> || ...);
 
 namespace _traits {
-template <class T, class U>
-concept same_as = is_same_v<T, U> && is_same_v<U, T>;
+template <class T, class U> concept same_as = is_same_v<T, U> && is_same_v<U, T>;
 
-template <class Fn, class... Args>
-concept invocable = requires(Fn fn, Args... args) { fn(forward<Args>(args)...); };
+template <class Fn, class... Args> concept invocable = requires(Fn fn, Args... args) { fn(forward<Args>(args)...); };
 
-template <class Fn, class R, class... Args>
-concept invocable_r = requires(Fn fn, Args... args) {
+template <class Fn, class R, class... Args> concept invocable_r = requires(Fn fn, Args... args) {
   { fn(forward<Args>(args)...) } -> same_as<R>;
 };
 
@@ -57,9 +53,7 @@ template <class Fn, class R, class... Args> struct is_invocable_r : bool_constan
 template <class Fn, class R, class... Args> inline constexpr bool is_invocable_r_v = is_invocable_r<Fn, R, Args...>::value;
 
 template <class Fn, class... Args> struct invoke_result {};
-template <class Fn, class... Args>
-  requires is_invocable_v<Fn, Args...>
-struct invoke_result<Fn, Args...> {
+template <class Fn, class... Args> requires is_invocable_v<Fn, Args...> struct invoke_result<Fn, Args...> {
   using type = decltype(declval<Fn>()(declval<Args>()...));
 };
 
@@ -260,15 +254,11 @@ using std::is_trivially_copyable;
 using std::is_trivially_copyable_v;
 
 template <class T> struct is_signed : false_type {};
-template <class T>
-  requires(is_arithmetic_v<T>)
-struct is_signed<T> : bool_constant<T(-1) < T(0)> {};
+template <class T> requires(is_arithmetic_v<T>) struct is_signed<T> : bool_constant<T(-1) < T(0)> {};
 template <class T> inline constexpr bool is_signed_v = is_signed<T>::value;
 
 template <class T> struct is_unsigned : false_type {};
-template <class T>
-  requires(is_arithmetic_v<T>)
-struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
+template <class T> requires(is_arithmetic_v<T>) struct is_unsigned<T> : bool_constant<T(0) < T(-1)> {};
 template <class T> inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
 
 template <class T> struct is_bounded_array : false_type {};
@@ -281,9 +271,7 @@ template <class T> inline constexpr bool is_unbounded_array_v = is_unbounded_arr
 
 //----------------- Sign modifiers -----------------------
 template <class T> struct make_unsigned {};
-template <class T>
-  requires is_unsigned_v<T>
-struct make_unsigned<T> : type_identity<T> {};
+template <class T> requires is_unsigned_v<T> struct make_unsigned<T> : type_identity<T> {};
 template <> struct make_unsigned<char> : type_identity<unsigned char> {};
 template <> struct make_unsigned<short> : type_identity<unsigned short> {};
 template <> struct make_unsigned<int> : type_identity<unsigned int> {};
@@ -292,9 +280,7 @@ template <> struct make_unsigned<long long> : type_identity<unsigned long long> 
 template <class T> using make_unsigned_t = make_unsigned<T>::type;
 
 template <class T> struct make_signed {};
-template <class T>
-  requires is_signed_v<T>
-struct make_signed<T> : type_identity<T> {};
+template <class T> requires is_signed_v<T> struct make_signed<T> : type_identity<T> {};
 template <> struct make_signed<unsigned char> : type_identity<char> {};
 template <> struct make_signed<unsigned short> : type_identity<short> {};
 template <> struct make_signed<unsigned int> : type_identity<int> {};
@@ -303,10 +289,8 @@ template <> struct make_signed<unsigned long long> : type_identity<long long> {}
 template <class T> using make_signed_t = make_signed<T>::type;
 
 //----------------- is_constructible -----------------------
-template <class T>
-concept _default_construct = requires { T(); } && requires { T{}; } && requires { ::new T; };
-template <class T, class... Args>
-concept _constructible = requires { T(declval<Args>()...); };
+template <class T> concept _default_construct = requires { T(); } && requires { T{}; } && requires { ::new T; };
+template <class T, class... Args> concept _constructible = requires { T(declval<Args>()...); };
 
 template <class T> struct is_default_constructible : bool_constant<_default_construct<T>> {};
 template <class T> inline constexpr bool is_default_constructible_v = is_default_constructible<T>::value;
@@ -318,8 +302,7 @@ template <class T> struct is_move_contructible : is_constructible<T, add_rvalue_
 template <class T> inline constexpr bool is_move_constructible_v = is_move_contructible<T>::value;
 
 //----------------- is_assignable -----------------
-template <class T, class U>
-concept _assignable = requires(T t) { t = declval<U>(); };
+template <class T, class U> concept _assignable = requires(T t) { t = declval<U>(); };
 template <class T, class U> struct is_assignable : bool_constant<_assignable<T, U>> {};
 template <class T, class U> inline constexpr bool is_assignable_v = is_assignable<T, U>::value;
 template <class T> struct is_copy_assignable : is_assignable<T, add_lvalue_reference_t<add_const_t<T>>> {};
@@ -328,11 +311,9 @@ template <class T> struct is_move_assignable : is_assignable<T, add_rvalue_refer
 template <class T> inline constexpr bool is_move_assignable_v = is_move_assignable<T>::value;
 
 //----------------- is_destructible -----------------------
-template <class T>
-concept _destructible = is_lvalue_reference_v<T> || requires { declval<T &>().~T(); };
+template <class T> concept _destructible = is_lvalue_reference_v<T> || requires { declval<T &>().~T(); };
 
-template <class T>
-concept _nothrow_destructible = is_lvalue_reference_v<T> || requires { requires noexcept(declval<T>().~T()); };
+template <class T> concept _nothrow_destructible = is_lvalue_reference_v<T> || requires { requires noexcept(declval<T>().~T()); };
 
 template <class T> struct is_destructible : bool_constant<_destructible<T>> {};
 template <class T> inline constexpr bool is_destructible_v = is_destructible<T>::value;
@@ -340,22 +321,18 @@ template <class T> struct is_nothrow_destructible : bool_constant<_nothrow_destr
 template <class T> inline constexpr bool is_nothrow_destructible_v = is_nothrow_destructible<T>::value;
 
 //-----------------swap, is_swappable -----------------------
-template <class T>
-  requires is_move_constructible_v<T> && is_move_assignable_v<T>
-constexpr void swap(T &a, T &b) noexcept {
+template <class T> requires is_move_constructible_v<T> && is_move_assignable_v<T> constexpr void swap(T &a, T &b) noexcept {
   T temp = move(a);
   a = move(b);
   b = move(temp);
 }
 
-template <class T, class U>
-concept _swappable = requires {
+template <class T, class U> concept _swappable = requires {
   swap(declval<T>(), declval<U>());
   swap(declval<U>(), declval<T>());
 };
 
-template <class T, class U>
-concept _nothrow_swappable = requires {
+template <class T, class U> concept _nothrow_swappable = requires {
   requires noexcept(swap(declval<T>(), declval<U>()));
   requires noexcept(swap(declval<U>(), declval<T>()));
 };
@@ -369,10 +346,7 @@ template <class T, class U> inline constexpr bool is_nothrow_swappable_with_v = 
 template <class T> struct is_nothrow_swappable : is_nothrow_swappable_with<T &, T &> {};
 template <class T> inline constexpr bool is_nothrow_swappable_v = is_nothrow_swappable<T>::value;
 
-template <class T, size_t N>
-void swap(T (&a)[N], T (&b)[N]) noexcept
-  requires is_swappable_v<T>
-{
+template <class T, size_t N> void swap(T (&a)[N], T (&b)[N]) noexcept requires is_swappable_v<T> {
   for (int i = 0; i < N; i++)
     swap(a[i], b[i]);
 }
