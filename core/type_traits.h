@@ -381,4 +381,11 @@ template <class T, size_t I> struct extent<T[I], 0> : integral_constant<size_t, 
 template <class T, size_t I, unsigned N> struct extent<T[I], N> : extent<T, N - 1> {};
 template <class T, unsigned N = 0> inline constexpr size_t extent_v = extent<T, N>::value;
 
+//----------------- decay -----------------------
+template <class T> struct decay : remove_cvref<T> {};
+template <class T> requires is_array_v<T> struct decay<T> : add_pointer<remove_extent_t<T>> {};
+template <class T> requires is_function_v<T> struct decay<T> : add_pointer<T> {};
+
+template <class T> using decay_t = decay<T>::type;
+
 } // namespace aria

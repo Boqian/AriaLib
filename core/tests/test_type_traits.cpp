@@ -54,12 +54,14 @@ struct ThrowSwap {
 
 void swap(ThrowSwap &, ThrowSwap &) {}
 
+template <class T, class U> void assert_same() { static_assert(aria::is_same_v<T, U>); }
+
 void test_traits() {
   using namespace aria;
-  static_assert(is_same_v<conditional_t<true, int, double>, int>);
-  static_assert(is_same_v<conditional_t<false, int, double>, double>);
+  assert_same<conditional_t<true, int, double>, int>();
+  assert_same<conditional_t<false, int, double>, double>();
 
-  static_assert(is_same_v<int, int>);
+  assert_same<int, int>();
   static_assert(!is_same_v<int, double>);
 
   static_assert(is_convertible_v<int, int>);
@@ -67,8 +69,8 @@ void test_traits() {
   static_assert(!is_convertible_v<int, std::string>);
   static_assert(!is_convertible_v<std::string, int>);
 
-  static_assert(is_same_v<void, add_lvalue_reference_t<void>>);
-  static_assert(is_same_v<int &, add_lvalue_reference_t<int>>);
+  assert_same<void, add_lvalue_reference_t<void>>();
+  assert_same<int &, add_lvalue_reference_t<int>>();
 
   static_assert(!is_base_of_v<int, double>);
   static_assert(is_base_of_v<Base, Derived>);
@@ -77,13 +79,13 @@ void test_traits() {
   static_assert(!is_base_of_v<int, short>);
   static_assert(!is_base_of_v<int, const int>);
 
-  static_assert(is_same_v<int, remove_reference_t<int>>);
-  static_assert(is_same_v<int, remove_reference_t<int &>>);
-  static_assert(is_same_v<int, remove_reference_t<int &&>>);
+  assert_same<int, remove_reference_t<int>>();
+  assert_same<int, remove_reference_t<int &>>();
+  assert_same<int, remove_reference_t<int &&>>();
 
-  static_assert(is_same_v<int, remove_cvref_t<const int &>>);
-  static_assert(is_same_v<int, remove_cvref_t<int &&>>);
-  static_assert(is_same_v<int, remove_cvref_t<const int>>);
+  assert_same<int, remove_cvref_t<const int &>>();
+  assert_same<int, remove_cvref_t<int &&>>();
+  assert_same<int, remove_cvref_t<const int>>();
 
   static_assert(!is_lvalue_reference_v<int>);
   static_assert(is_lvalue_reference_v<int &>);
@@ -123,10 +125,10 @@ void test_traits() {
   static_assert(is_floating_point_v<double>);
   static_assert(is_floating_point_v<float>);
 
-  static_assert(is_same_v<void, common_type_t<void>>);
-  static_assert(is_same_v<int, common_type_t<int, short>>);
-  static_assert(is_same_v<int, common_type_t<int, short, char>>);
-  static_assert(is_same_v<long long, common_type_t<int, short, char, long long>>);
+  assert_same<void, common_type_t<void>>();
+  assert_same<int, common_type_t<int, short>>();
+  assert_same<int, common_type_t<int, short, char>>();
+  assert_same<long long, common_type_t<int, short, char, long long>>();
 
   static_assert(!is_const_v<int>);
   static_assert(is_const_v<const int>);
@@ -141,13 +143,13 @@ void test_traits() {
   static_assert(is_unsigned_v<unsigned int>);
   static_assert(!is_unsigned_v<BB>);
 
-  static_assert(is_same_v<add_const_t<int>, const int>);
-  static_assert(is_same_v<remove_const_t<int>, int>);
-  static_assert(is_same_v<remove_const_t<const int>, int>);
+  assert_same<add_const_t<int>, const int>();
+  assert_same<remove_const_t<int>, int>();
+  assert_same<remove_const_t<const int>, int>();
 
-  static_assert(is_same_v<remove_cvref_t<const int>, int>);
-  static_assert(is_same_v<remove_cvref_t<const int &>, int>);
-  static_assert(is_same_v<remove_cvref_t<int &>, int>);
+  assert_same<remove_cvref_t<const int>, int>();
+  assert_same<remove_cvref_t<const int &>, int>();
+  assert_same<remove_cvref_t<int &>, int>();
 
   static_assert(!is_copy_constructible_v<CannotCopy>);
   static_assert(is_copy_constructible_v<AA>);
@@ -177,22 +179,25 @@ void test_traits() {
   static_assert(is_class_v<AA>);
   static_assert(!is_class_v<int>);
 
-  static_assert(is_same_v<add_pointer_t<int>, int *>);
-  static_assert(is_same_v<add_pointer_t<int &>, int *>);
-  static_assert(is_same_v<remove_pointer_t<int *>, int>);
-  static_assert(is_same_v<remove_pointer_t<int *const>, int>);
+  assert_same<add_pointer_t<int>, int *>();
+  assert_same<add_pointer_t<int &>, int *>();
+  assert_same<remove_pointer_t<int *>, int>();
+  assert_same<remove_pointer_t<int *const>, int>();
 
-  static_assert(is_same_v<make_signed_t<unsigned int>, int>);
-  static_assert(is_same_v<make_unsigned_t<unsigned int>, unsigned int>);
-  static_assert(is_same_v<make_signed_t<int>, int>);
-  static_assert(is_same_v<make_unsigned_t<int>, unsigned int>);
+  assert_same<make_signed_t<unsigned int>, int>();
+  assert_same<make_unsigned_t<unsigned int>, unsigned int>();
+  assert_same<make_signed_t<int>, int>();
+  assert_same<make_unsigned_t<int>, unsigned int>();
 
   static_assert(conjunction_v<>);
   static_assert(conjunction_v<true_type, true_type, true_type>);
 
-  static_assert(is_same_v<remove_extent_t<int[5]>, int>);
-  static_assert(is_same_v<remove_all_extents_t<int[5]>, int>);
-  static_assert(is_same_v<remove_all_extents_t<int[5][5]>, int>);
+  assert_same<remove_extent_t<int[5]>, int>();
+  assert_same<remove_all_extents_t<int[5]>, int>();
+  assert_same<remove_all_extents_t<int[5][5]>, int>();
+
+  assert_same<decay_t<const int &>, int>();
+  assert_same<decay_t<int[5]>, int *>();
 }
 
 TEST(test_type_traits, swap) {
@@ -245,7 +250,7 @@ void test_invocable() {
   static_assert(is_invocable_r_v<decltype(f1), void, int>);
   static_assert(is_invocable_r_v<decltype(f2), int, int &>);
 
-  static_assert(is_same_v<invoke_result_t<decltype(f0)>, void>);
-  static_assert(is_same_v<invoke_result_t<decltype(f1), int>, void>);
-  static_assert(is_same_v<invoke_result_t<decltype(f2), int &>, int>);
+  assert_same<invoke_result_t<decltype(f0)>, void>();
+  assert_same<invoke_result_t<decltype(f1), int>, void>();
+  assert_same<invoke_result_t<decltype(f2), int &>, int>();
 }

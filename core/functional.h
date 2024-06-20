@@ -121,10 +121,6 @@ template <class T> void ref(const T &&) = delete;
 template <class T> constexpr auto cref(const T &t) noexcept { return reference_wrapper<const T>(t); }
 template <class T> void cref(const T &&) = delete;
 
-template <class T> struct is_reference_wrapper : false_type {};
-template <class T> struct is_reference_wrapper<reference_wrapper<T>> : true_type {};
-template <class T> inline constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
-
 //-----------------------hash-----------------------
 inline constexpr size_t FNV_offset_basis = 14695981039346656037ULL;
 inline constexpr size_t FNV_prime = 1099511628211ULL;
