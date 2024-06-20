@@ -85,8 +85,7 @@ public:
   constexpr tuple &operator=(const tuple &) noexcept = default;
   constexpr tuple &operator=(tuple &&) noexcept = default;
 
-  template <class U, class... Us>
-    requires convertible_to<U, T> && convertible_to<Us..., Args...>
+  template <class U, class... Us> requires convertible_to<U, T> && convertible_to<Us..., Args...>
   constexpr tuple(U &&u, Us &&...args) : value(forward<U>(u)), rest(forward<Us>(args)...) {}
 
   constexpr auto operator<=>(const tuple &) const = default;
@@ -205,8 +204,7 @@ template <class T> auto addressof(T &x) noexcept {
 
 //------------------------- pointer_traits -------------------------//
 template <class T> struct _get_ptr_difference_type : type_identity<ptrdiff_t> {};
-template <class T>
-  requires requires { typename T::difference_type; }
+template <class T> requires requires { typename T::difference_type; }
 struct _get_ptr_difference_type<T> : type_identity<typename T::difference_type> {};
 
 template <class Ptr> struct pointer_traits {
@@ -224,8 +222,7 @@ template <class T> struct pointer_traits<T *> {
   static pointer pointer_to(element_type &val) noexcept { return std::addressof(val); }
 };
 
-template <class T>
-concept _has_to_address = requires(const T &val) {
+template <class T> concept _has_to_address = requires(const T &val) {
   typename pointer_traits<T>;
   pointer_traits<T>::to_address(val);
 };

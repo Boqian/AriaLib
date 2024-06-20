@@ -28,14 +28,10 @@ public:
   constexpr optional(nullopt_t) noexcept : empty_{} {}
   constexpr ~optional() { reset(); }
 
-  template <class U = T>
-    requires is_constructible_v<T, U &&> && !is_same_v<remove_cvref_t<U>, optional>
-             constexpr optional(U && u) : has_value_(true),
-  value_{forward<U>(u)} {}
+  template <class U = T> requires(is_constructible_v<T, U &&> && !is_optional_v<remove_cvref_t<U>>)
+  constexpr optional(U &&u) : has_value_(true), value_{forward<U>(u)} {}
 
-  template <class... Args>
-    requires is_constructible_v<T, Args &&...>
-  constexpr explicit optional(in_place_t, Args &&...args) {
+  template <class... Args> requires is_constructible_v<T, Args &&...> constexpr explicit optional(in_place_t, Args &&...args) {
     construct_in_place(forward<Args>(args)...);
   }
 
@@ -80,10 +76,7 @@ public:
     return *this;
   }
 
-  template <class U = T>
-    requires is_constructible_v<T, U> && !is_same_v<remove_cvref_t<U>, optional>
-                                             constexpr optional &
-                                         operator=(U &&value) {
+  template <class U = T> requires(is_constructible_v<T, U> && !is_optional_v<remove_cvref_t<U>>) constexpr optional &operator=(U &&value) {
     if (has_value()) {
       value_ = forward<U>(value);
     } else {
