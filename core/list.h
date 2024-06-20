@@ -12,9 +12,7 @@ struct node_base {
 };
 
 template <class T> struct node : public node_base {
-  template <class... Args>
-    requires is_constructible_v<T, Args...>
-  node(Args &&...args) : value(forward<Args>(args)...) {}
+  template <class... Args> requires is_constructible_v<T, Args...> node(Args &&...args) : value(forward<Args>(args)...) {}
   T value;
 };
 } // namespace _list

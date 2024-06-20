@@ -42,9 +42,7 @@ public:
       m_shared->decrease_use(m_ptr);
   }
 
-  template <class Y>
-    requires convertible_to<Y *, T *>
-  explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>()) {
+  template <class Y> requires convertible_to<Y *, T *> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>()) {
     if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
       m_ptr->m_wptr = *this;
     }
@@ -109,8 +107,7 @@ public:
     }
   }
 
-  template <class U>
-    requires(convertible_to<U *, T *> and !is_same_v<U, T>)
+  template <class U> requires(convertible_to<U *, T *> and !is_same_v<U, T>)
   weak_ptr(const weak_ptr<U> &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
     if (m_shared) {
       m_shared->m_weaks++;
@@ -135,9 +132,7 @@ public:
     return *this;
   }
 
-  template <class U>
-    requires convertible_to<U *, T *>
-  weak_ptr(const shared_ptr<U> &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
+  template <class U> requires convertible_to<U *, T *> weak_ptr(const shared_ptr<U> &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
     if (m_shared) {
       m_shared->m_weaks++;
     }
