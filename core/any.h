@@ -11,8 +11,9 @@ public:
   [[no_discard]] const char *what() const noexcept override { return "bad any cast"; }
 };
 
-template <class T> struct not_in_place : true_type {};
-template <class T> struct not_in_place<in_place_type_t<T>> : false_type {};
+template <class T> struct is_in_place_type : false_type {};
+template <class T> struct is_in_place_type<in_place_type_t<T>> : true_type {};
+template <class T> inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
 
 class any {
 public:
@@ -26,13 +27,10 @@ public:
   template <class T, class... Args>
   explicit any(in_place_type_t<T>, Args &&...args) : m_ptr(make_unique<storage<T>>(forward<Args>(args)...)) {}
 
-  template <class T, class U = remove_cvref_t<T>>
-    requires aria::conjunction_v<negation<is_same<U, any>>, not_in_place<U>>
+  template <class T, class U = remove_cvref_t<T>> requires(not_same<U, any> && !is_in_place_type_v<U>)
   any(T &&value) : m_ptr(make_unique<storage<U>>(value)) {}
 
-  template <class T>
-    requires not_same<remove_cvref_t<T>, any>
-  any &operator=(T &&value) {
+  template <class T> requires not_same<remove_cvref_t<T>, any> any &operator=(T &&value) {
     any tmp = forward<T>(value);
     swap(tmp);
     return *this;
