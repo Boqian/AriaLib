@@ -147,26 +147,16 @@ public:
     swap(m_alloc, rhs.m_alloc);
   }
 
-  void resize(size_type count)
-    requires is_default_constructible_v<T>
-  {
-    resize_helper(count);
-  }
+  void resize(size_type count) requires is_default_constructible_v<T> { resize_helper(count); }
 
-  void resize(size_type count, const value_type &value)
-    requires is_copy_constructible_v<T>
-  {
-    resize_helper(count, value);
-  }
+  void resize(size_type count, const value_type &value) requires is_copy_constructible_v<T> { resize_helper(count, value); }
 
   constexpr auto begin() const noexcept { return const_iterator(get(0)); }
   constexpr auto end() const noexcept { return const_iterator(get(m_size)); }
   constexpr auto begin() noexcept { return iterator(get(0)); }
   constexpr auto end() noexcept { return iterator(get(m_size)); }
 
-  constexpr iterator erase(const_iterator first, const_iterator last)
-    requires is_move_assignable_v<T>
-  {
+  constexpr iterator erase(const_iterator first, const_iterator last) requires is_move_assignable_v<T> {
     if (first == end())
       return end();
     auto d = distance(first, last);
@@ -180,9 +170,7 @@ public:
     return first;
   }
 
-  constexpr iterator erase(const_iterator pos)
-    requires is_move_assignable_v<T>
-  {
+  constexpr iterator erase(const_iterator pos) requires is_move_assignable_v<T> {
     if (pos == end())
       return end();
     return erase(pos, pos + 1);
