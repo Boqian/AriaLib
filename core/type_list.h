@@ -49,9 +49,7 @@ template <class U, class Tlist, template <class, class> class Trait = is_same> c
   return num_match<U, Tlist, Trait>() == 1;
 }
 
-template <class T, class... Ts>
-  requires(exact_one_match<T, type_list<Ts...>>())
-consteval size_t index_of() {
+template <class T, class... Ts> requires(exact_one_match<T, type_list<Ts...>>()) consteval size_t index_of() {
   return first_match_index<T, type_list<Ts...>>();
 }
 

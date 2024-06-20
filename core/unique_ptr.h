@@ -5,10 +5,7 @@ namespace aria {
 
 template <class T> struct default_delete {
   constexpr default_delete() noexcept = default;
-
-  template <class U>
-    requires convertible_to<U *, T *>
-  default_delete(const default_delete<U> &) noexcept {}
+  template <class U> requires convertible_to<U *, T *> default_delete(const default_delete<U> &) noexcept {}
 
   void operator()(T *ptr) const noexcept {
     static_assert(0 < sizeof(T), "can't delete incomplete type");
@@ -28,8 +25,7 @@ public:
 
   constexpr unique_ptr(T *ptr, Deleter &&deleter) : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
 
-  template <class U, class E>
-    requires convertible_to<U *, T *>
+  template <class U, class E> requires convertible_to<U *, T *>
   constexpr unique_ptr(unique_ptr<U, E> &&rhs) : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
 
   constexpr ~unique_ptr() {
