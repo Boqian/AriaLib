@@ -388,6 +388,17 @@ template <class T, class U> struct common_type<T, U> {
 
 template <class T, class U, class... R> struct common_type<T, U, R...> : common_type<common_type_t<T, U>, R...> {};
 
+//----------------- Arrays -----------------------
+template <class T> struct remove_extent : type_identity<T> {};
+template <class T, size_t N> struct remove_extent<T[N]> : type_identity<T> {};
+template <class T> struct remove_extent<T[]> : type_identity<T> {};
+template <class T> using remove_extent_t = typename remove_extent<T>::type;
+
+template <class T> struct remove_all_extents : type_identity<T> {};
+template <class T, size_t N> struct remove_all_extents<T[N]> : remove_all_extents<T> {};
+template <class T> struct remove_all_extents<T[]> : remove_all_extents<T> {};
+template <class T> using remove_all_extents_t = typename remove_all_extents<T>::type;
+
 //----------------- Property queries -----------------------
 template <class T, unsigned N = 0> struct extent : integral_constant<size_t, 0> {};
 template <class T> struct extent<T[], 0> : integral_constant<size_t, 0> {};

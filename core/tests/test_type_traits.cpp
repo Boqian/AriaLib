@@ -189,6 +189,10 @@ void test_traits() {
 
   static_assert(conjunction_v<>);
   static_assert(conjunction_v<true_type, true_type, true_type>);
+
+  static_assert(is_same_v<remove_extent_t<int[5]>, int>);
+  static_assert(is_same_v<remove_all_extents_t<int[5]>, int>);
+  static_assert(is_same_v<remove_all_extents_t<int[5][5]>, int>);
 }
 
 TEST(test_type_traits, swap) {

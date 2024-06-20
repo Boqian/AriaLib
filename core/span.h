@@ -2,6 +2,7 @@
 
 #include "array.h"
 #include "iterator.h"
+#include "ranges.h"
 
 namespace aria {
 
@@ -41,7 +42,12 @@ public:
 
   constexpr span() noexcept = default;
 
-  template <class It> constexpr span(It first, size_type count) {}
+  // todo contiguous_iterator
+  template <class It> constexpr span(It first, size_type count) : base(to_address(first), count) {}
+  template <class It, class End> constexpr span(It first, End last) : base(to_address(first), last - first) {}
+
+  // todo ranges::size
+  // template <ranges::range R> constexpr span(R &&range) : base(ranges::begin(range), ranges::size(range)) {}
 
   template <class U, size_t N>
     requires convertible_to<U, T> && (N == Extent)
@@ -52,8 +58,9 @@ public:
   constexpr reference front() const { return m_data[0]; }
   constexpr reference back() const { return m_data[size() - 1]; }
   constexpr pointer data() const noexcept { return m_data; }
-
   constexpr reference operator[](size_type idx) const { return *(m_data + idx); }
+
+  template <size_t Count> constexpr span<element_type, Count> first() const {}
 
 private:
   using base = _span::extent_type<T, Extent>;

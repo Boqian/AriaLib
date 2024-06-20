@@ -6,32 +6,52 @@
 
 namespace aria {
 
-template <class I>
-concept weakly_incrementable = std::movable<I> && requires(I i) {
+struct input_iterator_tag {};
+struct output_iterator_tag {};
+struct forward_iterator_tag : public input_iterator_tag {};
+struct bidirectional_iterator_tag : public forward_iterator_tag {};
+struct random_access_iterator_tag : public bidirectional_iterator_tag {};
+struct contiguous_iterator_tag : public random_access_iterator_tag {};
+
+template <class T> concept has_member_iterator_concept = requires { typename T::iterator_concept; };
+template <class T> concept has_member_iterator_category = requires { typename T::iterator_category; };
+template <class T> concept has_member_value_type = requires { typename T::value_type; };
+template <class T> concept has_member_element_type = requires { typename T::element_type; };
+template <class T> concept has_member_difference_type = requires { typename T::difference_type; };
+template <class T> concept has_member_pointer = requires { typename T::pointer; };
+template <class T> concept has_member_reference = requires { typename T::reference; };
+
+// indirectly_readable_traits
+// https://en.cppreference.com/w/cpp/iterator/indirectly_readable_traits
+template <class> struct _condition_value_type {};
+template <class T> requires is_object_v<T> struct _condition_value_type<T> : remove_cv<T> {};
+
+template <class T> struct indirectly_readable_traits {};
+template <class T> requires is_array_v<T> struct indirectly_readable_traits<T> : remove_cv<remove_extent_t<T>> {};
+template <class T> struct indirectly_readable_traits<const T> : indirectly_readable_traits<T> {};
+template <class T> struct indirectly_readable_traits<T *> : _condition_value_type<T> {};
+
+template <class I> concept weakly_incrementable = std::movable<I> && requires(I i) {
   { ++i } -> same_as<I &>;
   { i++ };
 };
 
-template <class I>
-concept input_or_output_iterator = weakly_incrementable<I> && requires(I i) {
+template <class I> concept input_or_output_iterator = weakly_incrementable<I> && requires(I i) {
   { *i } -> not_void;
 };
 
 // todo indirect_readable, incrementable
-template <class I>
-concept forward_iterator = requires(I i) {
+template <class I> concept forward_iterator = requires(I i) {
   { ++i } -> same_as<I &>;
   { i++ };
 };
 
-template <class I>
-concept bidirectional_iterator = forward_iterator<I> && requires(I i) {
+template <class I> concept bidirectional_iterator = forward_iterator<I> && requires(I i) {
   { i-- } -> same_as<I>;
   { --i } -> same_as<I &>;
 };
 
-template <class I>
-concept random_access_iterator = bidirectional_iterator<I> && requires(I i, I j, ptrdiff_t n) {
+template <class I> concept random_access_iterator = bidirectional_iterator<I> && requires(I i, I j, ptrdiff_t n) {
   { i += n } -> same_as<I &>;
   { i -= n } -> same_as<I &>;
   { i + n } -> same_as<I>;
@@ -39,8 +59,7 @@ concept random_access_iterator = bidirectional_iterator<I> && requires(I i, I j,
   { i - j } -> same_as<ptrdiff_t>;
 };
 
-template <class S, class I>
-concept sentinel_for = semiregular<S> && input_or_output_iterator<I> && weakly_equality_comparable_with<S, I>;
+template <class S, class I> concept sentinel_for = semiregular<S> && input_or_output_iterator<I> && weakly_equality_comparable_with<S, I>;
 
 template <class InputIt> constexpr ptrdiff_t distance(InputIt first, InputIt last) {
   if constexpr (random_access_iterator<InputIt>) {
@@ -93,8 +112,7 @@ public:
   basic_const_iterator() = default;
   basic_const_iterator(iter a) : it(a) {}
 
-  template <class... Args>
-    requires constructible_from<iter, Args...>
+  template <class... Args> requires constructible_from<iter, Args...>
   explicit basic_const_iterator(Args &&...args) : it(forward<Args>(args)...) {}
 
   operator iter() const noexcept { return it; }
@@ -121,37 +139,25 @@ public:
     return temp;
   }
 
-  basic_const_iterator &operator+=(const difference_type d)
-    requires random_access_iterator<iter>
-  {
+  basic_const_iterator &operator+=(const difference_type d) requires random_access_iterator<iter> {
     it += d;
     return *this;
   }
 
-  basic_const_iterator &operator-=(const difference_type d)
-    requires random_access_iterator<iter>
-  {
+  basic_const_iterator &operator-=(const difference_type d) requires random_access_iterator<iter> {
     it.operator-=(d);
     return *this;
   }
 
-  basic_const_iterator operator+(const difference_type d) const
-    requires random_access_iterator<iter>
-  {
+  basic_const_iterator operator+(const difference_type d) const requires random_access_iterator<iter> {
     auto temp = *this;
     temp += d;
     return temp;
   }
 
-  difference_type operator-(const basic_const_iterator &rhs) const noexcept
-    requires random_access_iterator<iter>
-  {
-    return it - rhs.it;
-  }
+  difference_type operator-(const basic_const_iterator &rhs) const noexcept requires random_access_iterator<iter> { return it - rhs.it; }
 
-  basic_const_iterator operator-(const difference_type d) const
-    requires random_access_iterator<iter>
-  {
+  basic_const_iterator operator-(const difference_type d) const requires random_access_iterator<iter> {
     auto temp = *this;
     temp -= d;
     return temp;
@@ -176,8 +182,7 @@ public:
   mutable_iterator() = default;
   mutable_iterator(const_iterator a) : it(a) {}
 
-  template <class... Args>
-    requires constructible_from<const_iterator, Args...>
+  template <class... Args> requires constructible_from<const_iterator, Args...>
   explicit mutable_iterator(Args &&...args) : it(forward<Args>(args)...) {}
 
   operator const_iterator() const noexcept { return it; }
@@ -204,37 +209,27 @@ public:
     return temp;
   }
 
-  mutable_iterator &operator+=(const difference_type d)
-    requires random_access_iterator<const_iterator>
-  {
+  mutable_iterator &operator+=(const difference_type d) requires random_access_iterator<const_iterator> {
     it += d;
     return *this;
   }
 
-  mutable_iterator &operator-=(const difference_type d)
-    requires random_access_iterator<const_iterator>
-  {
+  mutable_iterator &operator-=(const difference_type d) requires random_access_iterator<const_iterator> {
     it.operator-=(d);
     return *this;
   }
 
-  mutable_iterator operator+(const difference_type d) const
-    requires random_access_iterator<const_iterator>
-  {
+  mutable_iterator operator+(const difference_type d) const requires random_access_iterator<const_iterator> {
     auto temp = *this;
     temp += d;
     return temp;
   }
 
-  difference_type operator-(const mutable_iterator &rhs) const noexcept
-    requires random_access_iterator<const_iterator>
-  {
+  difference_type operator-(const mutable_iterator &rhs) const noexcept requires random_access_iterator<const_iterator> {
     return it - rhs.it;
   }
 
-  mutable_iterator operator-(const difference_type d) const
-    requires random_access_iterator<const_iterator>
-  {
+  mutable_iterator operator-(const difference_type d) const requires random_access_iterator<const_iterator> {
     auto temp = *this;
     temp -= d;
     return temp;
