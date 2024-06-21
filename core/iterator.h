@@ -210,23 +210,19 @@ public:
   }
 
   basic_const_iterator &operator-=(const difference_type d) requires random_access_iterator<iter> {
-    it.operator-=(d);
+    it -= d;
     return *this;
   }
 
   basic_const_iterator operator+(const difference_type d) const requires random_access_iterator<iter> {
-    auto temp = *this;
-    temp += d;
-    return temp;
+    return basic_const_iterator(it + d);
+  }
+
+  basic_const_iterator operator-(const difference_type d) const requires random_access_iterator<iter> {
+    return basic_const_iterator(it - d);
   }
 
   difference_type operator-(const basic_const_iterator &rhs) const noexcept requires random_access_iterator<iter> { return it - rhs.it; }
-
-  basic_const_iterator operator-(const difference_type d) const requires random_access_iterator<iter> {
-    auto temp = *this;
-    temp -= d;
-    return temp;
-  }
 
   auto operator<=>(const basic_const_iterator &) const noexcept = default;
 
@@ -281,14 +277,12 @@ public:
   }
 
   mutable_iterator &operator-=(const difference_type d) requires random_access_iterator<const_iterator> {
-    it.operator-=(d);
+    it -= d;
     return *this;
   }
 
   mutable_iterator operator+(const difference_type d) const requires random_access_iterator<const_iterator> {
-    auto temp = *this;
-    temp += d;
-    return temp;
+    return mutable_iterator(it + d);
   }
 
   difference_type operator-(const mutable_iterator &rhs) const noexcept requires random_access_iterator<const_iterator> {
@@ -296,9 +290,7 @@ public:
   }
 
   mutable_iterator operator-(const difference_type d) const requires random_access_iterator<const_iterator> {
-    auto temp = *this;
-    temp -= d;
-    return temp;
+    return mutable_iterator(it - d);
   }
 
   auto operator<=>(const mutable_iterator &) const noexcept = default;
@@ -353,21 +345,21 @@ public:
     return temp;
   }
 
-  reverse_iterator &operator+=(const difference_type d) {
+  reverse_iterator &operator+=(const difference_type d) requires random_access_iterator<Iter> {
     it -= d;
     return *this;
   }
 
-  reverse_iterator operator+(const difference_type d) { return reverse_iterator(it - d); }
+  reverse_iterator operator+(const difference_type d) requires random_access_iterator<Iter> { return reverse_iterator(it - d); }
 
-  reverse_iterator &operator-=(const difference_type d) {
+  reverse_iterator &operator-=(const difference_type d) requires random_access_iterator<Iter> {
     it += d;
     return *this;
   }
 
-  reverse_iterator operator-(const difference_type d) { return reverse_iterator(it + d); }
+  reverse_iterator operator-(const difference_type d) requires random_access_iterator<Iter> { return reverse_iterator(it + d); }
 
-  difference_type operator-(const reverse_iterator &rhs) { return rhs.it - it; }
+  difference_type operator-(const reverse_iterator &rhs) requires random_access_iterator<Iter> { return rhs.it - it; }
 
   auto operator<=>(const reverse_iterator &) const noexcept = default;
 

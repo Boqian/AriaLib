@@ -5,6 +5,10 @@ using namespace aria;
 
 static_assert(bidirectional_iterator<list<int>::iterator>);
 static_assert(bidirectional_iterator<list<int>::const_iterator>);
+static_assert(bidirectional_iterator<list<int>::reverse_iterator>);
+static_assert(!random_access_iterator<list<int>::iterator>);
+static_assert(!random_access_iterator<list<int>::const_iterator>);
+static_assert(!random_access_iterator<list<int>::reverse_iterator>);
 
 TEST(test_list, base) {
   list<int> li;
