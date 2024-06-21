@@ -120,9 +120,7 @@ void swap(node_base &a, node_base &b) {
 }
 
 template <class T> struct node : public node_base {
-  template <class... Args>
-    requires is_constructible_v<T, Args...>
-  node(Args &&...args) : value(forward<Args>(args)...) {}
+  template <class... Args> requires is_constructible_v<T, Args...> node(Args &&...args) : value(forward<Args>(args)...) {}
   T value;
 };
 
@@ -145,6 +143,7 @@ template <class T> const auto &get_key(const T &x) {
 
 template <class BSTType> class bst_iterator {
 public:
+  using iterator_concept = bidirectional_iterator_tag;
   using value_type = typename BSTType::value_type;
   using pointer = value_type *;
   using reference = value_type &;

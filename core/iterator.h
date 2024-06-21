@@ -355,6 +355,7 @@ public:
   using pointer = T *;
   using reference = T &;
   using difference_type = ptrdiff_t;
+  using iterator_concept = contiguous_iterator_tag;
 
   array_iterator() = default;
   array_iterator(T *p) : ptr(p) {}

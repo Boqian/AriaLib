@@ -19,6 +19,7 @@ template <class T> struct node : public node_base {
 
 template <class ListType> class list_const_iterator {
 public:
+  using iterator_concept = bidirectional_iterator_tag;
   using value_type = typename ListType::value_type;
   using pointer = typename ListType::const_pointer;
   using reference = const value_type &;

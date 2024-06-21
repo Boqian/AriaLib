@@ -9,6 +9,7 @@ namespace aria {
 
 template <class DequeType> class deque_const_iterator {
 public:
+  using iterator_concept = random_access_iterator_tag;
   using value_type = typename DequeType::value_type;
   using pointer = typename DequeType::const_pointer;
   using reference = const value_type &;
