@@ -42,15 +42,12 @@ public:
 
   constexpr span() noexcept = default;
 
-  // todo contiguous_iterator
-  template <class It> constexpr span(It first, size_type count) : base(to_address(first), count) {}
-  template <class It, class End> constexpr span(It first, End last) : base(to_address(first), last - first) {}
+  template <contiguous_iterator It> constexpr span(It first, size_type count) : base(to_address(first), count) {}
+  template <contiguous_iterator It, class End> constexpr span(It first, End last) : base(to_address(first), last - first) {}
 
-  // todo ranges::size
-  // template <ranges::range R> constexpr span(R &&range) : base(ranges::begin(range), ranges::size(range)) {}
+  template <ranges::range R> constexpr span(R &&r) : base(ranges::begin(r), ranges::size(r)) {}
 
-  template <class U, size_t N>
-    requires convertible_to<U, T> && (N == Extent)
+  template <class U, size_t N> requires convertible_to<U, T> && (N == Extent)
   constexpr span(array<U, N> &arr) noexcept : base(arr.data(), N) {}
 
   constexpr bool empty() const noexcept { return m_size == 0; }
@@ -71,5 +68,8 @@ private:
 template <class T, size_t Size> span(T (&)[Size]) -> span<T, Size>;
 template <class T, size_t Size> span(array<T, Size> &) -> span<T, Size>;
 template <class T, size_t Size> span(const array<T, Size> &) -> span<const T, Size>;
+
+// todo  ranges::range_reference
+//  template <ranges::range R> span(R &&) -> span<remove_reference_t<ranges::range_reference_t<R>>>;
 
 } // namespace aria

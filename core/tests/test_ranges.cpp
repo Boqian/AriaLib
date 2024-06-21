@@ -5,6 +5,8 @@
 
 using namespace aria;
 
+static_assert(ranges::range<vector<int>>);
+
 TEST(test_ranges, begin_end_size) {
   {
     int x[10]{};
