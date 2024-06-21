@@ -3,6 +3,11 @@
 
 using namespace aria;
 
+static_assert(contiguous_iterator<string::iterator>);
+static_assert(contiguous_iterator<string::const_iterator>);
+static_assert(contiguous_iterator<string::reverse_iterator>);
+static_assert(contiguous_iterator<string::const_reverse_iterator>);
+
 TEST(test_string, empty_string) {
   {
     string a;

@@ -6,7 +6,7 @@
 
 namespace aria {
 
-class bad_any_cast : public std::exception {
+class bad_any_cast : public exception {
 public:
   [[no_discard]] const char *what() const noexcept override { return "bad any cast"; }
 };
