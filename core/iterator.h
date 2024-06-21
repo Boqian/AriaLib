@@ -58,7 +58,6 @@ template <class T> using iter_value_t = indirectly_readable_traits<remove_cvref_
 template <class T> using iter_reference_t = decltype(*declval<T &>());
 template <class T> using iter_difference_t = incrementable_traits<remove_cvref_t<T>>;
 
-//----------------- iterator concept -----------------
 template <class I> concept _indirectly_readable_impl = requires(const I i) {
   typename iter_value_t<I>;
   typename iter_reference_t<I>;
@@ -67,6 +66,11 @@ template <class I> concept _indirectly_readable_impl = requires(const I i) {
 };
 
 template <class I> concept indirectly_readable = _indirectly_readable_impl<remove_cvref_t<I>>;
+
+// todo use common_reference_t<const iter_value_t<T>&&, iter_reference_t<T>> ;
+template <indirectly_readable T> using iter_const_reference_t = const iter_value_t<T> &;
+
+//----------------- iterator concept -----------------
 
 template <class I> concept weakly_incrementable = movable<I> && requires(I i) {
   { ++i } -> same_as<I &>;
