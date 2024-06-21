@@ -120,6 +120,8 @@ template <class InputIt> constexpr ptrdiff_t distance(InputIt first, InputIt las
 template <class I> concept contiguous_iterator = random_access_iterator<I> && is_lvalue_reference_v<iter_reference_t<I>> &&
                                                  same_as<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>> && requires(const I &i) {
                                                    { to_address(i) } -> same_as<add_pointer_t<iter_reference_t<I>>>;
+                                                   typename I::iterator_concept;
+                                                   requires derived_from<typename I::iterator_concept, contiguous_iterator_tag>;
                                                  };
 
 template <input_iterator I> consteval auto _get_iter_concept() noexcept {

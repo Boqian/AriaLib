@@ -5,6 +5,10 @@ using namespace aria;
 
 static_assert(random_access_iterator<deque<int>::iterator>);
 static_assert(random_access_iterator<deque<int>::const_iterator>);
+static_assert(random_access_iterator<deque<int>::reverse_iterator>);
+static_assert(!contiguous_iterator<deque<int>::iterator>);
+static_assert(!contiguous_iterator<deque<int>::const_iterator>);
+static_assert(!contiguous_iterator<deque<int>::reverse_iterator>);
 
 struct A {
   static inline int n_ctor = 0;
