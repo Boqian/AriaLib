@@ -6,6 +6,14 @@
 
 using namespace aria;
 
+namespace {
+using I = vector<int>::iterator;
+static_assert(is_lvalue_reference_v<iter_reference_t<I>>);
+static_assert(same_as<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>>);
+static_assert(same_as<iter_value_t<I>, int>);
+static_assert(contiguous_iterator<I>);
+} // namespace
+
 TEST(test_iterator, distance) {
   {
     vector<int> v = {1, 2, 3, 4};

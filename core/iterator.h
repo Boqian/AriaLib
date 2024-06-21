@@ -27,7 +27,9 @@ template <class T> concept dereferenceable = requires {
 
 //----------------- indirectly_readable_traits -----------------------
 template <class> struct _condition_value_type {};
-template <class T> requires is_object_v<T> struct _condition_value_type<T> : remove_cv<T> {};
+template <class T> requires is_object_v<T> struct _condition_value_type<T> {
+  using value_type = remove_cv_t<T>;
+};
 
 template <class T> struct indirectly_readable_traits {};
 template <class T> requires is_array_v<T> struct indirectly_readable_traits<T> : remove_cv<remove_extent_t<T>> {};
@@ -54,9 +56,9 @@ template <class T> requires(!has_member_difference_type<T> && _can_difference<T>
 
 //----------------- iter_value_t, iter_reference_t, ... -----------------------
 // todo use iterator_traits<>
-template <class T> using iter_value_t = indirectly_readable_traits<remove_cvref_t<T>>;
+template <class T> using iter_value_t = indirectly_readable_traits<remove_cvref_t<T>>::value_type;
 template <class T> using iter_reference_t = decltype(*declval<T &>());
-template <class T> using iter_difference_t = incrementable_traits<remove_cvref_t<T>>;
+template <class T> using iter_difference_t = incrementable_traits<remove_cvref_t<T>>::difference_type;
 
 template <class I> concept _indirectly_readable_impl = requires(const I i) {
   typename iter_value_t<I>;
@@ -114,6 +116,11 @@ template <class InputIt> constexpr ptrdiff_t distance(InputIt first, InputIt las
     return d;
   }
 }
+
+template <class I> concept contiguous_iterator = random_access_iterator<I> && is_lvalue_reference_v<iter_reference_t<I>> &&
+                                                 same_as<iter_value_t<I>, remove_cvref_t<iter_reference_t<I>>> && requires(const I &i) {
+                                                   { to_address(i) } -> same_as<add_pointer_t<iter_reference_t<I>>>;
+                                                 };
 
 template <class InputIt> constexpr InputIt advance(InputIt i, ptrdiff_t n) {
   if constexpr (random_access_iterator<InputIt>) {
