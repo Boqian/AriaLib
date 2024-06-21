@@ -3,11 +3,16 @@
 
 using namespace aria;
 
-static_assert(random_access_iterator<vector<int>::iterator>);
-static_assert(random_access_iterator<vector<int>::const_iterator>);
-static_assert(contiguous_iterator<vector<int>::iterator>);
-static_assert(contiguous_iterator<vector<int>::const_iterator>);
-static_assert(contiguous_iterator<vector<int>::reverse_iterator>);
+namespace {
+using T = vector<int>;
+static_assert(random_access_iterator<T::iterator>);
+static_assert(random_access_iterator<T::const_iterator>);
+static_assert(random_access_iterator<T::reverse_iterator>);
+static_assert(contiguous_iterator<T::iterator>);
+static_assert(contiguous_iterator<T::const_iterator>);
+static_assert(contiguous_iterator<T::reverse_iterator>);
+static_assert(contiguous_iterator<T::const_reverse_iterator>);
+} // namespace
 
 struct A {
   static inline int n_ctor = 0;
