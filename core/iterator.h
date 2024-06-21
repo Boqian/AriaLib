@@ -122,6 +122,20 @@ template <class I> concept contiguous_iterator = random_access_iterator<I> && is
                                                    { to_address(i) } -> same_as<add_pointer_t<iter_reference_t<I>>>;
                                                  };
 
+template <input_iterator I> consteval auto _get_iter_concept() noexcept {
+  if constexpr (contiguous_iterator<I>) {
+    return contiguous_iterator_tag{};
+  } else if constexpr (random_access_iterator<I>) {
+    return random_access_iterator_tag{};
+  } else if constexpr (bidirectional_iterator<I>) {
+    return bidirectional_iterator_tag{};
+  } else if constexpr (forward_iterator<I>) {
+    return forward_iterator_tag{};
+  } else {
+    return input_iterator_tag{};
+  }
+}
+
 template <class InputIt> constexpr InputIt advance(InputIt i, ptrdiff_t n) {
   if constexpr (random_access_iterator<InputIt>) {
     return i + n;
@@ -158,6 +172,7 @@ public:
   using pointer = const value_type *;
   using reference = const value_type &;
   using difference_type = typename iter::difference_type;
+  using iterator_concept = decltype(_get_iter_concept<iter>());
 
   basic_const_iterator() = default;
   basic_const_iterator(iter a) : it(a) {}
@@ -228,6 +243,7 @@ public:
   using pointer = value_type *;
   using reference = value_type &;
   using difference_type = typename const_iterator::difference_type;
+  using iterator_concept = decltype(_get_iter_concept<const_iterator>());
 
   mutable_iterator() = default;
   mutable_iterator(const_iterator a) : it(a) {}
@@ -302,6 +318,7 @@ public:
   using difference_type = typename iterator_type::difference_type;
   using pointer = typename iterator_type::pointer;
   using reference = typename iterator_type::reference;
+  using iterator_concept = decltype(_get_iter_concept<Iter>());
 
   reverse_iterator() = default;
   reverse_iterator(iterator_type a) : it(a) {}
@@ -335,6 +352,22 @@ public:
     ++it;
     return temp;
   }
+
+  reverse_iterator &operator+=(const difference_type d) {
+    it -= d;
+    return *this;
+  }
+
+  reverse_iterator operator+(const difference_type d) { return reverse_iterator(it - d); }
+
+  reverse_iterator &operator-=(const difference_type d) {
+    it += d;
+    return *this;
+  }
+
+  reverse_iterator operator-(const difference_type d) { return reverse_iterator(it + d); }
+
+  difference_type operator-(const reverse_iterator &rhs) { return rhs.it - it; }
 
   auto operator<=>(const reverse_iterator &) const noexcept = default;
 
