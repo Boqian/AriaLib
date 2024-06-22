@@ -15,12 +15,12 @@ TEST(test_span, constructor) {
     EXPECT_EQ(v[0], 10);
   }
   {
-    // vector<int> v = {1, 2, 3};
-    // span sp(v);
-    //  EXPECT_EQ(sp.front(), 1);
-    //  EXPECT_EQ(sp.back(), 3);
-    //  EXPECT_EQ(sp.size(), 3);
-    //  sp[0] = 10;
-    //  EXPECT_EQ(v[0], 10);
+    vector<int> v = {1, 2, 3};
+    span sp(v);
+    EXPECT_EQ(sp.front(), 1);
+    EXPECT_EQ(sp.back(), 3);
+    EXPECT_EQ(sp.size(), 3);
+    sp[0] = 10;
+    EXPECT_EQ(v[0], 10);
   }
 }

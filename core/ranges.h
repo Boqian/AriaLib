@@ -62,15 +62,15 @@ template <class T> concept range = requires(T &t) {
   ranges::end(t);
 };
 
+template <range R> using range_difference_t = iter_difference_t<iterator_t<R>>;
 template <range R> using sentinel_t = decltype(ranges::end(declval<R &>()));
+template <range R> using range_value_t = iter_value_t<iterator_t<R>>;
+template <range R> using range_reference_t = iter_reference_t<iterator_t<R>>;
 
-template <class Se, class It> inline constexpr bool disable_sized_sentinel_for = false;
-
-template <class Se, class It> concept sized_sentinel_for =
-    sentinel_for<Se, It> && !disable_sized_sentinel_for<remove_cv_t<Se>, remove_cv_t<It>> && requires(const It &i, const Se &s) {
-      { s - i } -> same_as<iter_difference_t<It>>;
-      { i - s } -> same_as<iter_difference_t<It>>;
-    };
+template <class Se, class It> concept sized_sentinel_for = sentinel_for<Se, It> && requires(const It &i, const Se &s) {
+  { s - i } -> same_as<iter_difference_t<It>>;
+  { i - s } -> same_as<iter_difference_t<It>>;
+};
 
 namespace _size {
 void size() = delete;
@@ -101,6 +101,29 @@ template <_size::has_size T> auto size(T &&val) {
     return size(val);
   } else if (_size::can_difference<T>) {
     return ranges::end(val) - ranges::begin(val);
+  }
+}
+
+namespace _data {
+template <class T> concept points_to_object = is_pointer_v<T> && is_object_v<remove_pointer_t<T>>;
+
+template <class T> concept has_member = requires(T t) {
+  { t.data() } -> points_to_object;
+};
+
+template <class T> concept has_contiguous_iterator = requires(T t) {
+  { ranges::begin(t) } -> contiguous_iterator;
+};
+
+template <class T> concept has_data = has_member<T> || has_contiguous_iterator<T>;
+
+} // namespace _data
+
+template <_data::has_data T> constexpr auto data(T &&val) noexcept {
+  if constexpr (_data::has_member<T>) {
+    return val.data();
+  } else if (_data::has_contiguous_iterator<T>) {
+    return to_address(ranges::begin(val));
   }
 }
 
