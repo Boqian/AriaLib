@@ -26,7 +26,8 @@ template <class T> struct extent_type<T, dynamic_extent> {
 } // namespace _span
 
 template <class T, size_t Extent = dynamic_extent>
-class span : private _span::extent_type<T, Extent>
+class span : public iterable,
+             private _span::extent_type<T, Extent>
 
 {
 public:
@@ -38,13 +39,17 @@ public:
   using const_pointer = const T *;
   using reference = T &;
   using const_reference = const T &;
+  using iterator = array_iterator<T>;
+  using const_iterator = basic_const_iterator<iterator>;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+
   static constexpr size_t extent = Extent;
 
   constexpr span() noexcept = default;
 
   template <contiguous_iterator It> constexpr span(It first, size_type count) : base(to_address(first), count) {}
   template <contiguous_iterator It, class End> constexpr span(It first, End last) : base(to_address(first), last - first) {}
-
   template <ranges::range R> constexpr span(R &&r) : base(ranges::data(r), ranges::size(r)) {}
 
   template <class U, size_t N> requires convertible_to<U, T> && (N == Extent)
@@ -56,8 +61,11 @@ public:
   constexpr reference back() const { return m_data[size() - 1]; }
   constexpr pointer data() const noexcept { return m_data; }
   constexpr reference operator[](size_type idx) const { return *(m_data + idx); }
+  constexpr iterator begin() const noexcept { return iterator(m_data); }
+  constexpr iterator end() const noexcept { return iterator(m_data + m_size); }
 
-  template <size_t Count> constexpr span<element_type, Count> first() const {}
+  template <size_t Count> constexpr span<element_type, Count> first() const { return span<element_type, Count>(begin(), Count); }
+  constexpr span<element_type, dynamic_extent> first(size_t count) const { return span(begin(), count); }
 
 private:
   using base = _span::extent_type<T, Extent>;
@@ -68,7 +76,6 @@ private:
 template <class T, size_t Size> span(T (&)[Size]) -> span<T, Size>;
 template <class T, size_t Size> span(array<T, Size> &) -> span<T, Size>;
 template <class T, size_t Size> span(const array<T, Size> &) -> span<const T, Size>;
-
 template <ranges::range R> span(R &&) -> span<remove_reference_t<ranges::range_reference_t<R>>>;
 
 } // namespace aria
