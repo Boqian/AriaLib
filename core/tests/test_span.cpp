@@ -50,6 +50,18 @@ TEST(test_span, basic) {
   {
     vector<int> v = {1, 2, 3, 4};
     span sp(v);
+    auto sub1 = sp.last<2>();
+    EXPECT_EQ(sub1.size(), 2);
+    EXPECT_EQ(sub1[0], 3);
+    EXPECT_EQ(sub1[1], 4);
+    auto sub2 = sp.last(2);
+    EXPECT_EQ(sub2.size(), 2);
+    EXPECT_EQ(sub2[0], 3);
+    EXPECT_EQ(sub2[1], 4);
+  }
+  {
+    vector<int> v = {1, 2, 3, 4};
+    span sp(v);
     auto sub1 = sp.subspan<1, 2>();
     static_assert(is_same_v<decltype(sub1), span<int, 2>>);
     EXPECT_EQ(sub1[0], 2);

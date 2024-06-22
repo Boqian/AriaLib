@@ -62,6 +62,8 @@ public:
 
   template <size_t Count> constexpr span<element_type, Count> first() const { return span<element_type, Count>(begin(), Count); }
   constexpr span<element_type, dynamic_extent> first(size_t count) const { return span(begin(), count); }
+  template <size_t Count> constexpr span<element_type, Count> last() const { return span<element_type, Count>(end() - Count, Count); }
+  constexpr span<element_type, dynamic_extent> last(size_t count) const { return span(end() - count, count); }
 
   template <size_t Offset, size_t Count = dynamic_extent> constexpr auto subspan() const {
     if constexpr (Count == dynamic_extent) {
