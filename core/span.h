@@ -54,6 +54,7 @@ public:
 
   constexpr bool empty() const noexcept { return m_size == 0; }
   constexpr size_type size() const noexcept { return m_size; }
+  constexpr size_type size_bytes() const noexcept { return m_size * sizeof(element_type); }
   constexpr reference front() const { return m_data[0]; }
   constexpr reference back() const { return m_data[size() - 1]; }
   constexpr pointer data() const noexcept { return m_data; }
