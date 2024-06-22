@@ -33,6 +33,9 @@ TEST(test_span, constructor) {
     EXPECT_TRUE(sp1 == sp2);
     EXPECT_TRUE(sp1 == sp3);
     EXPECT_TRUE(sp2 == sp3);
+    span<int> sp4;
+    sp4 = sp1;
+    EXPECT_TRUE(sp2 == sp4);
   }
 }
 
