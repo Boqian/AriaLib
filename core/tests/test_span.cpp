@@ -4,6 +4,8 @@
 
 using namespace aria;
 
+template <class T> bool operator==(const span<T> &a, const span<T> &b) { return (a.data() == b.data()) && (a.size() == b.size()); }
+
 TEST(test_span, constructor) {
   {
     array<int, 3> v = {1, 2, 3};
@@ -22,6 +24,15 @@ TEST(test_span, constructor) {
     EXPECT_EQ(sp.size(), 3);
     sp[0] = 10;
     EXPECT_EQ(v[0], 10);
+  }
+  {
+    vector<int> v = {1, 2, 3};
+    span sp1(v.begin(), 3);
+    span sp2(v.begin(), v.end());
+    span sp3(v);
+    EXPECT_TRUE(sp1 == sp2);
+    EXPECT_TRUE(sp1 == sp3);
+    EXPECT_TRUE(sp2 == sp3);
   }
 }
 

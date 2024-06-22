@@ -45,7 +45,8 @@ public:
   constexpr span() noexcept = default;
 
   template <contiguous_iterator It> constexpr span(It first, size_type count) : base(to_address(first), count) {}
-  template <contiguous_iterator It, class End> constexpr span(It first, End last) : base(to_address(first), last - first) {}
+  template <contiguous_iterator It, class End> requires ranges::sized_sentinel_for<End, It>
+  constexpr span(It first, End last) : base(to_address(first), last - first) {}
   template <ranges::range R> constexpr span(R &&r) : base(ranges::data(r), ranges::size(r)) {}
 
   template <class U, size_t N> requires convertible_to<U, T> && (N == Extent)
@@ -83,6 +84,7 @@ private:
   using base::m_size;
 };
 
+template <class It, class EndOrSize> span(It, EndOrSize) -> span<remove_reference_t<iter_reference_t<It>>>;
 template <class T, size_t Size> span(T (&)[Size]) -> span<T, Size>;
 template <class T, size_t Size> span(array<T, Size> &) -> span<T, Size>;
 template <class T, size_t Size> span(const array<T, Size> &) -> span<const T, Size>;
