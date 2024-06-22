@@ -25,11 +25,7 @@ template <class T> struct extent_type<T, dynamic_extent> {
 
 } // namespace _span
 
-template <class T, size_t Extent = dynamic_extent>
-class span : public iterable,
-             private _span::extent_type<T, Extent>
-
-{
+template <class T, size_t Extent = dynamic_extent> class span : public iterable, private _span::extent_type<T, Extent> {
 public:
   using element_type = T;
   using value_type = remove_cv_t<T>;
@@ -66,6 +62,18 @@ public:
 
   template <size_t Count> constexpr span<element_type, Count> first() const { return span<element_type, Count>(begin(), Count); }
   constexpr span<element_type, dynamic_extent> first(size_t count) const { return span(begin(), count); }
+
+  template <size_t Offset, size_t Count = dynamic_extent> constexpr auto subspan() const {
+    if constexpr (Count == dynamic_extent) {
+      return span<element_type, dynamic_extent>(begin() + Offset, m_size - Offset);
+    } else {
+      return span<element_type, Count>(begin() + Offset, Count);
+    }
+  }
+
+  constexpr span<element_type, dynamic_extent> subspan(size_type Offset, size_type Count = dynamic_extent) const {
+    return span<element_type, dynamic_extent>(begin() + Offset, Count == dynamic_extent ? m_size - Offset : Count);
+  }
 
 private:
   using base = _span::extent_type<T, Extent>;
