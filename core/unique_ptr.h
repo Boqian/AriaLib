@@ -5,11 +5,21 @@ namespace aria {
 
 template <class T> struct default_delete {
   constexpr default_delete() noexcept = default;
-  template <class U> requires convertible_to<U *, T *> default_delete(const default_delete<U> &) noexcept {}
+  template <class U> requires convertible_to<U *, T *> constexpr default_delete(const default_delete<U> &) noexcept {}
 
   void operator()(T *ptr) const noexcept {
     static_assert(0 < sizeof(T), "can't delete incomplete type");
     delete ptr;
+  }
+};
+
+template <class T> struct default_delete<T[]> {
+  constexpr default_delete() noexcept = default;
+  template <class U> requires is_convertible_v<U (*)[], T (*)[]> constexpr default_delete(const default_delete<U[]> &) noexcept {}
+
+  template <class U> requires is_convertible_v<U (*)[], T (*)[]> constexpr void operator()(U *ptr) const noexcept {
+    static_assert(0 < sizeof(U), "can't delete an incomplete type");
+    delete[] ptr;
   }
 };
 
