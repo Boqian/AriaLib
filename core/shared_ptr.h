@@ -77,7 +77,6 @@ public:
   const T *operator->() const { return m_ptr; }
   operator bool() const noexcept { return m_ptr; }
   long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
-  bool unique() const noexcept { return use_count() == 1; }
   void reset() noexcept { shared_ptr().swap(*this); }
 
   void swap(shared_ptr &rhs) noexcept {
