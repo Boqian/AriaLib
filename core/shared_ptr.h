@@ -6,13 +6,11 @@ namespace aria {
 
 struct _shared_base {
   virtual ~_shared_base() = default;
-  virtual void destory(void *ptr) const = 0;
-  std::atomic<long> m_uses = 1;
-  std::atomic<long> m_weaks = 0;
+  virtual void destory() const = 0;
 
-  template <class U> void decrease_ref(U *ptr) noexcept {
+  void decrease_ref() noexcept {
     if (--m_uses == 0) {
-      destory(ptr);
+      destory();
       if (m_weaks == 0)
         delete this;
     }
@@ -22,10 +20,15 @@ struct _shared_base {
     if (m_uses == 0 && --m_weaks == 0)
       delete this;
   }
+
+  std::atomic<long> m_uses = 1;
+  std::atomic<long> m_weaks = 0;
 };
 
 template <class T> struct _default_shared : _shared_base {
-  void destory(void *ptr) const override { delete static_cast<T *>(ptr); }
+  explicit _default_shared(T *p) : m_ptr(p) {}
+  void destory() const override { delete m_ptr; }
+  T *m_ptr;
 };
 
 template <class T> class weak_ptr;
@@ -36,13 +39,13 @@ public:
   using element_type = T;
 
   shared_ptr() noexcept {}
-  shared_ptr(std::nullptr_t) noexcept {}
+  shared_ptr(nullptr_t) noexcept {}
   ~shared_ptr() {
     if (m_shared)
-      m_shared->decrease_ref(m_ptr);
+      m_shared->decrease_ref();
   }
 
-  template <class Y> requires convertible_to<Y *, T *> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>()) {
+  template <class Y> requires convertible_to<Y *, T *> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>(ptr)) {
     if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
       m_ptr->m_wptr = *this;
     }
@@ -91,14 +94,16 @@ public:
   void reset() noexcept { shared_ptr().swap(*this); }
 
   void swap(shared_ptr &rhs) noexcept {
-    aria::swap(m_shared, rhs.m_shared);
-    aria::swap(m_ptr, rhs.m_ptr);
+    using aria::swap;
+    swap(m_shared, rhs.m_shared);
+    swap(m_ptr, rhs.m_ptr);
   }
 
 private:
   friend class weak_ptr<T>; // weak_ptr.lock()
+  template <class> friend class shared_ptr;
 
-  void increase_ref() {
+  void increase_ref() const {
     if (m_shared)
       ++m_shared->m_uses;
   }
@@ -116,17 +121,11 @@ public:
       m_shared->decrease_weak();
   }
 
-  weak_ptr(const weak_ptr &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
-    if (m_shared) {
-      m_shared->m_weaks++;
-    }
-  }
+  weak_ptr(const weak_ptr &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) { increase_weak(); }
 
   template <class U> requires(convertible_to<U *, T *> and !is_same_v<U, T>)
   weak_ptr(const weak_ptr<U> &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
-    if (m_shared) {
-      m_shared->m_weaks++;
-    }
+    increase_weak();
   }
 
   weak_ptr &operator=(const weak_ptr &rhs) noexcept {
@@ -148,9 +147,7 @@ public:
   }
 
   template <class U> requires convertible_to<U *, T *> weak_ptr(const shared_ptr<U> &r) noexcept : m_ptr(r.m_ptr), m_shared(r.m_shared) {
-    if (m_shared) {
-      m_shared->m_weaks++;
-    }
+    increase_weak();
   }
 
   long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
@@ -174,11 +171,17 @@ public:
   void reset() noexcept { weak_ptr().swap(*this); }
 
   void swap(weak_ptr &rhs) noexcept {
-    aria::swap(m_shared, rhs.m_shared);
-    aria::swap(m_ptr, rhs.m_ptr);
+    using aria::swap;
+    swap(m_shared, rhs.m_shared);
+    swap(m_ptr, rhs.m_ptr);
   }
 
 private:
+  void increase_weak() const {
+    if (m_shared)
+      m_shared->m_weaks++;
+  }
+
   T *m_ptr{};
   _shared_base *m_shared{};
 };
@@ -200,5 +203,27 @@ template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) { a.swap(b); }
 template <class T> void swap(weak_ptr<T> &a, weak_ptr<T> &b) { a.swap(b); }
 
 template <class T, class... Args> shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(forward<Args>(args)...)); }
+
+template <class T, class U> shared_ptr<T> static_pointer_cast(const shared_ptr<U> &r) noexcept {
+  auto p = static_cast<typename shared_ptr<T>::element_type *>(r.get());
+  return shared_ptr<T>{r, p};
+}
+
+template <class T, class U> shared_ptr<T> dynamic_pointer_cast(const shared_ptr<U> &r) noexcept {
+  if (auto p = dynamic_cast<typename shared_ptr<T>::element_type *>(r.get()))
+    return shared_ptr<T>{r, p};
+  else
+    return {};
+}
+
+template <class T, class U> shared_ptr<T> const_pointer_cast(const shared_ptr<U> &r) noexcept {
+  auto p = const_cast<typename shared_ptr<T>::element_type *>(r.get());
+  return shared_ptr<T>{r, p};
+}
+
+template <class T, class U> shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U> &r) noexcept {
+  auto p = reinterpret_cast<typename shared_ptr<T>::element_type *>(r.get());
+  return shared_ptr<T>{r, p};
+}
 
 } // namespace aria

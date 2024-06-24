@@ -248,3 +248,15 @@ TEST(test_shared_ptr, shared_from_this) {
   EXPECT_EQ(Counter::n_Actor, 1);
   EXPECT_EQ(Counter::n_Adtor, 1);
 }
+
+TEST(test_shared_ptr, pointer_cast) {
+  {
+    auto p = make_shared<int>(5);
+    auto q = const_pointer_cast<const int>(p);
+    EXPECT_EQ(p.use_count(), 2);
+    EXPECT_EQ(q.use_count(), 2);
+    EXPECT_EQ(*q, 5);
+    *p = 111;
+    EXPECT_EQ(*q, 111);
+  }
+}
