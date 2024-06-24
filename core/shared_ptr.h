@@ -58,7 +58,7 @@ public:
     m_shared = other.m_shared;
   }
   // aliasing move ctor
-  template <class U> shared_ptr(shared_ptr<U> &other, element_type *p) noexcept {
+  template <class U> shared_ptr(shared_ptr<U> &&other, element_type *p) noexcept {
     m_ptr = p;
     m_shared = other.m_shared;
     other.m_ptr = nullptr;
