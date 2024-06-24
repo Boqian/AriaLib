@@ -30,11 +30,16 @@ public:
   using deleter_type = Deleter;
   static constexpr bool is_array = is_array_v<T>;
 
-  constexpr unique_ptr() = default;
+  constexpr unique_ptr() noexcept = default;
+  constexpr unique_ptr(nullptr_t) noexcept {}
+  explicit constexpr unique_ptr(pointer p) : m_ptr(p), m_deleter() {}
 
-  explicit constexpr unique_ptr(pointer ptr) : m_ptr(ptr), m_deleter() {}
-
-  constexpr unique_ptr(pointer ptr, Deleter &&deleter) : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
+  constexpr unique_ptr(pointer p, const Deleter &d) noexcept requires(!is_reference_v<Deleter> && is_copy_constructible_v<Deleter>)
+      : m_ptr(p), m_deleter(d) {}
+  constexpr unique_ptr(pointer p, Deleter &&d) noexcept requires(!is_reference_v<Deleter> && is_move_constructible_v<Deleter>)
+      : m_ptr(p), m_deleter(move(d)) {}
+  constexpr unique_ptr(pointer p, Deleter d) noexcept requires(is_lvalue_reference_v<Deleter>) : m_ptr(p), m_deleter(d) {}
+  constexpr unique_ptr(pointer p, Deleter &&d) requires(is_lvalue_reference_v<Deleter>) = delete;
 
   template <class U, class E> requires(convertible_to<U *, pointer> && !is_array)
   constexpr unique_ptr(unique_ptr<U, E> &&rhs) : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
