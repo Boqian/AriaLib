@@ -23,19 +23,20 @@ template <class T> struct default_delete<T[]> {
   }
 };
 
-template <class T, class Deleter = default_delete<T>> requires(!is_array_v<T>) class unique_ptr {
+template <class T, class Deleter = default_delete<T>> class unique_ptr {
 public:
-  using element_type = T;
-  using pointer = T *;
+  using element_type = remove_extent_t<T>;
+  using pointer = element_type *;
   using deleter_type = Deleter;
+  static constexpr bool is_array = is_array_v<T>;
 
   constexpr unique_ptr() = default;
 
-  explicit constexpr unique_ptr(T *ptr) : m_ptr(ptr), m_deleter() {}
+  explicit constexpr unique_ptr(pointer ptr) : m_ptr(ptr), m_deleter() {}
 
-  constexpr unique_ptr(T *ptr, Deleter &&deleter) : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
+  constexpr unique_ptr(pointer ptr, Deleter &&deleter) : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
 
-  template <class U, class E> requires convertible_to<U *, T *>
+  template <class U, class E> requires convertible_to<U *, pointer>
   constexpr unique_ptr(unique_ptr<U, E> &&rhs) : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
 
   constexpr ~unique_ptr() {
@@ -59,15 +60,15 @@ public:
 
   constexpr void reset() noexcept { unique_ptr().swap(*this); }
 
-  constexpr T *get() const noexcept { return m_ptr; }
+  constexpr pointer get() const noexcept { return m_ptr; }
 
   constexpr const Deleter &get_deleter() const noexcept { return m_deleter; }
   constexpr Deleter &get_deleter() noexcept { return m_deleter; }
 
   constexpr operator bool() const noexcept { return m_ptr; }
 
-  constexpr T *operator->() const noexcept { return m_ptr; }
-  constexpr T &operator*() const { return *m_ptr; }
+  constexpr pointer operator->() const noexcept requires(!is_array) { return m_ptr; }
+  constexpr element_type &operator*() const requires(!is_array) { return *m_ptr; }
 
   constexpr void swap(unique_ptr &rhs) noexcept {
     using aria::swap;
@@ -82,7 +83,7 @@ public:
   }
 
 private:
-  T *m_ptr = nullptr;
+  pointer m_ptr = nullptr;
   Deleter m_deleter;
 };
 
