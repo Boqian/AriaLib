@@ -249,6 +249,15 @@ TEST(test_shared_ptr, shared_from_this) {
   EXPECT_EQ(Counter::n_Adtor, 1);
 }
 
+struct B1 {
+  B1(int a) : x(a) {}
+  int x;
+  virtual ~B1() = default;
+};
+struct D1 : B1 {
+  using B1::B1;
+};
+
 TEST(test_shared_ptr, pointer_cast) {
   {
     auto p = make_shared<int>(5);
@@ -258,5 +267,14 @@ TEST(test_shared_ptr, pointer_cast) {
     EXPECT_EQ(*q, 5);
     *p = 111;
     EXPECT_EQ(*q, 111);
+  }
+  {
+    shared_ptr<B1> p(new D1(5));
+    auto q = dynamic_pointer_cast<D1>(p);
+    EXPECT_EQ(p.use_count(), 2);
+    EXPECT_EQ(q.use_count(), 2);
+    EXPECT_EQ(q->x, 5);
+    q->x = 111;
+    EXPECT_EQ(p->x, 111);
   }
 }

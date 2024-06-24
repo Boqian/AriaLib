@@ -83,8 +83,7 @@ public:
     return *this;
   }
 
-  T *get() { return m_ptr; }
-  const T *get() const { return m_ptr; }
+  element_type *get() const { return m_ptr; }
   add_lvalue_reference_t<T> operator*() { return *m_ptr; }
   const add_lvalue_reference_t<T> operator*() const { return *m_ptr; }
   T *operator->() { return m_ptr; }
