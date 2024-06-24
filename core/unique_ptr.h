@@ -42,7 +42,7 @@ public:
   constexpr unique_ptr(pointer p, Deleter &&d) requires(is_lvalue_reference_v<Deleter>) = delete;
 
   template <class U, class E> requires(convertible_to<U *, pointer> && !is_array)
-  constexpr unique_ptr(unique_ptr<U, E> &&rhs) : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
+  constexpr unique_ptr(unique_ptr<U, E> &&rhs) : unique_ptr(rhs.release(), rhs.get_deleter()) {}
 
   constexpr ~unique_ptr() {
     if (m_ptr) {
