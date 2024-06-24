@@ -33,10 +33,10 @@ template <class T> struct _default_ref_count : _ref_count_base {
   T *m_ptr;
 };
 
-template <class T, class Deleter> concept _valid_deleter = is_copy_constructible_v<Deleter> && is_invocable_v<Deleter, T *>;
+template <class T, class Deleter> concept _valid_deleter = is_move_constructible_v<Deleter> && is_invocable_v<Deleter, T *>;
 
 template <class T, class Deleter> requires _valid_deleter<T, Deleter> struct _ref_count_with_deleter : _ref_count_base {
-  explicit _ref_count_with_deleter(T *p, const Deleter &d) : m_ptr(p), m_deleter(d) {}
+  explicit _ref_count_with_deleter(T *p, Deleter &&d) : m_ptr(p), m_deleter(move(d)) {}
   void destory() const noexcept override { m_deleter(m_ptr); }
   void delete_this() noexcept override { delete this; }
   T *m_ptr;
@@ -67,7 +67,7 @@ public:
   }
 
   template <class Y, class Deleter> requires(convertible_to<Y *, pointer> && _valid_deleter<Y, Deleter>)
-  shared_ptr(Y *p, Deleter d) : m_ptr(p), m_shared(new _ref_count_with_deleter(p, d)) {
+  shared_ptr(Y *p, Deleter d) : m_ptr(p), m_shared(new _ref_count_with_deleter(p, move(d))) {
     if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
       m_ptr->m_wptr = *this;
     }
