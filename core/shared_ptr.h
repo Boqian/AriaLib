@@ -4,15 +4,16 @@
 
 namespace aria {
 
-struct _shared_base {
-  virtual ~_shared_base() = default;
-  virtual void destory() const = 0;
+struct _ref_count_base {
+  virtual ~_ref_count_base() = default;
+  virtual void destory() const noexcept = 0;
+  virtual void delete_this() noexcept = 0;
 
   void decrease_ref() noexcept {
     if (--m_uses == 0) {
       destory();
       if (m_weaks == 0)
-        delete this;
+        delete_this();
     }
   }
 
@@ -25,10 +26,21 @@ struct _shared_base {
   std::atomic<long> m_weaks = 0;
 };
 
-template <class T> struct _default_shared : _shared_base {
-  explicit _default_shared(T *p) : m_ptr(p) {}
-  void destory() const override { delete m_ptr; }
+template <class T> struct _default_ref_count : _ref_count_base {
+  explicit _default_ref_count(T *p) : m_ptr(p) {}
+  void destory() const noexcept override { delete m_ptr; }
+  void delete_this() noexcept override { delete this; }
   T *m_ptr;
+};
+
+template <class T, class Deleter> concept _valid_deleter = is_copy_constructible_v<Deleter> && is_invocable_v<Deleter, T *>;
+
+template <class T, class Deleter> requires _valid_deleter<T, Deleter> struct _ref_count_with_deleter : _ref_count_base {
+  explicit _ref_count_with_deleter(T *p, const Deleter &d) : m_ptr(p), m_deleter(d) {}
+  void destory() const noexcept override { m_deleter(m_ptr); }
+  void delete_this() noexcept override { delete this; }
+  T *m_ptr;
+  Deleter m_deleter;
 };
 
 template <class T> class weak_ptr;
@@ -48,7 +60,14 @@ public:
       m_shared->decrease_ref();
   }
 
-  template <class Y> requires convertible_to<Y *, pointer> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>(ptr)) {
+  template <class Y> requires convertible_to<Y *, pointer> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_ref_count(ptr)) {
+    if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
+      m_ptr->m_wptr = *this;
+    }
+  }
+
+  template <class Y, class Deleter> requires(convertible_to<Y *, pointer> && _valid_deleter<Y, Deleter>)
+  shared_ptr(Y *p, Deleter d) : m_ptr(p), m_shared(new _ref_count_with_deleter(p, d)) {
     if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
       m_ptr->m_wptr = *this;
     }
@@ -109,7 +128,7 @@ private:
   }
 
   pointer m_ptr{};
-  _shared_base *m_shared{};
+  _ref_count_base *m_shared{};
 };
 
 template <class T> class weak_ptr {
@@ -186,7 +205,7 @@ private:
   }
 
   pointer m_ptr{};
-  _shared_base *m_shared{};
+  _ref_count_base *m_shared{};
 };
 
 template <class T> class enable_shared_from_this {

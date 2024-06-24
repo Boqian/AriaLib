@@ -278,3 +278,13 @@ TEST(test_shared_ptr, pointer_cast) {
     EXPECT_EQ(p->x, 111);
   }
 }
+
+TEST(test_shared_ptr, construct_with_deleter) {
+  int delete_result = 0;
+  auto deletor = [&](int *p) {
+    delete p;
+    delete_result += 666;
+  };
+  { shared_ptr<int> sp(new int(5), deletor); }
+  EXPECT_EQ(delete_result, 666);
+}
