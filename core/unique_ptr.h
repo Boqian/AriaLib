@@ -23,7 +23,7 @@ template <class T> struct default_delete<T[]> {
   }
 };
 
-template <class T, class Deleter = default_delete<T>> class unique_ptr {
+template <class T, class Deleter = default_delete<T>> requires(!is_array_v<T>) class unique_ptr {
 public:
   using element_type = T;
   using pointer = T *;

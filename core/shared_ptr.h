@@ -10,7 +10,7 @@ struct _shared_base {
   std::atomic<long> m_uses = 1;
   std::atomic<long> m_weaks = 0;
 
-  template <class U> void decrease_use(U *ptr) noexcept {
+  template <class U> void decrease_ref(U *ptr) noexcept {
     if (--m_uses == 0) {
       destory(ptr);
       if (m_weaks == 0)
@@ -39,7 +39,7 @@ public:
   shared_ptr(std::nullptr_t) noexcept {}
   ~shared_ptr() {
     if (m_shared)
-      m_shared->decrease_use(m_ptr);
+      m_shared->decrease_ref(m_ptr);
   }
 
   template <class Y> requires convertible_to<Y *, T *> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>()) {
@@ -48,12 +48,23 @@ public:
     }
   }
 
+  // aliasing ctor
+  template <class U> shared_ptr(const shared_ptr<U> &other, element_type *p) noexcept {
+    other.increase_ref();
+    m_ptr = p;
+    m_shared = other.m_shared;
+  }
+  // aliasing move ctor
+  template <class U> shared_ptr(shared_ptr<U> &other, element_type *p) noexcept {
+    m_ptr = p;
+    m_shared = other.m_shared;
+    other.m_ptr = nullptr;
+    other.m_shared = nullptr;
+  }
+
   shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }
 
-  shared_ptr(const shared_ptr &rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) {
-    if (m_shared)
-      m_shared->m_uses++;
-  }
+  shared_ptr(const shared_ptr &rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) { increase_ref(); }
 
   shared_ptr &operator=(const shared_ptr &rhs) noexcept {
     if (this != &rhs) {
@@ -86,6 +97,11 @@ public:
 
 private:
   friend class weak_ptr<T>; // weak_ptr.lock()
+
+  void increase_ref() {
+    if (m_shared)
+      ++m_shared->m_uses;
+  }
 
   T *m_ptr{};
   _shared_base *m_shared{};
