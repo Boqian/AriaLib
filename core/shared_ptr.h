@@ -38,6 +38,8 @@ template <class T> class shared_ptr {
 public:
   using element_type = remove_extent_t<T>;
   using pointer = element_type *;
+  using reference = add_lvalue_reference_t<element_type>;
+  static constexpr bool is_array = is_array_v<T>;
 
   shared_ptr() noexcept {}
   shared_ptr(nullptr_t) noexcept {}
@@ -84,11 +86,12 @@ public:
   }
 
   pointer get() const noexcept { return m_ptr; }
-  add_lvalue_reference_t<element_type> operator*() const noexcept { return *m_ptr; }
-  pointer operator->() const noexcept { return m_ptr; }
-  operator bool() const noexcept { return m_ptr; }
+  explicit operator bool() const noexcept { return m_ptr; }
   long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
   void reset() noexcept { shared_ptr().swap(*this); }
+  reference operator*() const noexcept requires(!is_array && not_void<element_type>) { return *m_ptr; }
+  pointer operator->() const noexcept requires(!is_array) { return m_ptr; }
+  reference operator[](ptrdiff_t i) const requires(is_array) { return m_ptr[i]; }
 
   void swap(shared_ptr &rhs) noexcept {
     using aria::swap;
@@ -199,8 +202,8 @@ private:
   weak_ptr<T> m_wptr;
 };
 
-template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) { a.swap(b); }
-template <class T> void swap(weak_ptr<T> &a, weak_ptr<T> &b) { a.swap(b); }
+template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) noexcept { a.swap(b); }
+template <class T> void swap(weak_ptr<T> &a, weak_ptr<T> &b) noexcept { a.swap(b); }
 
 template <class T, class... Args> shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(forward<Args>(args)...)); }
 

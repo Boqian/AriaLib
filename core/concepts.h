@@ -41,8 +41,6 @@ template <class T> concept boolean_testable = _boolean_testable_impl<T> && requi
   { !static_cast<T &&>(t) } -> _boolean_testable_impl;
 };
 
-template <class T> concept not_void = !same_as<T, void>;
-
 template <class T> concept has_class_or_enumTpe =
     is_class_v<remove_cvref_t<T>> || is_enum_v<remove_cvref_t<T>> || is_union_v<remove_cvref_t<T>>;
 
@@ -101,5 +99,6 @@ template <class T> concept regular = semiregular<T> && equality_comparable<T>;
 
 //----------------- custom concepts -----------------------
 template <class T, class U> concept not_same = !is_same_v<T, U>;
+template <class T> concept not_void = not_same<T, void>;
 
 } // namespace aria
