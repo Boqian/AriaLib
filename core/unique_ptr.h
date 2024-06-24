@@ -36,7 +36,7 @@ public:
 
   constexpr unique_ptr(pointer ptr, Deleter &&deleter) : m_ptr(ptr), m_deleter(forward<Deleter>(deleter)) {}
 
-  template <class U, class E> requires convertible_to<U *, pointer>
+  template <class U, class E> requires(convertible_to<U *, pointer> && !is_array)
   constexpr unique_ptr(unique_ptr<U, E> &&rhs) : m_ptr(rhs.release()), m_deleter(rhs.get_deleter()) {}
 
   constexpr ~unique_ptr() {
@@ -69,6 +69,7 @@ public:
 
   constexpr pointer operator->() const noexcept requires(!is_array) { return m_ptr; }
   constexpr element_type &operator*() const requires(!is_array) { return *m_ptr; }
+  constexpr element_type &operator[](size_t i) const requires(is_array) { return m_ptr[i]; }
 
   constexpr void swap(unique_ptr &rhs) noexcept {
     using aria::swap;
@@ -89,6 +90,12 @@ private:
 
 template <class T, class D> constexpr void swap(unique_ptr<T, D> &a, unique_ptr<T, D> &b) { a.swap(b); }
 
-template <class T, class... Args> unique_ptr<T> make_unique(Args &&...args) { return unique_ptr<T>(new T(forward<Args>(args)...)); }
+template <class T, class... Args> requires(!is_array_v<T>) unique_ptr<T> make_unique(Args &&...args) {
+  return unique_ptr<T>(new T(forward<Args>(args)...));
+}
+
+template <class T> requires is_array_v<T> constexpr unique_ptr<T> make_unique(size_t size) {
+  return unique_ptr<T>(new remove_extent_t<T>[size]);
+}
 
 } // namespace aria

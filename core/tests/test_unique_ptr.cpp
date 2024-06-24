@@ -60,3 +60,11 @@ TEST(test_unique_ptr, convertable) {
   auto q = unique_ptr<Base>(aria::move(p));
   EXPECT_EQ(q->foo(), 2);
 }
+
+TEST(test_unique_ptr, array) {
+  auto p = make_unique<int[]>(5);
+  for (int i = 0; i < 5; i++) {
+    p[i] = i;
+    EXPECT_EQ(*(p.get() + i), i);
+  }
+}
