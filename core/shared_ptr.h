@@ -36,7 +36,8 @@ template <class T> class enable_shared_from_this;
 
 template <class T> class shared_ptr {
 public:
-  using element_type = T;
+  using element_type = remove_extent_t<T>;
+  using pointer = element_type *;
 
   shared_ptr() noexcept {}
   shared_ptr(nullptr_t) noexcept {}
@@ -45,20 +46,20 @@ public:
       m_shared->decrease_ref();
   }
 
-  template <class Y> requires convertible_to<Y *, T *> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>(ptr)) {
+  template <class Y> requires convertible_to<Y *, pointer> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_shared<Y>(ptr)) {
     if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
       m_ptr->m_wptr = *this;
     }
   }
 
   // aliasing ctor
-  template <class U> shared_ptr(const shared_ptr<U> &other, element_type *p) noexcept {
+  template <class U> shared_ptr(const shared_ptr<U> &other, pointer p) noexcept {
     other.increase_ref();
     m_ptr = p;
     m_shared = other.m_shared;
   }
   // aliasing move ctor
-  template <class U> shared_ptr(shared_ptr<U> &&other, element_type *p) noexcept {
+  template <class U> shared_ptr(shared_ptr<U> &&other, pointer p) noexcept {
     m_ptr = p;
     m_shared = other.m_shared;
     other.m_ptr = nullptr;
@@ -82,9 +83,9 @@ public:
     return *this;
   }
 
-  element_type *get() const noexcept { return m_ptr; }
-  add_lvalue_reference_t<T> operator*() const noexcept { return *m_ptr; }
-  T *operator->() const noexcept { return m_ptr; }
+  pointer get() const noexcept { return m_ptr; }
+  add_lvalue_reference_t<element_type> operator*() const noexcept { return *m_ptr; }
+  pointer operator->() const noexcept { return m_ptr; }
   operator bool() const noexcept { return m_ptr; }
   long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
   void reset() noexcept { shared_ptr().swap(*this); }
@@ -104,12 +105,15 @@ private:
       ++m_shared->m_uses;
   }
 
-  T *m_ptr{};
+  pointer m_ptr{};
   _shared_base *m_shared{};
 };
 
 template <class T> class weak_ptr {
 public:
+  using element_type = remove_extent_t<T>;
+  using pointer = element_type *;
+
   weak_ptr() noexcept = default;
 
   ~weak_ptr() noexcept {
@@ -178,7 +182,7 @@ private:
       m_shared->m_weaks++;
   }
 
-  T *m_ptr{};
+  pointer m_ptr{};
   _shared_base *m_shared{};
 };
 
