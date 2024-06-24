@@ -66,15 +66,13 @@ public:
 
   constexpr operator bool() const noexcept { return m_ptr; }
 
-  constexpr T *operator->() noexcept { return m_ptr; }
-  constexpr const T *operator->() const noexcept { return m_ptr; }
-
-  constexpr T &operator*() { return *m_ptr; }
-  constexpr const T &operator*() const { return *m_ptr; }
+  constexpr T *operator->() const noexcept { return m_ptr; }
+  constexpr T &operator*() const { return *m_ptr; }
 
   constexpr void swap(unique_ptr &rhs) noexcept {
-    aria::swap(m_ptr, rhs.m_ptr);
-    aria::swap(m_deleter, rhs.m_deleter);
+    using aria::swap;
+    swap(m_ptr, rhs.m_ptr);
+    swap(m_deleter, rhs.m_deleter);
   }
 
   constexpr T *release() noexcept {

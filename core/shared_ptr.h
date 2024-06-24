@@ -66,7 +66,6 @@ public:
   }
 
   shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }
-
   shared_ptr(const shared_ptr &rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) { increase_ref(); }
 
   shared_ptr &operator=(const shared_ptr &rhs) noexcept {
