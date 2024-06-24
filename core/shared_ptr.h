@@ -83,11 +83,9 @@ public:
     return *this;
   }
 
-  element_type *get() const { return m_ptr; }
-  add_lvalue_reference_t<T> operator*() { return *m_ptr; }
-  const add_lvalue_reference_t<T> operator*() const { return *m_ptr; }
-  T *operator->() { return m_ptr; }
-  const T *operator->() const { return m_ptr; }
+  element_type *get() const noexcept { return m_ptr; }
+  add_lvalue_reference_t<T> operator*() const noexcept { return *m_ptr; }
+  T *operator->() const noexcept { return m_ptr; }
   operator bool() const noexcept { return m_ptr; }
   long use_count() const noexcept { return m_shared ? m_shared->m_uses.load() : 0; }
   void reset() noexcept { shared_ptr().swap(*this); }
