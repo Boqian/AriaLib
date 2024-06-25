@@ -53,6 +53,7 @@ template <class T> class enable_shared_from_this;
 template <class T> class shared_ptr {
 public:
   using element_type = remove_extent_t<T>;
+  using weak_type = weak_ptr<T>;
   using pointer = element_type *;
   using reference = add_lvalue_reference_t<element_type>;
   static constexpr bool is_array = is_array_v<T>;
