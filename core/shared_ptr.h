@@ -8,6 +8,7 @@ struct _ref_count_base {
   virtual ~_ref_count_base() = default;
   virtual void destory() const noexcept = 0;
   virtual void delete_this() noexcept = 0;
+  virtual void *get_deleter(const type_info &) const noexcept { return nullptr; }
 
   void decrease_ref() noexcept {
     if (--m_uses == 0) {
@@ -39,6 +40,9 @@ template <class T, class Deleter> requires _valid_deleter<T, Deleter> struct _re
   explicit _ref_count_with_deleter(T *p, Deleter &&d) : m_ptr(p), m_deleter(move(d)) {}
   void destory() const noexcept override { m_deleter(m_ptr); }
   void delete_this() noexcept override { delete this; }
+  void *get_deleter(const type_info &info) const noexcept override {
+    return typeid(Deleter) == info ? const_cast<Deleter *>(addressof(m_deleter)) : nullptr;
+  }
   T *m_ptr;
   Deleter m_deleter;
 };
@@ -120,6 +124,7 @@ public:
 
 private:
   friend class weak_ptr<T>; // weak_ptr.lock()
+  template <class Deleter, class T> friend Deleter *get_deleter(const shared_ptr<T> &p) noexcept;
   template <class> friend class shared_ptr;
 
   void increase_ref() const {
@@ -246,6 +251,12 @@ template <class T, class U> shared_ptr<T> const_pointer_cast(const shared_ptr<U>
 template <class T, class U> shared_ptr<T> reinterpret_pointer_cast(const shared_ptr<U> &r) noexcept {
   auto p = reinterpret_cast<typename shared_ptr<T>::element_type *>(r.get());
   return shared_ptr<T>{r, p};
+}
+
+template <class Deleter, class T> Deleter *get_deleter(const shared_ptr<T> &p) noexcept {
+  if (p.m_shared)
+    return static_cast<Deleter *>(p.m_shared->get_deleter(typeid(Deleter)));
+  return nullptr;
 }
 
 } // namespace aria
