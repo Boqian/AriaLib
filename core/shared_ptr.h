@@ -236,6 +236,7 @@ public:
         shared_ptr<T> p;
         p.m_ptr = m_ptr;
         p.m_shared = m_shared;
+        p.set_enable_from_this();
         return p;
       }
     }
