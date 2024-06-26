@@ -1,5 +1,6 @@
 #pragma once
 #include "exception.h"
+#include "unique_ptr.h"
 #include "utility.h"
 #include <atomic>
 
@@ -123,6 +124,12 @@ public:
     other.lock().swap(*this);
     if (!m_ptr)
       throw bad_weak_ptr();
+  }
+
+  template <class U, class D>
+  requires(_sp_pointer_compatible_v<U, T> && is_convertible_v<typename unique_ptr<U, D>::pointer, element_type *>)
+  shared_ptr(unique_ptr<U, D> &&p) : shared_ptr(p.release(), move(p.get_deleter())) {
+    set_enable_from_this();
   }
 
   shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }

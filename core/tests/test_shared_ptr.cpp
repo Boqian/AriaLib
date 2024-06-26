@@ -295,3 +295,10 @@ TEST(test_shared_ptr, construct_from_weak) {
   shared_ptr<int> p2(w);
   EXPECT_EQ(*p2, 5);
 }
+
+TEST(test_shared_ptr, construct_from_unique) {
+  auto p1 = make_unique<int>(5);
+  shared_ptr<int> p2(move(p1));
+  EXPECT_EQ(*p2, 5);
+  EXPECT_FALSE(p1);
+}
