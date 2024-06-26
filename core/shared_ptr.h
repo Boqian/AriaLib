@@ -13,14 +13,12 @@ template <class T, class U> struct _sp_convertible<T, U[]> : is_convertible<T (*
 template <class T, class U, size_t N> struct _sp_convertible<T, U[N]> : is_convertible<T (*)[N], U (*)[N]> {};
 template <class T, class U> inline constexpr bool _sp_convertible_v = _sp_convertible<T, U>::value;
 
-// static_assert(_sp_convertible_v<int, int>);
-// static_assert(_sp_convertible_v<int &, int>);
-
 template <class T, class U> struct _sp_pointer_compatible : is_convertible<T *, U *> {};
 template <class U, size_t N> struct _sp_pointer_compatible<U[N], U[]> : true_type {};
 template <class U, size_t N> struct _sp_pointer_compatible<U[N], const U[]> : true_type {};
 template <class U, size_t N> struct _sp_pointer_compatible<U[N], volatile U[]> : true_type {};
 template <class U, size_t N> struct _sp_pointer_compatible<U[N], const volatile U[N]> : true_type {};
+template <class T, class U> inline constexpr bool _sp_pointer_compatible_v = _sp_pointer_compatible<T, U>::value;
 
 struct _ref_count_base {
   virtual ~_ref_count_base() = default;
@@ -96,8 +94,8 @@ public:
     set_enable_from_this();
   }
 
-  template <class Y, class Deleter> requires(convertible_to<Y *, pointer> && _valid_deleter<Y, Deleter>)
-  shared_ptr(Y *p, Deleter d) : m_ptr(p), m_shared(new _ref_count_with_deleter(p, move(d))) {
+  template <class U, class Deleter> requires(_sp_convertible_v<U, T> && _valid_deleter<U, Deleter>)
+  shared_ptr(U *p, Deleter d) : m_ptr(p), m_shared(new _ref_count_with_deleter(p, move(d))) {
     set_enable_from_this();
   }
 
