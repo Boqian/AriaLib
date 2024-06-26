@@ -1,8 +1,14 @@
 #pragma once
+#include "exception.h"
 #include "utility.h"
 #include <atomic>
 
 namespace aria {
+
+class bad_weak_ptr : public exception {
+public:
+  const char *what() const noexcept override { return "bad_weak_ptr"; }
+};
 
 template <class T> concept _can_scalar_delete = requires { delete declval<T *>(); };
 template <class T> concept _can_array_delete = requires { delete[] declval<T *>(); };
@@ -111,6 +117,12 @@ public:
     m_shared = other.m_shared;
     other.m_ptr = nullptr;
     other.m_shared = nullptr;
+  }
+
+  template <class U> requires(_sp_pointer_compatible_v<U, T>) explicit shared_ptr(const weak_ptr<U> &other) {
+    other.lock().swap(*this);
+    if (!m_ptr)
+      throw bad_weak_ptr();
   }
 
   shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }

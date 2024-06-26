@@ -288,3 +288,10 @@ TEST(test_shared_ptr, construct_with_deleter) {
   { shared_ptr<int> sp(new int(5), deletor); }
   EXPECT_EQ(delete_result, 666);
 }
+
+TEST(test_shared_ptr, construct_from_weak) {
+  auto p1 = make_shared<int>(5);
+  weak_ptr<int> w(p1);
+  shared_ptr<int> p2(w);
+  EXPECT_EQ(*p2, 5);
+}
