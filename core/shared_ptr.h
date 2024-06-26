@@ -4,6 +4,24 @@
 
 namespace aria {
 
+template <class T> concept _can_scalar_delete = requires { delete declval<T *>(); };
+template <class T> concept _can_array_delete = requires { delete[] declval<T *>(); };
+template <class T> concept _can_delete = (is_array_v<T> && _can_array_delete<T>) || (!is_array_v<T> && _can_scalar_delete<T>);
+
+template <class T, class U> struct _sp_convertible : is_convertible<T *, U *> {};
+template <class T, class U> struct _sp_convertible<T, U[]> : is_convertible<T (*)[], U (*)[]> {};
+template <class T, class U, size_t N> struct _sp_convertible<T, U[N]> : is_convertible<T (*)[N], U (*)[N]> {};
+template <class T, class U> inline constexpr bool _sp_convertible_v = _sp_convertible<T, U>::value;
+
+// static_assert(_sp_convertible_v<int, int>);
+// static_assert(_sp_convertible_v<int &, int>);
+
+template <class T, class U> struct _sp_pointer_compatible : is_convertible<T *, U *> {};
+template <class U, size_t N> struct _sp_pointer_compatible<U[N], U[]> : true_type {};
+template <class U, size_t N> struct _sp_pointer_compatible<U[N], const U[]> : true_type {};
+template <class U, size_t N> struct _sp_pointer_compatible<U[N], volatile U[]> : true_type {};
+template <class U, size_t N> struct _sp_pointer_compatible<U[N], const volatile U[N]> : true_type {};
+
 struct _ref_count_base {
   virtual ~_ref_count_base() = default;
   virtual void destory() const noexcept = 0;
@@ -27,10 +45,18 @@ struct _ref_count_base {
   std::atomic<long> m_weaks = 0;
 };
 
-template <class T> struct _default_ref_count : _ref_count_base {
+template <class T, bool is_array> struct _default_ref_count : _ref_count_base {
   explicit _default_ref_count(T *p) : m_ptr(p) {}
-  void destory() const noexcept override { delete m_ptr; }
+  _default_ref_count(const _default_ref_count &) = delete;
   void delete_this() noexcept override { delete this; }
+
+  void destory() const noexcept override {
+    if constexpr (!is_array)
+      delete m_ptr;
+    else
+      delete[] m_ptr;
+  }
+
   T *m_ptr;
 };
 
@@ -65,17 +91,14 @@ public:
       m_shared->decrease_ref();
   }
 
-  template <class Y> requires convertible_to<Y *, pointer> explicit shared_ptr(Y *ptr) : m_ptr(ptr), m_shared(new _default_ref_count(ptr)) {
-    if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
-      m_ptr->m_wptr = *this;
-    }
+  template <class U> requires(_can_delete<U> && _sp_convertible_v<U, T>)
+  explicit shared_ptr(U *ptr) : m_ptr(ptr), m_shared(new _default_ref_count<U, is_array>(ptr)) {
+    set_enable_from_this();
   }
 
   template <class Y, class Deleter> requires(convertible_to<Y *, pointer> && _valid_deleter<Y, Deleter>)
   shared_ptr(Y *p, Deleter d) : m_ptr(p), m_shared(new _ref_count_with_deleter(p, move(d))) {
-    if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
-      m_ptr->m_wptr = *this;
-    }
+    set_enable_from_this();
   }
 
   // aliasing ctor
@@ -131,6 +154,12 @@ private:
   void increase_ref() const {
     if (m_shared)
       ++m_shared->m_uses;
+  }
+
+  void set_enable_from_this() {
+    if constexpr (is_base_of_v<enable_shared_from_this<T>, T>) {
+      m_ptr->m_wptr = *this;
+    }
   }
 
   pointer m_ptr{};
