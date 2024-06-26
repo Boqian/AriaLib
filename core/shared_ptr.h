@@ -89,7 +89,7 @@ public:
       m_shared->decrease_ref();
   }
 
-  template <class U> requires(_can_delete<U> && _sp_convertible_v<U, T>)
+  template <class U> requires(_sp_convertible_v<U, T> && _can_delete<U>)
   explicit shared_ptr(U *ptr) : m_ptr(ptr), m_shared(new _default_ref_count<U, is_array>(ptr)) {
     set_enable_from_this();
   }
