@@ -96,6 +96,23 @@ public:
       m_shared->decrease_ref();
   }
 
+  shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }
+  shared_ptr(const shared_ptr &rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) { increase_ref(); }
+
+  shared_ptr &operator=(const shared_ptr &rhs) noexcept {
+    if (this != &rhs) {
+      auto tmp = rhs;
+      swap(tmp);
+    }
+    return *this;
+  }
+
+  shared_ptr &operator=(shared_ptr &&rhs) noexcept {
+    auto tmp = move(rhs);
+    swap(tmp);
+    return *this;
+  }
+
   template <class U> requires(_sp_convertible_v<U, T> && _can_delete<U>)
   explicit shared_ptr(U *ptr) : m_ptr(ptr), m_shared(new _default_ref_count<U, is_array>(ptr)) {
     set_enable_from_this();
@@ -132,22 +149,14 @@ public:
     set_enable_from_this();
   }
 
-  shared_ptr(shared_ptr &&rhs) noexcept { swap(rhs); }
-  shared_ptr(const shared_ptr &rhs) : m_ptr(rhs.m_ptr), m_shared(rhs.m_shared) { increase_ref(); }
-
-  shared_ptr &operator=(const shared_ptr &rhs) noexcept {
-    if (this != &rhs) {
-      auto tmp = rhs;
-      swap(tmp);
-    }
+  template <class U, class D>
+  requires(_sp_pointer_compatible_v<U, T> && is_convertible_v<typename unique_ptr<U, D>::pointer, element_type *>)
+  shared_ptr &operator=(unique_ptr<U, D> &&p) {
+    shared_ptr(move(p)).swap(*this);
     return *this;
   }
 
-  shared_ptr &operator=(shared_ptr &&rhs) noexcept {
-    auto tmp = move(rhs);
-    swap(tmp);
-    return *this;
-  }
+  template <class U> requires(_sp_convertible_v<U, T> && _can_delete<U>) void reset(U *p) { shared_ptr(p).swap(*this); }
 
   pointer get() const noexcept { return m_ptr; }
   explicit operator bool() const noexcept { return m_ptr; }
