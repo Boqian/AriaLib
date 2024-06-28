@@ -298,6 +298,12 @@ template <class T> requires is_bounded_array_v<T> constexpr shared_ptr<T> make_s
   return shared_ptr<T>(new remove_extent_t<T>[extent_v<T>]());
 }
 
+template <class T> requires(!is_array_v<T>) shared_ptr<T> make_shared_for_overwrite() { return shared_ptr<T>(new T); }
+
+template <class T> requires(is_array_v<T>) shared_ptr<T> make_shared_for_overwrite(size_t size) {
+  return shared_ptr<T>(new remove_extent_t<T>[size]);
+}
+
 template <class T, class U> shared_ptr<T> static_pointer_cast(const shared_ptr<U> &r) noexcept {
   auto p = static_cast<typename shared_ptr<T>::element_type *>(r.get());
   return shared_ptr<T>{r, p};

@@ -320,4 +320,8 @@ TEST(test_shared_ptr, make_shared_for_array) {
     p[2] = 666;
     EXPECT_EQ(p[2], 666);
   }
+  {
+    auto p = make_shared_for_overwrite<int>();
+    auto q = make_shared_for_overwrite<int[]>(5);
+  }
 }
