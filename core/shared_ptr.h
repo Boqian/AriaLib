@@ -286,7 +286,17 @@ private:
 template <class T> void swap(shared_ptr<T> &a, shared_ptr<T> &b) noexcept { a.swap(b); }
 template <class T> void swap(weak_ptr<T> &a, weak_ptr<T> &b) noexcept { a.swap(b); }
 
-template <class T, class... Args> shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(forward<Args>(args)...)); }
+template <class T, class... Args> requires(!is_array_v<T>) shared_ptr<T> make_shared(Args &&...args) {
+  return shared_ptr<T>(new T(forward<Args>(args)...));
+}
+
+template <class T> requires is_unbounded_array_v<T> constexpr shared_ptr<T> make_shared(size_t size) {
+  return shared_ptr<T>(new remove_extent_t<T>[size]());
+}
+
+template <class T> requires is_bounded_array_v<T> constexpr shared_ptr<T> make_shared() {
+  return shared_ptr<T>(new remove_extent_t<T>[extent_v<T>]());
+}
 
 template <class T, class U> shared_ptr<T> static_pointer_cast(const shared_ptr<U> &r) noexcept {
   auto p = static_cast<typename shared_ptr<T>::element_type *>(r.get());

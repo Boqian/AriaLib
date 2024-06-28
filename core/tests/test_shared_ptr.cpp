@@ -302,3 +302,22 @@ TEST(test_shared_ptr, construct_from_unique) {
   EXPECT_EQ(*p2, 5);
   EXPECT_FALSE(p1);
 }
+
+TEST(test_shared_ptr, make_shared_for_array) {
+  {
+    auto p = make_shared<int[3]>();
+    EXPECT_EQ(p[0], 0);
+    EXPECT_EQ(p[1], 0);
+    EXPECT_EQ(p[2], 0);
+    p[2] = 666;
+    EXPECT_EQ(p[2], 666);
+  }
+  {
+    auto p = make_shared<int[]>(3);
+    EXPECT_EQ(p[0], 0);
+    EXPECT_EQ(p[1], 0);
+    EXPECT_EQ(p[2], 0);
+    p[2] = 666;
+    EXPECT_EQ(p[2], 666);
+  }
+}

@@ -99,6 +99,7 @@ template <class T> concept regular = semiregular<T> && equality_comparable<T>;
 
 //----------------- custom concepts -----------------------
 template <class T, class U> concept not_same = !is_same_v<T, U>;
-template <class T> concept not_void = not_same<T, void>;
+template <class T> concept not_void = !is_void_v<T>;
+template <class T> concept not_array = !is_array_v<T>;
 
 } // namespace aria
