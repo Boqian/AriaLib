@@ -1,6 +1,7 @@
 #pragma once
 #include "functional.h"
 #include "iterator.h"
+#include "ranges.h"
 #include "utility.h"
 
 // https://en.cppreference.com/w/cpp/algorithm
@@ -11,6 +12,12 @@ template <class InputIt, class UnaryFunc> UnaryFunc for_each(InputIt first, Inpu
   for (; first != last; ++first)
     f(*first);
   return f;
+}
+
+template <class InputIt, class Size, class UnaryFunc> InputIt for_each_n(InputIt first, Size n, UnaryFunc f) {
+  for (Size i = 0; i < n; ++first, ++i)
+    f(*first);
+  return first;
 }
 
 //---------------------Search operations---------------------

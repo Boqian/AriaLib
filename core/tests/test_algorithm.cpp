@@ -7,9 +7,16 @@
 using namespace aria;
 
 TEST(test_algorithm, for_each) {
-  vector<int> v = {1, 2, 3};
-  for_each(v.begin(), v.end(), [](int &x) { x *= 2; });
-  EXPECT_EQ(v, vector({2, 4, 6}));
+  {
+    vector<int> v = {1, 2, 3};
+    for_each(v.begin(), v.end(), [](int &x) { x *= 2; });
+    EXPECT_EQ(v, vector({2, 4, 6}));
+  }
+  {
+    vector<int> v = {1, 2, 3};
+    for_each_n(v.begin(), 3, [](int &x) { x *= 2; });
+    EXPECT_EQ(v, vector({2, 4, 6}));
+  }
 }
 
 TEST(test_algorithm, all_of) {
