@@ -1,6 +1,6 @@
 #pragma once
 
-#include <memory>
+#include "memory.h"
 #include <shared_mutex>
 
 namespace aria {
@@ -10,40 +10,34 @@ a simple implementation of folly::Synchronized
 https://github.com/facebook/folly/blob/main/folly/docs/Synchronized.md
 */
 
-template <class T, class LockType>
-class LockedPtr {
- public:
+template <class T, class LockType> class LockedPtr {
+public:
   using mutex_type = LockType::mutex_type;
-  LockedPtr(T* a_ptr, mutex_type& mut, bool try_to_lock = false)
-      : ptr(a_ptr),
-        lock(try_to_lock ? LockType(mut, std::try_to_lock)
-                         : LockType(mut)) {}
+  LockedPtr(T *a_ptr, mutex_type &mut, bool try_to_lock = false)
+      : ptr(a_ptr), lock(try_to_lock ? LockType(mut, std::try_to_lock) : LockType(mut)) {}
   ~LockedPtr() = default;
 
-  T* operator->() noexcept { return ptr; }
-  const T* operator->() const noexcept { return ptr; }
+  T *operator->() noexcept { return ptr; }
+  const T *operator->() const noexcept { return ptr; }
 
-  T& operator*() { return *ptr; }
-  const T& operator*() const { return *ptr; }
+  T &operator*() { return *ptr; }
+  const T &operator*() const { return *ptr; }
 
   bool is_locked() const { return lock.owns_lock(); }
   void unlock() { lock.unlock(); }
 
-  LockType& as_lock() noexcept { return lock; }
-  LockType const& as_lock() const noexcept { return lock; }
+  LockType &as_lock() noexcept { return lock; }
+  LockType const &as_lock() const noexcept { return lock; }
 
- private:
-  T* ptr;
+private:
+  T *ptr;
   LockType lock;
 };
 
-template <class T, class TMutex> 
-class SynchronizedBase {
-};
+template <class T, class TMutex> class SynchronizedBase {};
 
-template <class T>
-class SynchronizedBase<T, std::shared_mutex> {
- public:
+template <class T> class SynchronizedBase<T, std::shared_mutex> {
+public:
   using mutex_type = std::shared_mutex;
   using wlock_type = std::unique_lock<mutex_type>;
   using rlock_type = std::shared_lock<mutex_type>;
@@ -57,14 +51,13 @@ class SynchronizedBase<T, std::shared_mutex> {
   auto try_wlock() { return wlocked_ptr_type(&obj, mut, true); }
   auto try_rlock() { return rlocked_ptr_type(&obj, mut, false); }
 
- private:
+private:
   mutex_type mut;
   T obj;
 };
 
-template <class T>
-class SynchronizedBase<T, std::mutex> {
- public:
+template <class T> class SynchronizedBase<T, std::mutex> {
+public:
   using mutex_type = std::mutex;
   using lock_type = std::unique_lock<mutex_type>;
   using locked_ptr_type = LockedPtr<T, lock_type>;
@@ -78,11 +71,8 @@ private:
   T obj;
 };
 
-
-template <class T, class MutexType = std::shared_mutex>
-class Synchronized : public SynchronizedBase<T, MutexType> {
- public:
-
+template <class T, class MutexType = std::shared_mutex> class Synchronized : public SynchronizedBase<T, MutexType> {
+public:
 };
 
-}  // namespace aria
+} // namespace aria

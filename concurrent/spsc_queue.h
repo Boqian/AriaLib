@@ -1,7 +1,7 @@
 #pragma once
+#include "memory.h"
+#include "optional.h"
 #include <atomic>
-#include <memory>
-#include <optional>
 
 namespace aria {
 
@@ -9,7 +9,7 @@ template <class T> class spsc_queue {
 public:
   using size_t = std::size_t;
 
-  spsc_queue(size_t capacity) : m_max_size(capacity + 1), m_buffer(std::make_unique<T[]>(capacity + 1)) {}
+  spsc_queue(size_t capacity) : m_max_size(capacity + 1), m_buffer(make_unique<T[]>(capacity + 1)) {}
 
   bool push(const T &x) {
     const auto r = m_read_pos.load(std::memory_order_acquire);
@@ -46,8 +46,8 @@ private:
 
   alignas(64) std::atomic<size_t> m_read_pos{};
   alignas(64) std::atomic<size_t> m_write_pos{};
-  alignas(64) const std::unique_ptr<T[]> m_buffer;
-  const std::size_t m_max_size;
+  alignas(64) const unique_ptr<T[]> m_buffer;
+  const size_t m_max_size;
 };
 
 } // namespace aria
