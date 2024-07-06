@@ -159,3 +159,10 @@ TEST(test_algorithm, lower_upper_bound) {
     EXPECT_FALSE(binary_search(begin(a), end(a), 5));
   }
 }
+
+TEST(test_algorithm, heap) {
+  {
+    vector<int> v{9, 6, 9, 5, 5, 9, 7, 1, 1, 3, 5, 8, 3, 4, 2};
+    EXPECT_TRUE(is_heap(v.begin(), v.end()));
+  }
+}
