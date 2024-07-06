@@ -8,13 +8,13 @@
 namespace aria {
 
 //---------------------Batch operations---------------------
-template <input_iterator InputIt, class UnaryFunc> UnaryFunc for_each(InputIt first, InputIt last, UnaryFunc f) {
+template <input_iterator It, class UnaryFunc> UnaryFunc for_each(It first, It last, UnaryFunc f) {
   for (; first != last; ++first)
     f(*first);
   return f;
 }
 
-template <input_iterator InputIt, class Size, class UnaryFunc> InputIt for_each_n(InputIt first, Size n, UnaryFunc f) {
+template <input_iterator It, class Size, class UnaryFunc> It for_each_n(It first, Size n, UnaryFunc f) {
   for (Size i = 0; i < n; ++first, ++i)
     f(*first);
   return first;
@@ -22,7 +22,7 @@ template <input_iterator InputIt, class Size, class UnaryFunc> InputIt for_each_
 
 //---------------------Search operations---------------------
 // all_of any_of none_of find, fine_if count count_if equal
-template <input_iterator InputIt, class UnaryPred> constexpr bool all_of(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> constexpr bool all_of(It first, It last, UnaryPred p) {
   for (; first != last; ++first) {
     if (!p(*first))
       return false;
@@ -30,7 +30,7 @@ template <input_iterator InputIt, class UnaryPred> constexpr bool all_of(InputIt
   return true;
 }
 
-template <input_iterator InputIt, class UnaryPred> constexpr bool any_of(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> constexpr bool any_of(It first, It last, UnaryPred p) {
   for (; first != last; ++first) {
     if (p(*first))
       return true;
@@ -38,29 +38,27 @@ template <input_iterator InputIt, class UnaryPred> constexpr bool any_of(InputIt
   return false;
 }
 
-template <input_iterator InputIt, class UnaryPred> constexpr bool none_of(InputIt first, InputIt last, UnaryPred p) {
-  return !any_of(first, last, p);
-}
+template <input_iterator It, class UnaryPred> constexpr bool none_of(It first, It last, UnaryPred p) { return !any_of(first, last, p); }
 
-template <input_iterator InputIt, class T> constexpr InputIt find(InputIt first, InputIt last, const T &value) {
+template <input_iterator It, class T> constexpr It find(It first, It last, const T &value) {
   for (; first != last && *first != value; ++first) {
   }
   return first;
 }
 
-template <input_iterator InputIt, class UnaryPred> constexpr InputIt find_if(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> constexpr It find_if(It first, It last, UnaryPred p) {
   for (; first != last && !p(*first); ++first) {
   }
   return first;
 }
 
-template <input_iterator InputIt, class UnaryPred> constexpr InputIt find_if_not(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> constexpr It find_if_not(It first, It last, UnaryPred p) {
   for (; first != last && p(*first); ++first) {
   }
   return first;
 }
 
-template <input_iterator InputIt, class T> size_t count(InputIt first, InputIt last, const T &x) {
+template <input_iterator It, class T> size_t count(It first, It last, const T &x) {
   size_t cnt = 0;
   for (; first != last; ++first) {
     if (*first == x)
@@ -69,7 +67,7 @@ template <input_iterator InputIt, class T> size_t count(InputIt first, InputIt l
   return cnt;
 }
 
-template <input_iterator InputIt, class UnaryPred> size_t count_if(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> size_t count_if(It first, It last, UnaryPred p) {
   size_t cnt = 0;
   for (; first != last; ++first) {
     if (p(*first))
@@ -79,7 +77,7 @@ template <input_iterator InputIt, class UnaryPred> size_t count_if(InputIt first
 }
 
 //-----------------------Comparison operations-----------------------
-template <input_iterator InputIt1, input_iterator InputIt2> constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
+template <input_iterator It1, input_iterator It2> constexpr bool equal(It1 first1, It1 last1, It2 first2) {
   for (; first1 != last1; ++first1, ++first2) {
     if (*first1 != *first2)
       return false;
@@ -87,16 +85,15 @@ template <input_iterator InputIt1, input_iterator InputIt2> constexpr bool equal
   return true;
 }
 
-template <input_iterator InputIt1, input_iterator InputIt2>
-constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) {
+template <input_iterator It1, input_iterator It2> constexpr bool equal(It1 first1, It1 last1, It2 first2, It2 last2) {
   if (distance(first1, last1) != distance(first2, last2))
     return false;
 
   return equal(first1, last1, first2);
 }
 
-template <input_iterator InputIt1, input_iterator InputIt2, class Cmp>
-constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Cmp comp)
+template <input_iterator It1, input_iterator It2, class Cmp>
+constexpr auto lexicographical_compare_three_way(It1 first1, It1 last1, It2 first2, It2 last2, Cmp comp)
     -> decltype(comp(*first1, *first2)) {
   for (;; ++first1, ++first2) {
     if (first1 == last1) {
@@ -111,13 +108,13 @@ constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1
   }
 }
 
-template <input_iterator InputIt1, input_iterator InputIt2>
-constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) {
+template <input_iterator It1, input_iterator It2>
+constexpr auto lexicographical_compare_three_way(It1 first1, It1 last1, It2 first2, It2 last2) {
   return aria::lexicographical_compare_three_way(first1, last1, first2, last2, std::compare_three_way());
 }
 
 //-----------------------Minimum/maximum operations-----------------------
-template <forward_iterator ForwardIt, class Compare> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last, Compare cmp) {
+template <forward_iterator It, class Compare> constexpr It max_element(It first, It last, Compare cmp) {
   if (first == last)
     return last;
 
@@ -129,11 +126,9 @@ template <forward_iterator ForwardIt, class Compare> constexpr ForwardIt max_ele
   return max_it;
 }
 
-template <forward_iterator ForwardIt> constexpr ForwardIt max_element(ForwardIt first, ForwardIt last) {
-  return max_element(first, last, aria::less());
-}
+template <forward_iterator It> constexpr It max_element(It first, It last) { return max_element(first, last, aria::less()); }
 
-template <forward_iterator ForwardIt, class Compare> constexpr ForwardIt min_element(ForwardIt first, ForwardIt last, Compare cmp) {
+template <forward_iterator It, class Compare> constexpr It min_element(It first, It last, Compare cmp) {
   if (first == last)
     return last;
 
@@ -145,9 +140,7 @@ template <forward_iterator ForwardIt, class Compare> constexpr ForwardIt min_ele
   return min_it;
 }
 
-template <forward_iterator ForwardIt> constexpr ForwardIt min_element(ForwardIt first, ForwardIt last) {
-  return min_element(first, last, aria::less());
-}
+template <forward_iterator It> constexpr It min_element(It first, It last) { return min_element(first, last, aria::less()); }
 
 template <class T> constexpr const T &max(const T &a, const T &b) { return (a < b) ? b : a; }
 template <class T, class Compare> const T &max(const T &a, const T &b, Compare comp) { return comp(a, b) ? b : a; }
@@ -197,7 +190,7 @@ constexpr OutputIt transform(InputIt1 first1, InputIt1 last1, InputIt2 first2, O
   return d_first;
 }
 
-template <forward_iterator ForwardIt, class T> constexpr void fill(ForwardIt first, ForwardIt last, const T &value) {
+template <forward_iterator It, class T> constexpr void fill(It first, It last, const T &value) {
   for (; first != last; ++first)
     *first = value;
 }
@@ -209,12 +202,12 @@ template <class OutputIt, class Size, class T> constexpr OutputIt fill_n(OutputI
 }
 
 //-----------------------Order-changing operations-----------------------
-template <forward_iterator ForwardIt1, forward_iterator ForwardIt2> constexpr void iter_swap(ForwardIt1 a, ForwardIt2 b) {
+template <forward_iterator It1, forward_iterator It2> constexpr void iter_swap(It1 a, It2 b) {
   using aria::swap;
   swap(*a, *b);
 }
 
-template <bidirectional_iterator Iter> void reverse(Iter first, Iter last) {
+template <bidirectional_iterator It> void reverse(It first, It last) {
   if (first == last)
     return;
   --last;
@@ -224,12 +217,12 @@ template <bidirectional_iterator Iter> void reverse(Iter first, Iter last) {
 
 //-----------------------Partitioning operations-----------------------
 // is_partitioned partition partition_point
-template <input_iterator InputIt, class UnaryPred> bool is_partitioned(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> bool is_partitioned(It first, It last, UnaryPred p) {
   first = find_if_not(first, last, p);
   return none_of(first, last, p);
 }
 
-template <input_iterator InputIt, class UnaryPred> InputIt partition(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> It partition(It first, It last, UnaryPred p) {
   first = find_if_not(first, last, p);
   if (first == last)
     return first;
@@ -242,7 +235,7 @@ template <input_iterator InputIt, class UnaryPred> InputIt partition(InputIt fir
   return first;
 }
 
-template <input_iterator InputIt, class UnaryPred> InputIt partition_point(InputIt first, InputIt last, UnaryPred p) {
+template <input_iterator It, class UnaryPred> It partition_point(It first, It last, UnaryPred p) {
   for (auto d = distance(first, last); d > 0;) {
     auto half = d / 2;
     auto mid = advance(first, half);
@@ -258,41 +251,36 @@ template <input_iterator InputIt, class UnaryPred> InputIt partition_point(Input
 
 //-----------------------Binary search operations-----------------------
 // lower_bound upper_bound equal_range binary_search
-template <forward_iterator ForwardIt, class T, class Compare>
-constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+template <forward_iterator It, class T, class Compare> constexpr It lower_bound(It first, It last, const T &value, Compare comp) {
   return partition_point(first, last, [&](const auto &x) { return comp(x, value); });
 }
 
-template <forward_iterator ForwardIt, class T> constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T &value) {
+template <forward_iterator It, class T> constexpr It lower_bound(It first, It last, const T &value) {
   return lower_bound(first, last, value, less{});
 }
 
-template <forward_iterator ForwardIt, class T, class Compare>
-constexpr ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+template <forward_iterator It, class T, class Compare> constexpr It upper_bound(It first, It last, const T &value, Compare comp) {
   return partition_point(first, last, [&](const auto &x) { return !comp(value, x); });
 }
 
-template <forward_iterator ForwardIt, class T> constexpr ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T &value) {
+template <forward_iterator It, class T> constexpr It upper_bound(It first, It last, const T &value) {
   return upper_bound(first, last, value, less{});
 }
 
-template <forward_iterator ForwardIt, class T, class Compare>
-constexpr pair<ForwardIt, ForwardIt> equal_range(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+template <forward_iterator It, class T, class Compare> constexpr pair<It, It> equal_range(It first, It last, const T &value, Compare comp) {
   return make_pair(lower_bound(first, last, value, comp), upper_bound(first, last, value, comp));
 }
 
-template <forward_iterator ForwardIt, class T>
-constexpr pair<ForwardIt, ForwardIt> equal_range(ForwardIt first, ForwardIt last, const T &value) {
+template <forward_iterator It, class T> constexpr pair<It, It> equal_range(It first, It last, const T &value) {
   return equal_range(first, last, value, less{});
 }
 
-template <forward_iterator ForwardIt, class T, class Compare>
-bool binary_search(ForwardIt first, ForwardIt last, const T &value, Compare comp) {
+template <forward_iterator It, class T, class Compare> bool binary_search(It first, It last, const T &value, Compare comp) {
   const auto it = lower_bound(first, last, value, comp);
   return (it != last and !(comp(value, *it)));
 }
 
-template <forward_iterator ForwardIt, class T> bool binary_search(ForwardIt first, ForwardIt last, const T &value) {
+template <forward_iterator It, class T> bool binary_search(It first, It last, const T &value) {
   return binary_search(first, last, value, less{});
 }
 
