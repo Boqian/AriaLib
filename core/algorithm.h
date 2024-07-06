@@ -285,16 +285,27 @@ template <forward_iterator It, class T> bool binary_search(It first, It last, co
 }
 
 //-----------------------Heap operations-----------------------
+namespace _heap {
+template <integral I> auto left(I i) { return i * 2 + 1; }
+template <integral I> auto right(I i) { return i * 2 + 2; }
+template <integral I> auto parent(I i) { return (i - 1) / 2; }
+} // namespace _heap
+
 template <random_access_iterator It, class Compare> constexpr bool is_heap(It first, It last, Compare comp) {
   using Diff = iter_difference_t<It>;
   const Diff size = last - first;
   for (Diff i = 1; i < size; i++) {
-    if (comp(*(first + ((i - 1) >> 1)), *(first + i)))
+    if (comp(*(first + _heap::parent(i)), *(first + i)))
       return false;
   }
   return true;
 }
 
 template <random_access_iterator It> constexpr bool is_heap(It first, It last) { return is_heap(first, last, less{}); }
+
+template <random_access_iterator It, class Compare> void make_heap(It first, It last, Compare comp) {
+  using value_type = decltype(*first);
+  static_assert(is_move_assignable_v<value_type> && is_move_constructible_v<value_type>);
+}
 
 } // namespace aria
