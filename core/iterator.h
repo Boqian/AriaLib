@@ -72,6 +72,13 @@ template <class I> concept indirectly_readable = _indirectly_readable_impl<remov
 // todo use common_reference_t<const iter_value_t<T>&&, iter_reference_t<T>> ;
 template <indirectly_readable T> using iter_const_reference_t = const iter_value_t<T> &;
 
+template <class I, class T> concept indirectly_writable = requires(I &&i, T &&t) {
+  *i = static_cast<T &&>(t);
+  *static_cast<I &&>(i) = static_cast<T &&>(t);
+  const_cast<const iter_reference_t<I> &&>(*i) = static_cast<T &&>(t);
+  const_cast<const iter_reference_t<I> &&>(*static_cast<I &&>(i)) = static_cast<T &&>(t);
+};
+
 //----------------- iterator concept -----------------
 
 template <class I> concept weakly_incrementable = movable<I> && requires(I i) {
@@ -86,6 +93,9 @@ template <class I> concept input_or_output_iterator = weakly_incrementable<I> &&
 template <class S, class I> concept sentinel_for = semiregular<S> && input_or_output_iterator<I> && weakly_equality_comparable_with<S, I>;
 
 template <class I> concept input_iterator = input_or_output_iterator<I> && indirectly_readable<I>;
+
+template <class I, class T> concept output_iterator =
+    input_or_output_iterator<I> && indirectly_writable<I, T> && requires(I i, T &&t) { *i++ = static_cast<T &&>(t); };
 
 template <class T> concept incrementable = regular<T> && weakly_incrementable<T> && requires(T t) {
   { t++ } -> same_as<T>;
