@@ -180,4 +180,23 @@ TEST(test_algorithm, heap) {
     EXPECT_TRUE(is_heap(v.begin(), v.end()));
     EXPECT_TRUE(std::is_heap(v.begin(), v.end()));
   }
+  {
+    vector<int> v{3, 2, 1};
+    v.push_back(4);
+    EXPECT_FALSE(is_heap(v.begin(), v.end()));
+    push_heap(v.begin(), v.end());
+    EXPECT_EQ(v, (vector{4, 3, 1, 2}));
+    EXPECT_TRUE(is_heap(v.begin(), v.end()));
+    EXPECT_TRUE(std::is_heap(v.begin(), v.end()));
+  }
+  {
+    vector<int> v{9, 6, 9, 5, 5, 9, 7, 1, 1, 3, 5, 8, 3, 4, 2};
+    EXPECT_TRUE(is_heap(v.begin(), v.end()));
+    while (!v.empty()) {
+      pop_heap(v.begin(), v.end());
+      v.pop_back();
+      EXPECT_TRUE(is_heap(v.begin(), v.end()));
+      EXPECT_TRUE(std::is_heap(v.begin(), v.end()));
+    }
+  }
 }

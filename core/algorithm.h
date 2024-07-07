@@ -317,12 +317,11 @@ constexpr void sift_down(It first, iter_difference_t<It> pos, iter_difference_t<
   }
 }
 
-template <random_access_iterator It, class Compare>
-constexpr void sift_up(It first, iter_difference_t<It> pos, iter_difference_t<It> n, Compare comp) {
+template <random_access_iterator It, class Compare> constexpr void sift_up(It first, iter_difference_t<It> pos, Compare comp) {
   if (pos == 0)
     return;
   const auto it = first + pos, parent_it = parent(first, pos);
-  if (comp(*parent_it, it)) {
+  if (comp(*parent_it, *it)) {
     iter_swap(it, parent_it);
     sift_up(first, parent(pos), comp);
   }
@@ -359,5 +358,23 @@ template <random_access_iterator It, class Compare> void make_heap(It first, It 
 }
 
 template <random_access_iterator It> void make_heap(It first, It last) { return make_heap(first, last, less{}); }
+
+template <random_access_iterator It, class Compare> void push_heap(It first, It last, Compare comp) {
+  const auto n = last - first;
+  if (n > 1)
+    _heap::sift_up(first, n - 1, comp);
+}
+
+template <random_access_iterator It> void push_heap(It first, It last) { push_heap(first, last, less{}); }
+
+template <random_access_iterator It, class Compare> void pop_heap(It first, It last, Compare comp) {
+  const auto n = last - first;
+  if (n <= 1)
+    return;
+  iter_swap(first, last - 1);
+  _heap::sift_down(first, 0, n - 1, comp);
+}
+
+template <random_access_iterator It> void pop_heap(It first, It last) { pop_heap(first, last, less{}); }
 
 } // namespace aria
