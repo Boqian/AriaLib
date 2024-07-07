@@ -2,6 +2,8 @@
 #include "list.h"
 #include "numeric.h"
 #include "vector.h"
+#include <algorithm>
+
 #include "gtest/gtest.h"
 
 using namespace aria;
@@ -164,5 +166,18 @@ TEST(test_algorithm, heap) {
   {
     vector<int> v{9, 6, 9, 5, 5, 9, 7, 1, 1, 3, 5, 8, 3, 4, 2};
     EXPECT_TRUE(is_heap(v.begin(), v.end()));
+  }
+  {
+    vector<int> v{1, 2, 3};
+    EXPECT_FALSE(is_heap(v.begin(), v.end()));
+    make_heap(v.begin(), v.end());
+    EXPECT_EQ(v, (vector{3, 2, 1}));
+  }
+  {
+    vector<int> v{3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9};
+    EXPECT_FALSE(is_heap(v.begin(), v.end()));
+    make_heap(v.begin(), v.end());
+    EXPECT_TRUE(is_heap(v.begin(), v.end()));
+    EXPECT_TRUE(std::is_heap(v.begin(), v.end()));
   }
 }

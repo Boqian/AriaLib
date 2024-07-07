@@ -289,6 +289,55 @@ namespace _heap {
 template <integral I> auto left(I i) { return i * 2 + 1; }
 template <integral I> auto right(I i) { return i * 2 + 2; }
 template <integral I> auto parent(I i) { return (i - 1) / 2; }
+template <integral I> bool is_leaf(I i, I n) { return left(i) >= n; }
+
+template <random_access_iterator It> auto left(It first, iter_difference_t<It> i) { return first + left(i); }
+template <random_access_iterator It> auto right(It first, iter_difference_t<It> i) { return first + right(i); }
+template <random_access_iterator It> auto parent(It first, iter_difference_t<It> i) { return first + parent(i); }
+
+template <random_access_iterator It, class Compare, class Diff = iter_difference_t<It>>
+constexpr void sift_down(It first, iter_difference_t<It> pos, iter_difference_t<It> n, Compare comp) {
+  if (is_leaf(pos, n))
+    return;
+  const auto it = first + pos;
+  const auto left_idx = left(pos), right_idx = right(pos);
+  bool par_less_left = comp(*it, *left(first, pos)), par_less_right = false, left_less_right = false;
+
+  if (right_idx < n) {
+    par_less_right = comp(*it, *right(first, pos));
+    left_less_right = comp(*left(first, pos), *right(first, pos));
+  }
+
+  if (par_less_left && !left_less_right) {
+    iter_swap(it, left(first, pos));
+    sift_down(first, left_idx, n, comp);
+  } else if (par_less_right && left_less_right) {
+    iter_swap(it, right(first, pos));
+    sift_down(first, right_idx, n, comp);
+  }
+}
+
+template <random_access_iterator It, class Compare>
+constexpr void sift_up(It first, iter_difference_t<It> pos, iter_difference_t<It> n, Compare comp) {
+  if (pos == 0)
+    return;
+  const auto it = first + pos, parent_it = parent(first, pos);
+  if (comp(*parent_it, it)) {
+    iter_swap(it, parent_it);
+    sift_up(first, parent(pos), comp);
+  }
+}
+
+template <random_access_iterator It, class Compare>
+void make_heap_impl(It first, iter_difference_t<It> pos, iter_difference_t<It> n, Compare comp) {
+  if (pos >= n)
+    return;
+  auto left_idx = left(pos), right_idx = right(pos);
+  make_heap_impl(first, left_idx, n, comp);
+  make_heap_impl(first, right_idx, n, comp);
+  sift_down(first, pos, n, comp);
+}
+
 } // namespace _heap
 
 template <random_access_iterator It, class Compare> constexpr bool is_heap(It first, It last, Compare comp) {
@@ -306,6 +355,9 @@ template <random_access_iterator It> constexpr bool is_heap(It first, It last) {
 template <random_access_iterator It, class Compare> void make_heap(It first, It last, Compare comp) {
   using value_type = decltype(*first);
   static_assert(is_move_assignable_v<value_type> && is_move_constructible_v<value_type>);
+  _heap::make_heap_impl(first, 0, last - first, comp);
 }
+
+template <random_access_iterator It> void make_heap(It first, It last) { return make_heap(first, last, less{}); }
 
 } // namespace aria
