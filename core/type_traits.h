@@ -250,8 +250,12 @@ using std::is_standard_layout;
 using std::is_standard_layout_v;
 using std::is_trivial;
 using std::is_trivial_v;
+using std::is_trivially_constructible;
+using std::is_trivially_constructible_v;
 using std::is_trivially_copyable;
 using std::is_trivially_copyable_v;
+using std::is_trivially_destructible;
+using std::is_trivially_destructible_v;
 
 template <class T> struct is_signed : false_type {};
 template <class T> requires(is_arithmetic_v<T>) struct is_signed<T> : bool_constant<T(-1) < T(0)> {};

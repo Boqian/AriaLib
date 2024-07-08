@@ -28,14 +28,33 @@ private:
   E unexpected;
 };
 
+struct unexpect_t {
+  explicit unexpect_t() = default;
+};
+inline constexpr unexpect_t unexpect{};
+
 template <class T, class E> class expected {
 public:
   using value_type = T;
   using error_type = E;
   template <class U> using rebind = expected<U, error_type>;
 
-  bool has_value() const noexcept { return m_has_value; }
-  constexpr explicit operator bool() const noexcept { return m_has_value(); }
+  constexpr expected() requires is_default_constructible_v<T> : m_has_value(true), m_val() {}
+
+  ~expected() {
+    if constexpr (!is_trivially_destructible_v<T>) {
+      if (has_value())
+        destroy_at(addressof(m_val));
+    }
+    if constexpr (!is_trivially_destructible_v<E>) {
+      if (!has_value()) {
+        destroy_at(addressof(m_err));
+      }
+    }
+  }
+
+  constexpr bool has_value() const noexcept { return m_has_value; }
+  constexpr explicit operator bool() const noexcept { return m_has_value; }
   constexpr const T *operator->() const noexcept { return addressof(m_val); }
   constexpr T *operator->() noexcept { return addressof(m_val); }
   constexpr const T &operator*() const & noexcept { return m_val; }
@@ -61,20 +80,20 @@ public:
     return has_value() ? move(m_val) : static_cast<T>(forward<U>(default_value));
   }
 
-  template <class G = E> is_copy_constructible_v<E> &&is_convertible_v<G, E> constexpr E error_or(G &&default_value) const & {
+  template <class G = E> requires is_copy_constructible_v<E> && is_convertible_v<G, E> constexpr E error_or(G &&default_value) const & {
     return has_value() ? static_cast<E>(forward<G>(default_value)) : m_err;
   }
 
-  template <class G = E> is_move_constructible_v<E> &&is_convertible_v<G, E> constexpr E error_or(G &&default_value) && {
+  template <class G = E> requires is_move_constructible_v<E> && is_convertible_v<G, E> constexpr E error_or(G &&default_value) && {
     return has_value() ? static_cast<E>(forward<G>(default_value)) : move(m_err);
   }
 
 private:
-  bool m_has_value;
   union {
     T m_val;
     E m_err;
   };
+  bool m_has_value;
 };
 
 } // namespace aria
