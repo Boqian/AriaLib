@@ -1,4 +1,5 @@
 #pragma once
+#include "allocator.h"
 #include "cassert"
 #include "exception.h"
 #include "utility.h"
@@ -39,6 +40,9 @@ public:
   using error_type = E;
   template <class U> using rebind = expected<U, error_type>;
 
+  static constexpr bool is_trivially_copyable = is_trivially_copyable_v<T> && is_trivially_copyable_v<E>;
+  static constexpr bool is_copy_constructible = is_copy_constructible_v<T> && is_copy_constructible_v<E>;
+
   constexpr expected() requires is_default_constructible_v<T> : m_has_value(true), m_val() {}
 
   ~expected() {
@@ -51,6 +55,15 @@ public:
         destroy_at(addressof(m_err));
       }
     }
+  }
+
+  constexpr expected(const expected &other) requires is_trivially_copyable = default;
+
+  constexpr expected(const expected &other) requires(is_copy_constructible && !is_trivially_copyable) : m_has_value(other.has_value()) {
+    if (m_has_value)
+      construct_at(addressof(m_val), other.m_val);
+    else
+      construct_at(addressof(m_err), other.m_err);
   }
 
   constexpr bool has_value() const noexcept { return m_has_value; }
