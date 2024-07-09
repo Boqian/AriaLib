@@ -60,6 +60,8 @@ private:
   E m_err;
 };
 
+template <class E> unexpected(E) -> unexpected<E>;
+
 template <class E> requires(is_swappable_v<E>) constexpr void swap(unexpected<E> &x, unexpected<E> &y) {
   using aria::swap;
   swap(x.m_err, y.m_err);
@@ -108,6 +110,12 @@ public:
   requires(!is_same_v<remove_cvref_t<U>, in_place_t> && !is_expected_v<remove_cvref_t<U>> && is_constructible_v<T, U>)
   constexpr explicit(!is_convertible_v<U, T>) expected(U &&v) : m_has_value(true), m_val(forward<U>(v)) {}
 
+  template <class G> requires(is_constructible_v<E, G>)
+  constexpr explicit(!is_convertible_v<G, E>) expected(const unexpected<G> &e) : m_has_value(false), m_err(e.error()) {}
+
+  template <class G> requires(is_constructible_v<E, G>)
+  constexpr explicit(!is_convertible_v<G, E>) expected(unexpected<G> &&e) : m_has_value(false), m_err(move(e).error()) {}
+
   constexpr bool has_value() const noexcept { return m_has_value; }
   constexpr explicit operator bool() const noexcept { return m_has_value; }
   constexpr const T *operator->() const noexcept { return addressof(m_val); }
@@ -124,7 +132,7 @@ public:
   }
 
   template <class Self> constexpr decltype(auto) error(this Self &&self) {
-    assert(!has_value());
+    assert(!self.has_value());
     return forward<Self>(self).m_err;
   }
 

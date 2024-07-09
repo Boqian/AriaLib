@@ -5,8 +5,7 @@ using namespace aria;
 
 TEST(test_expected, basic) {
   {
-    auto e = unexpected<int>(123);
-
+    auto e = unexpected(123);
     EXPECT_EQ(e.error(), 123);
   }
   {
@@ -20,5 +19,11 @@ TEST(test_expected, basic) {
     EXPECT_EQ(a.value(), 5);
     expected<int, double> b = 'a';
     EXPECT_EQ(b.value(), 'a');
+  }
+  {
+    auto e = unexpected(123);
+    expected<double, int> a(e);
+    EXPECT_FALSE(a.has_value());
+    EXPECT_EQ(a.error(), 123);
   }
 }
