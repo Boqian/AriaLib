@@ -392,4 +392,10 @@ template <class T> requires is_function_v<T> struct decay<T> : add_pointer<T> {}
 
 template <class T> using decay_t = decay<T>::type;
 
+//----------------- is_specialization_of -----------------------
+template <class T, template <class...> class Template> struct is_specialization_of : false_type {};
+template <template <class...> class Template, class... Ts> struct is_specialization_of<Template<Ts...>, Template> : true_type {};
+template <class T, template <class...> class Template>
+inline constexpr bool is_specialization_of_v = is_specialization_of<T, Template>::value;
+
 } // namespace aria
