@@ -159,22 +159,40 @@ public:
   }
 
   template <class F, class Self> auto and_then(this Self &&self, F &&f) {
-    using result_t = remove_cvref_t<invoke_result_t<F, decltype(forward<Self>(self).value())>>;
+    using result_t = remove_cvref_t<invoke_result_t<F, decltype(*forward<Self>(self))>>;
     static_assert(is_expected_v<result_t> && same_as<E, typename result_t::error_type>);
     if (self.has_value()) {
-      return invoke(forward<F>(f), forward<Self>(self).value());
+      return invoke(forward<F>(f), *forward<Self>(self));
     } else {
       return result_t(unexpect, forward<Self>(self).error());
     }
   }
 
+  template <class F, class Self> auto transform(this Self &&self, F &&f) {
+    using U = remove_cvref_t<invoke_result_t<F, decltype(*forward<Self>(self))>>;
+    if (self.has_value()) {
+      return expected<U, E>(invoke(forward<F>(f), *forward<Self>(self)));
+    } else {
+      return expected<U, E>(unexpect, forward<Self>(self).error());
+    }
+  }
+
   template <class F, class Self> auto or_else(this Self &&self, F &&f) {
-    using result_t = remove_cvref_t<invoke_result_t<F, decltype(forward<Self>(self).value())>>;
+    using result_t = remove_cvref_t<invoke_result_t<F, decltype(forward<Self>(self).error())>>;
     static_assert(is_expected_v<result_t> && same_as<T, typename result_t::value_type>);
     if (self.has_value()) {
-      return result_t(in_place, forward<Self>(self).value());
+      return result_t(in_place, *forward<Self>(self));
     } else {
       return invoke(forward<F>(f), forward<Self>(self).error());
+    }
+  }
+
+  template <class F, class Self> auto transform_error(this Self &&self, F &&f) {
+    using G = remove_cvref_t<invoke_result_t<F, decltype(forward<Self>(self).error())>>;
+    if (self.has_value()) {
+      return expected<T, G>(in_place, *forward<Self>(self));
+    } else {
+      return expected<T, G>(unexpect, invoke(forward<F>(f), forward<Self>(self).error()));
     }
   }
 

@@ -42,3 +42,13 @@ TEST(test_expected, and_then) {
   auto rb = b.and_then(f);
   EXPECT_DOUBLE_EQ(rb.error(), 4.5);
 }
+
+TEST(test_expected, transform) {
+  auto f = [](int x) { return to_string(x); };
+  expected<int, double> a(123), b(unexpect, 4.5);
+  auto ra = a.transform(f);
+  static_assert(same_as<remove_cvref_t<decltype(ra)>, expected<string, double>>);
+  EXPECT_EQ(ra.value(), "123");
+  auto rb = b.transform(f);
+  EXPECT_DOUBLE_EQ(rb.error(), 4.5);
+}
