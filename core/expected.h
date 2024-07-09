@@ -117,6 +117,12 @@ public:
   template <class G> requires(is_constructible_v<E, G>)
   constexpr explicit(!is_convertible_v<G, E>) expected(unexpected<G> &&e) : m_has_value(false), m_err(move(e).error()) {}
 
+  template <class... Args> requires(is_constructible_v<T, Args...>)
+  constexpr explicit expected(in_place_t, Args &&...args) : m_has_value(true), m_val(forward<Args...>(args)...) {}
+
+  template <class... Args> requires(is_constructible_v<E, Args...>)
+  constexpr explicit expected(unexpect_t, Args &&...args) : m_has_value(true), m_err(forward<Args...>(args)...) {}
+
   constexpr bool has_value() const noexcept { return m_has_value; }
   constexpr explicit operator bool() const noexcept { return m_has_value; }
   constexpr const T *operator->() const noexcept { return addressof(m_val); }
@@ -158,7 +164,7 @@ public:
     if (self.m_has_value) {
       return invoke(forward<F>(f), forward<Self>(self).value());
     } else {
-      return result_t(unexpected(forward<Self>(self).error()));
+      return result_t(unexpect, forward<Self>(self).error());
     }
   }
 

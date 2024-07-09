@@ -35,7 +35,7 @@ TEST(test_expected, basic) {
 
 TEST(test_expected, and_then) {
   auto f = [](int x) { return expected<string, double>(to_string(x)); };
-  expected<int, double> a(123), b(unexpected(4.5));
+  expected<int, double> a(123), b(unexpect, 4.5);
   auto ra = a.and_then(f);
   static_assert(same_as<remove_cvref_t<decltype(ra)>, expected<string, double>>);
   EXPECT_EQ(ra.value(), "123");
