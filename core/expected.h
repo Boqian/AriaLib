@@ -34,14 +34,20 @@ struct unexpect_t {
 };
 inline constexpr unexpect_t unexpect{};
 
+template <class T, class E> class expected;
+
+template <class U> struct is_expected : false_type {};
+template <class T, class E> struct is_expected<expected<T, E>> : true_type {};
+template <class U> inline constexpr bool is_expected_v = is_expected<U>::value;
+
 template <class T, class E> class expected {
+  static constexpr bool is_trivially_copyable = is_trivially_copyable_v<T> && is_trivially_copyable_v<E>;
+  static constexpr bool is_copy_constructible = is_copy_constructible_v<T> && is_copy_constructible_v<E>;
+
 public:
   using value_type = T;
   using error_type = E;
   template <class U> using rebind = expected<U, error_type>;
-
-  static constexpr bool is_trivially_copyable = is_trivially_copyable_v<T> && is_trivially_copyable_v<E>;
-  static constexpr bool is_copy_constructible = is_copy_constructible_v<T> && is_copy_constructible_v<E>;
 
   constexpr expected() requires is_default_constructible_v<T> : m_has_value(true), m_val() {}
 
@@ -66,6 +72,10 @@ public:
       construct_at(addressof(m_err), other.m_err);
   }
 
+  template <class U = T>
+  requires(!is_same_v<remove_cvref_t<U>, in_place_t> && !is_expected_v<remove_cvref_t<U>> && is_constructible_v<T, U>)
+  constexpr explicit(!is_convertible_v<U, T>) expected(U &&v) : m_has_value(true), m_val(forward<U>(v)) {}
+
   constexpr bool has_value() const noexcept { return m_has_value; }
   constexpr explicit operator bool() const noexcept { return m_has_value; }
   constexpr const T *operator->() const noexcept { return addressof(m_val); }
@@ -76,7 +86,7 @@ public:
   constexpr T &&operator*() && noexcept { return move(m_val); }
 
   template <class Self> constexpr decltype(auto) value(this Self &&self) {
-    if (has_value())
+    if (self.has_value())
       return forward<Self>(self).m_val;
     throw bad_expected_access(forward<Self>(self).m_err);
   }
