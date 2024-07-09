@@ -2,6 +2,7 @@
 #include "allocator.h"
 #include "cassert"
 #include "exception.h"
+#include "functional.h"
 #include "utility.h"
 
 namespace aria {
@@ -149,6 +150,16 @@ public:
 
   template <class G = E> requires is_move_constructible_v<E> && is_convertible_v<G, E> constexpr E error_or(G &&default_value) && {
     return has_value() ? static_cast<E>(forward<G>(default_value)) : move(m_err);
+  }
+
+  template <class F, class Self> auto and_then(this Self &&self, F &&f) {
+    using result_t = remove_cvref_t<invoke_result_t<F, decltype(forward<Self>(self).value())>>;
+    static_assert(is_expected_v<result_t> && same_as<E, typename result_t::error_type>);
+    if (self.m_has_value) {
+      return invoke(forward<F>(f), forward<Self>(self).value());
+    } else {
+      return result_t(unexpected(forward<Self>(self).error()));
+    }
   }
 
 private:
