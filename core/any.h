@@ -11,10 +11,6 @@ public:
   [[no_discard]] const char *what() const noexcept override { return "bad any cast"; }
 };
 
-template <class T> struct is_in_place_type : false_type {};
-template <class T> struct is_in_place_type<in_place_type_t<T>> : true_type {};
-template <class T> inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
-
 class any {
 public:
   any() noexcept = default;

@@ -193,6 +193,9 @@ template <class T> struct in_place_type_t {
   explicit in_place_type_t() = default;
 };
 template <class T> inline constexpr in_place_type_t<T> in_place_type{};
+template <class T> struct is_in_place_type : false_type {};
+template <class T> struct is_in_place_type<in_place_type_t<T>> : true_type {};
+template <class T> inline constexpr bool is_in_place_type_v = is_in_place_type<T>::value;
 
 //------------------------- addressof -------------------------//
 template <class T> auto addressof(T &x) noexcept {

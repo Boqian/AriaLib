@@ -5,6 +5,11 @@ using namespace aria;
 
 TEST(test_expected, basic) {
   {
+    auto e = unexpected<int>(123);
+
+    EXPECT_EQ(e.err(), 123);
+  }
+  {
     expected<int, double> a;
     EXPECT_TRUE(a);
     EXPECT_TRUE(a.has_value());

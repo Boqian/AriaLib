@@ -22,11 +22,11 @@ protected:
 
 template <class E> class bad_expected_access : public bad_expected_access<void> {
 public:
-  explicit bad_expected_access(E unex) : unexpected(move(unex)) {}
-  template <class Self> decltype(auto) error(this Self &&self) noexcept { return forward<Self>(self).unexpected; }
+  explicit bad_expected_access(E err) : m_err(move(err)) {}
+  template <class Self> decltype(auto) error(this Self &&self) noexcept { return forward<Self>(self).m_err; }
 
 private:
-  E unexpected;
+  E m_err;
 };
 
 struct unexpect_t {
@@ -34,11 +34,24 @@ struct unexpect_t {
 };
 inline constexpr unexpect_t unexpect{};
 
+template <class E> class unexpected;
+template <class E> inline constexpr bool is_unexpected_v = is_specialization_of_v<E, unexpected>;
 template <class T, class E> class expected;
+template <class U> inline constexpr bool is_expected_v = is_specialization_of_v<U, expected>;
 
-template <class U> struct is_expected : false_type {};
-template <class T, class E> struct is_expected<expected<T, E>> : true_type {};
-template <class U> inline constexpr bool is_expected_v = is_expected<U>::value;
+template <class E> class unexpected {
+public:
+  static_assert(is_object_v<E> && !is_array_v<E> && !is_const_v<E> && !same_as<E, in_place_t>, "invalid type of E.");
+
+  template <class U = E>
+  requires(!is_unexpected_v<remove_cvref_t<U>> && !same_as<remove_cvref_t<U>, in_place_t> && is_constructible_v<E, U>)
+  constexpr explicit unexpected(U &&u) : m_err(forward<U>(u)) {}
+
+  template <class Self> constexpr decltype(auto) err(this Self &&self) { return forward<Self>(self).m_err; }
+
+private:
+  E m_err;
+};
 
 template <class T, class E> class expected {
   static constexpr bool is_trivially_copyable = is_trivially_copyable_v<T> && is_trivially_copyable_v<E>;
