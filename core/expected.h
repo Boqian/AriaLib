@@ -6,6 +6,8 @@
 
 namespace aria {
 
+//-----------------------bad_expected_access-----------------------
+
 template <class E> class bad_expected_access;
 
 template <> class bad_expected_access<void> : public exception {
@@ -34,10 +36,10 @@ struct unexpect_t {
 };
 inline constexpr unexpect_t unexpect{};
 
+//-----------------------unexpected-----------------------
+
 template <class E> class unexpected;
 template <class E> inline constexpr bool is_unexpected_v = is_specialization_of_v<E, unexpected>;
-template <class T, class E> class expected;
-template <class U> inline constexpr bool is_expected_v = is_specialization_of_v<U, expected>;
 
 template <class E> class unexpected {
 public:
@@ -47,11 +49,28 @@ public:
   requires(!is_unexpected_v<remove_cvref_t<U>> && !same_as<remove_cvref_t<U>, in_place_t> && is_constructible_v<E, U>)
   constexpr explicit unexpected(U &&u) : m_err(forward<U>(u)) {}
 
-  template <class Self> constexpr decltype(auto) err(this Self &&self) { return forward<Self>(self).m_err; }
+  template <class... Args> requires(is_constructible_v<E, Args...>)
+  constexpr explicit unexpected(in_place_t, Args &&...args) : m_err(forward<Args>(args)...) {}
+
+  template <class Self> constexpr decltype(auto) error(this Self &&self) { return forward<Self>(self).m_err; }
+
+  friend constexpr void swap(unexpected &x, unexpected &y);
 
 private:
   E m_err;
 };
+
+template <class E> requires(is_swappable_v<E>) constexpr void swap(unexpected<E> &x, unexpected<E> &y) {
+  using aria::swap;
+  swap(x.m_err, y.m_err);
+}
+
+template <class E> constexpr bool operator==(unexpected<E> &x, unexpected<E> &y) { return x.error() == y.error(); }
+
+//-----------------------expected-----------------------
+
+template <class T, class E> class expected;
+template <class U> inline constexpr bool is_expected_v = is_specialization_of_v<U, expected>;
 
 template <class T, class E> class expected {
   static constexpr bool is_trivially_copyable = is_trivially_copyable_v<T> && is_trivially_copyable_v<E>;

@@ -7,7 +7,7 @@ TEST(test_expected, basic) {
   {
     auto e = unexpected<int>(123);
 
-    EXPECT_EQ(e.err(), 123);
+    EXPECT_EQ(e.error(), 123);
   }
   {
     expected<int, double> a;
