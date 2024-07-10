@@ -100,28 +100,33 @@ public:
 
   constexpr expected(const expected &other) requires is_trivially_copyable = default;
 
-  constexpr expected(const expected &other) requires(is_copy_constructible && !is_trivially_copyable) : m_has_value(other.has_value()) {
-    if (m_has_value)
-      construct_at(addressof(m_val), other.m_val);
+  constexpr expected(const expected &other) requires(is_copy_constructible && !is_trivially_copyable) {
+    if (other.has_value())
+      construct_value(addressof(m_val), other.m_val);
     else
-      construct_at(addressof(m_err), other.m_err);
+      construct_error(addressof(m_err), other.m_err);
   }
 
-  template <class U = T>
-  requires(!is_same_v<remove_cvref_t<U>, in_place_t> && !is_expected_v<remove_cvref_t<U>> && is_constructible_v<T, U>)
-  constexpr explicit(!is_convertible_v<U, T>) expected(U &&v) : m_has_value(true), m_val(forward<U>(v)) {}
+  template <class U = T> requires(!is_same_v<remove_cvref_t<U>, in_place_t> && !is_expected_v<remove_cvref_t<U>> &&
+                                  is_constructible_v<T, U>) constexpr explicit(!is_convertible_v<U, T>) expected(U &&v) {
+    construct_value(forward<U>(v));
+  }
 
-  template <class G> requires(is_constructible_v<E, G>)
-  constexpr explicit(!is_convertible_v<G, E>) expected(const unexpected<G> &e) : m_has_value(false), m_err(e.error()) {}
+  template <class G> requires(is_constructible_v<E, G>) constexpr explicit(!is_convertible_v<G, E>) expected(const unexpected<G> &e) {
+    construct_error(e.error());
+  }
 
-  template <class G> requires(is_constructible_v<E, G>)
-  constexpr explicit(!is_convertible_v<G, E>) expected(unexpected<G> &&e) : m_has_value(false), m_err(move(e).error()) {}
+  template <class G> requires(is_constructible_v<E, G>) constexpr explicit(!is_convertible_v<G, E>) expected(unexpected<G> &&e) {
+    construct_error(move(e).error());
+  }
 
-  template <class... Args> requires(is_constructible_v<T, Args...>)
-  constexpr explicit expected(in_place_t, Args &&...args) : m_has_value(true), m_val(forward<Args...>(args)...) {}
+  template <class... Args> requires(is_constructible_v<T, Args...>) constexpr explicit expected(in_place_t, Args &&...args) {
+    construct_value(forward<Args...>(args)...);
+  }
 
-  template <class... Args> requires(is_constructible_v<E, Args...>)
-  constexpr explicit expected(unexpect_t, Args &&...args) : m_has_value(true), m_err(forward<Args...>(args)...) {}
+  template <class... Args> requires(is_constructible_v<E, Args...>) constexpr explicit expected(unexpect_t, Args &&...args) {
+    construct_error(forward<Args...>(args)...);
+  }
 
   constexpr bool has_value() const noexcept { return m_has_value; }
   constexpr explicit operator bool() const noexcept { return m_has_value; }
@@ -197,6 +202,16 @@ public:
   }
 
 private:
+  template <class... Args> void construct_value(Args &&...args) {
+    m_has_value = true;
+    construct_at(addressof(m_val), forward<Args>(args)...);
+  }
+
+  template <class... Args> void construct_error(Args &&...args) {
+    m_has_value = false;
+    construct_at(addressof(m_err), forward<Args>(args)...);
+  }
+
   union {
     T m_val;
     E m_err;
