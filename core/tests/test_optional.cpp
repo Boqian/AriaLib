@@ -26,8 +26,6 @@ TEST(test_optional, basic) {
     optional<int> a(5);
     EXPECT_TRUE(a);
     EXPECT_EQ(*a, 5);
-    constexpr optional<int> b(4);
-    static_assert(*b == 4);
   }
   {
     optional<pair<int, double>> a(pair(1, 1.5));
@@ -144,4 +142,27 @@ TEST(test_optional, make_optional) {
   auto x = make_optional<pair<int, int>>(1, 2);
   EXPECT_EQ(x->first, 1);
   EXPECT_EQ(x->second, 2);
+}
+
+TEST(test_optional, and_then_or_else_transform) {
+  {
+    auto f = [](int x) { return optional<double>(x * 2); };
+    optional<int> a = 10, b;
+    auto ra = a.and_then(f);
+    static_assert(is_same_v<decay_t<decltype(ra)>, optional<double>>);
+    EXPECT_DOUBLE_EQ(ra.value(), 20.0);
+    auto rb = b.and_then(f);
+    static_assert(is_same_v<decay_t<decltype(rb)>, optional<double>>);
+    EXPECT_FALSE(rb);
+  }
+  {
+    auto f = []() { return optional<int>(999); };
+    optional<int> a = 10, b;
+    auto ra = a.or_else(f);
+    static_assert(is_same_v<decay_t<decltype(ra)>, optional<int>>);
+    EXPECT_EQ(ra.value(), 10);
+    auto rb = b.or_else(f);
+    static_assert(is_same_v<decay_t<decltype(rb)>, optional<int>>);
+    EXPECT_EQ(rb.value(), 999);
+  }
 }

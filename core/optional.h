@@ -1,5 +1,6 @@
 #pragma once
 #include "allocator.h"
+#include "functional.h"
 #include "stdexcept.h"
 #include "utility.h"
 
@@ -29,9 +30,10 @@ public:
   constexpr optional(nullopt_t) noexcept : m_empty{} {}
   constexpr ~optional() { reset(); }
 
-  template <class U = T>
-  requires(is_constructible_v<T, U &&> && !is_optional_v<remove_cvref_t<U>> && not_same<in_place_t, remove_cvref_t<U>>)
-  constexpr optional(U &&u) : m_has_value(true), m_value{forward<U>(u)} {}
+  template <class U = T> requires(is_constructible_v<T, U &&> && !is_optional_v<remove_cvref_t<U>> &&
+                                  not_same<in_place_t, remove_cvref_t<U>>) constexpr optional(U &&u) {
+    construct_in_place(forward<U>(u));
+  }
 
   template <class... Args> requires is_constructible_v<T, Args &&...> constexpr explicit optional(in_place_t, Args &&...args) {
     construct_in_place(forward<Args>(args)...);
@@ -123,6 +125,30 @@ public:
     } else if (!*this && rhs) {
       swap_helper(rhs, *this);
     }
+  }
+
+  template <class... Args> constexpr T &emplace(Args &&...args) {
+    reset();
+    construct_in_place(forward<Args>(args)...);
+    return **this;
+  }
+
+  template <class Self, class F> constexpr auto and_then(this Self &&self, F &&f) {
+    using R = remove_cvref_t<invoke_result_t<F, decltype(forward<Self>(self).m_value)>>;
+    static_assert(is_optional_v<R>);
+    if (self)
+      return invoke(forward<F>(f), *forward<Self>(self));
+    else
+      return R{};
+  }
+
+  template <class Self, class F> constexpr auto or_else(this Self &&self, F &&f) {
+    using R = remove_cvref_t<invoke_result_t<F>>;
+    static_assert(same_as<optional<T>, R>);
+    if (self)
+      return self;
+    else
+      return invoke(forward<F>(f));
   }
 
 private:
