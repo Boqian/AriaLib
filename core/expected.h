@@ -100,11 +100,17 @@ public:
       construct_error(other.m_err);
   }
 
-  constexpr expected(expected &&other) requires(is_move_constructible && !is_trivially_move_constructible) {
-    if (other.has_value())
-      construct_value(move(other.m_val));
-    else
-      construct_error(move(other.m_err));
+  constexpr expected(expected &&other) requires(is_move_constructible && !is_trivially_move_constructible) { swap(other); }
+
+  constexpr expected &operator=(const expected &rhs) {
+    if (this != &rhs)
+      expected(rhs).swap(*this);
+    return *this;
+  }
+  constexpr expected &operator=(expected &&rhs) noexcept {
+    if (this != &rhs)
+      expected(move(rhs)).swap(*this);
+    return *this;
   }
 
   template <class U = T> requires(!is_same_v<remove_cvref_t<U>, in_place_t> && !is_expected_v<remove_cvref_t<U>> &&
