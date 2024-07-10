@@ -207,7 +207,6 @@ public:
       a.destroy_value();
       a.construct_error(move(temp_error));
     }
-    swap(a.m_has_value, b.m_has_value);
   }
 
 private:
