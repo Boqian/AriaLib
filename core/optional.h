@@ -29,7 +29,8 @@ public:
   constexpr optional(nullopt_t) noexcept : m_empty{} {}
   constexpr ~optional() { reset(); }
 
-  template <class U = T> requires(is_constructible_v<T, U &&> && !is_optional_v<remove_cvref_t<U>>)
+  template <class U = T>
+  requires(is_constructible_v<T, U &&> && !is_optional_v<remove_cvref_t<U>> && not_same<in_place_t, remove_cvref_t<U>>)
   constexpr optional(U &&u) : m_has_value(true), m_value{forward<U>(u)} {}
 
   template <class... Args> requires is_constructible_v<T, Args &&...> constexpr explicit optional(in_place_t, Args &&...args) {
