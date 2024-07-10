@@ -58,10 +58,10 @@ public:
   constexpr optional &operator=(const optional &rhs) {
     if (this == &rhs)
       return *this;
-    if (!rhs.has_value()) {
+    if (!rhs) {
       reset();
     } else if (has_value()) {
-      m_value = *rhs; // copy-assign
+      m_value = *rhs;
     } else {
       construct_value(*rhs);
     }
@@ -71,12 +71,12 @@ public:
   constexpr optional &operator=(optional &&rhs) noexcept {
     if (this == &rhs)
       return *this;
-    if (!rhs.has_value()) {
+    if (!rhs) {
       reset();
     } else if (has_value()) {
-      m_value = move(*rhs); // move-assign
+      m_value = move(*rhs);
     } else {
-      construct_value(move(*rhs)); // in-place move construct
+      construct_value(move(*rhs));
     }
     return *this;
   }
