@@ -84,6 +84,7 @@ template <class T, class E> class expected {
 public:
   using value_type = T;
   using error_type = E;
+  using unexpected_type = unexpected<E>;
   template <class U> using rebind = expected<U, error_type>;
 
   constexpr expected() requires is_default_constructible_v<T> : m_has_value(true), m_val() {}
