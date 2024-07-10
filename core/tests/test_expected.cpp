@@ -67,9 +67,19 @@ TEST(test_expected, transform_error) {
 
 TEST(test_expected, swap) {
   {
-    expected<int, double> a(in_place, 55), b(unexpect, 3.3);
+    expected<int, string> a(in_place, 55), b(unexpect, "3.3");
     swap(a, b);
-    EXPECT_DOUBLE_EQ(a.error(), 3.3);
+    EXPECT_FALSE(a);
+    EXPECT_TRUE(b);
+    EXPECT_EQ(a.error(), "3.3");
     EXPECT_EQ(b.value(), 55);
+  }
+  {
+    expected<int, string> a(unexpect, "3.3"), b(in_place, 55);
+    swap(a, b);
+    EXPECT_FALSE(b);
+    EXPECT_TRUE(a);
+    EXPECT_EQ(b.error(), "3.3");
+    EXPECT_EQ(a.value(), 55);
   }
 }

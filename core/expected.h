@@ -135,7 +135,7 @@ public:
 
   template <class Self> constexpr decltype(auto) error(this Self &&self) {
     assert(!self.has_value());
-    return forward<Self>(self).m_err;
+    return forward_like<Self>(self.m_err);
   }
 
   template <class U> requires is_copy_constructible_v<T> && is_convertible_v<U, T> constexpr T value_or(U &&default_value) const & {
@@ -192,22 +192,22 @@ public:
   }
 
   void swap(expected &b) noexcept {
-
     auto &a = *this;
+    using aria::swap;
     if (a && b) {
-      aria::swap(a.value(), b.value());
+      swap(*a, *b);
     } else if (!a && !b) {
-      aria::swap(m_err, b.m_err);
+      swap(a.m_err, b.m_err);
     } else if (!a && b) {
       b.swap(a);
     } else {
-      auto temp_error = move(b.error());
+      auto temp_error = move(b.m_err);
       b.destroy_error();
-      b.construct_value(value());
+      b.construct_value(*a);
       a.destroy_value();
       a.construct_error(move(temp_error));
     }
-    aria::swap(a.m_has_value, b.m_has_value);
+    swap(a.m_has_value, b.m_has_value);
   }
 
 private:
