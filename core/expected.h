@@ -86,25 +86,15 @@ public:
 
   constexpr expected() requires is_default_constructible_v<T> : m_has_value(true), m_val() {}
 
-  ~expected() {
-    if constexpr (!is_trivially_destructible_v<T>) {
-      if (has_value())
-        destroy_at(addressof(m_val));
-    }
-    if constexpr (!is_trivially_destructible_v<E>) {
-      if (!has_value()) {
-        destroy_at(addressof(m_err));
-      }
-    }
-  }
+  ~expected() { has_value() ? destroy_value() : destroy_error(); }
 
   constexpr expected(const expected &other) requires is_trivially_copyable = default;
 
   constexpr expected(const expected &other) requires(is_copy_constructible && !is_trivially_copyable) {
     if (other.has_value())
-      construct_value(addressof(m_val), other.m_val);
+      construct_value(other.m_val);
     else
-      construct_error(addressof(m_err), other.m_err);
+      construct_error(other.m_err);
   }
 
   template <class U = T> requires(!is_same_v<remove_cvref_t<U>, in_place_t> && !is_expected_v<remove_cvref_t<U>> &&
@@ -139,7 +129,7 @@ public:
 
   template <class Self> constexpr decltype(auto) value(this Self &&self) {
     if (self.has_value())
-      return forward<Self>(self).m_val;
+      return forward_like<Self>(self.m_val);
     throw bad_expected_access(forward<Self>(self).m_err);
   }
 
@@ -201,6 +191,25 @@ public:
     }
   }
 
+  void swap(expected &b) noexcept {
+
+    auto &a = *this;
+    if (a && b) {
+      aria::swap(a.value(), b.value());
+    } else if (!a && !b) {
+      aria::swap(m_err, b.m_err);
+    } else if (!a && b) {
+      b.swap(a);
+    } else {
+      auto temp_error = move(b.error());
+      b.destroy_error();
+      b.construct_value(value());
+      a.destroy_value();
+      a.construct_error(move(temp_error));
+    }
+    aria::swap(a.m_has_value, b.m_has_value);
+  }
+
 private:
   template <class... Args> void construct_value(Args &&...args) {
     m_has_value = true;
@@ -212,11 +221,22 @@ private:
     construct_at(addressof(m_err), forward<Args>(args)...);
   }
 
+  void destroy_value() {
+    if constexpr (!is_trivially_destructible_v<T>)
+      destroy_at(addressof(m_val));
+  }
+  void destroy_error() {
+    if constexpr (!is_trivially_destructible_v<E>)
+      destroy_at(addressof(m_err));
+  }
+
   union {
     T m_val;
     E m_err;
   };
   bool m_has_value;
 };
+
+template <class T, class E> void swap(expected<T, E> &a, expected<T, E> &b) noexcept { a.swap(b); }
 
 } // namespace aria

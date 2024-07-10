@@ -14,6 +14,8 @@ TEST(test_expected, basic) {
     EXPECT_TRUE(a);
     EXPECT_TRUE(a.has_value());
     EXPECT_EQ(a.value(), int{});
+    a.value() = 5;
+    EXPECT_EQ(a.value(), 5);
   }
   {
     expected<int, double> a = 5;
@@ -61,4 +63,13 @@ TEST(test_expected, transform_error) {
   auto rb = b.transform_error(f);
   static_assert(same_as<remove_cvref_t<decltype(rb)>, expected<int, string>>);
   EXPECT_EQ(rb.error(), "9");
+}
+
+TEST(test_expected, swap) {
+  {
+    expected<int, double> a(in_place, 55), b(unexpect, 3.3);
+    swap(a, b);
+    EXPECT_DOUBLE_EQ(a.error(), 3.3);
+    EXPECT_EQ(b.value(), 55);
+  }
 }
