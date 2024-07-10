@@ -90,22 +90,22 @@ public:
     return *this;
   }
 
-  constexpr const T &operator*() const noexcept { return m_value; }
-  constexpr T &operator*() noexcept { return m_value; }
+  template <class Self> constexpr decltype(auto) operator*(this Self && self) noexcept { return forward_like<Self>(self.m_value); }
+
   constexpr const T *operator->() const noexcept { return &m_value; }
   constexpr T *operator->() noexcept { return &m_value; }
 
   constexpr operator bool() const noexcept { return m_has_value; }
   constexpr bool has_value() const noexcept { return m_has_value; }
 
-  template <class Self> constexpr auto &&value(this Self &&self) {
-    if (!self.has_value())
-      throw(bad_optional_access{});
-    return self.m_value;
+  template <class Self> constexpr decltype(auto) value(this Self &&self) {
+    if (self.has_value())
+      return forward_like<Self>(self.m_value);
+    throw(bad_optional_access{});
   }
 
   template <class Self, class U> constexpr auto value_or(this Self &&self, U &&default_value) {
-    return self.m_has_value ? self.m_value : static_cast<T>(forward<U>(default_value));
+    return self.m_has_value ? forward_like<Self>(self.m_value) : static_cast<T>(forward<U>(default_value));
   }
 
   constexpr void reset() noexcept {
@@ -134,7 +134,7 @@ public:
   }
 
   template <class Self, class F> constexpr auto and_then(this Self &&self, F &&f) {
-    using R = remove_cvref_t<invoke_result_t<F, decltype(forward<Self>(self).m_value)>>;
+    using R = remove_cvref_t<invoke_result_t<F, decltype(forward_like<Self>(self.m_value))>>;
     static_assert(is_optional_v<R>);
     if (self)
       return invoke(forward<F>(f), *forward<Self>(self));
@@ -146,7 +146,7 @@ public:
     using R = remove_cvref_t<invoke_result_t<F>>;
     static_assert(same_as<optional<T>, R>);
     if (self)
-      return self;
+      return forward<Self>(self);
     else
       return invoke(forward<F>(f));
   }
