@@ -78,6 +78,8 @@ template <class U> inline constexpr bool is_expected_v = is_specialization_of_v<
 template <class T, class E> class expected {
   static constexpr bool is_trivially_copyable = is_trivially_copyable_v<T> && is_trivially_copyable_v<E>;
   static constexpr bool is_copy_constructible = is_copy_constructible_v<T> && is_copy_constructible_v<E>;
+  static constexpr bool is_trivially_move_constructible = is_trivially_move_constructible_v<T> && is_trivially_move_constructible_v<E>;
+  static constexpr bool is_move_constructible = is_move_constructible_v<T> && is_move_constructible_v<E>;
 
 public:
   using value_type = T;
@@ -88,13 +90,21 @@ public:
 
   ~expected() { has_value() ? destroy_value() : destroy_error(); }
 
-  constexpr expected(const expected &other) requires is_trivially_copyable = default;
+  constexpr expected(const expected &) requires is_trivially_copyable = default;
+  constexpr expected(expected &&other) requires is_trivially_move_constructible = default;
 
   constexpr expected(const expected &other) requires(is_copy_constructible && !is_trivially_copyable) {
     if (other.has_value())
       construct_value(other.m_val);
     else
       construct_error(other.m_err);
+  }
+
+  constexpr expected(expected &&other) requires(is_move_constructible && !is_trivially_move_constructible) {
+    if (other.has_value())
+      construct_value(move(other.m_val));
+    else
+      construct_error(move(other.m_err));
   }
 
   template <class U = T> requires(!is_same_v<remove_cvref_t<U>, in_place_t> && !is_expected_v<remove_cvref_t<U>> &&

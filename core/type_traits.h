@@ -256,6 +256,8 @@ using std::is_trivially_copyable;
 using std::is_trivially_copyable_v;
 using std::is_trivially_destructible;
 using std::is_trivially_destructible_v;
+using std::is_trivially_move_constructible;
+using std::is_trivially_move_constructible_v;
 
 template <class T> struct is_signed : false_type {};
 template <class T> requires(is_arithmetic_v<T>) struct is_signed<T> : bool_constant<T(-1) < T(0)> {};
