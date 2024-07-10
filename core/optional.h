@@ -37,7 +37,9 @@ public:
     construct_in_place(forward<Args>(args)...);
   }
 
-  constexpr optional(const optional &rhs) {
+  constexpr optional(const optional &rhs) requires(is_trivially_copyable_v<T>) = default;
+
+  constexpr optional(const optional &rhs) requires(is_copy_constructible_v<T> && !is_trivially_copyable_v<T>) {
     if (rhs) {
       construct_in_place(*rhs);
     }
