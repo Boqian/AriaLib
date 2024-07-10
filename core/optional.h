@@ -1,4 +1,5 @@
 #pragma once
+#include "allocator.h"
 #include "stdexcept.h"
 #include "utility.h"
 
@@ -24,12 +25,12 @@ template <class T> inline constexpr bool is_optional_v = is_optional<T>::value;
 template <class T> class optional {
 public:
   using value_type = T;
-  constexpr optional() noexcept : empty_{} {}
-  constexpr optional(nullopt_t) noexcept : empty_{} {}
+  constexpr optional() noexcept : m_empty{} {}
+  constexpr optional(nullopt_t) noexcept : m_empty{} {}
   constexpr ~optional() { reset(); }
 
   template <class U = T> requires(is_constructible_v<T, U &&> && !is_optional_v<remove_cvref_t<U>>)
-  constexpr optional(U &&u) : has_value_(true), value_{forward<U>(u)} {}
+  constexpr optional(U &&u) : m_has_value(true), m_value{forward<U>(u)} {}
 
   template <class... Args> requires is_constructible_v<T, Args &&...> constexpr explicit optional(in_place_t, Args &&...args) {
     construct_in_place(forward<Args>(args)...);
@@ -37,14 +38,13 @@ public:
 
   constexpr optional(const optional &rhs) {
     if (rhs) {
-      construct_in_place(rhs.value());
+      construct_in_place(*rhs);
     }
   }
 
   constexpr optional(optional &&rhs) noexcept {
     if (rhs) {
-      has_value_ = true;
-      construct_in_place(move(rhs.value()));
+      construct_in_place(move(*rhs));
     }
   }
 
@@ -56,9 +56,9 @@ public:
     if (!rhs.has_value()) {
       reset();
     } else if (has_value()) {
-      value_ = rhs.value(); // copy-assign
+      m_value = *rhs; // copy-assign
     } else {
-      construct_in_place(rhs.value());
+      construct_in_place(*rhs);
     }
     return *this;
   }
@@ -69,46 +69,46 @@ public:
     if (!rhs.has_value()) {
       reset();
     } else if (has_value()) {
-      value_ = move(rhs.value()); // move-assign
+      m_value = move(*rhs); // move-assign
     } else {
-      construct_in_place(move(rhs.value())); // in-place move construct
+      construct_in_place(move(*rhs)); // in-place move construct
     }
     return *this;
   }
 
   template <class U = T> requires(is_constructible_v<T, U> && !is_optional_v<remove_cvref_t<U>>) constexpr optional &operator=(U &&value) {
     if (has_value()) {
-      value_ = forward<U>(value);
+      m_value = forward<U>(value);
     } else {
       construct_in_place(forward<U>(value));
     }
     return *this;
   }
 
-  constexpr const T &operator*() const noexcept { return value_; }
-  constexpr T &operator*() noexcept { return value_; }
-  constexpr const T *operator->() const noexcept { return &value_; }
-  constexpr T *operator->() noexcept { return &value_; }
+  constexpr const T &operator*() const noexcept { return m_value; }
+  constexpr T &operator*() noexcept { return m_value; }
+  constexpr const T *operator->() const noexcept { return &m_value; }
+  constexpr T *operator->() noexcept { return &m_value; }
 
-  constexpr operator bool() const noexcept { return has_value_; }
-  constexpr bool has_value() const noexcept { return has_value_; }
+  constexpr operator bool() const noexcept { return m_has_value; }
+  constexpr bool has_value() const noexcept { return m_has_value; }
 
   template <class Self> constexpr auto &&value(this Self &&self) {
     if (!self.has_value())
       throw(bad_optional_access{});
-    return self.value_;
+    return self.m_value;
   }
 
   template <class Self, class U> constexpr auto value_or(this Self &&self, U &&default_value) {
-    return self.has_value_ ? self.value_ : static_cast<T>(forward<U>(default_value));
+    return self.m_has_value ? self.m_value : static_cast<T>(forward<U>(default_value));
   }
 
   constexpr void reset() noexcept {
-    if constexpr (is_destructible_v<T>) {
-      if (has_value_)
-        value_.~T();
+    if constexpr (!is_trivially_destructible_v<T>) {
+      if (m_has_value)
+        destroy_at(addressof(m_value));
     }
-    has_value_ = false;
+    m_has_value = false;
   }
 
   constexpr void swap(optional &rhs) noexcept {
@@ -124,8 +124,8 @@ public:
 
 private:
   template <class... Args> constexpr void construct_in_place(Args &&...args) {
-    new (&value_) T(forward<Args>(args)...);
-    has_value_ = true;
+    construct_at(addressof(m_value), forward<Args>(args)...);
+    m_has_value = true;
   }
 
   static void swap_helper(optional &has, optional &none) noexcept {
@@ -135,10 +135,10 @@ private:
 
   struct empty_byte {};
   union {
-    empty_byte empty_;
-    T value_;
+    empty_byte m_empty;
+    T m_value;
   };
-  bool has_value_ = false;
+  bool m_has_value = false;
 };
 
 template <class T, class... Args> constexpr optional<T> make_optional(Args &&...args) {
