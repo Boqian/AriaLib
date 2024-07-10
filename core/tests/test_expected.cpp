@@ -68,6 +68,8 @@ TEST(test_expected, transform_error) {
 TEST(test_expected, swap) {
   {
     expected<int, string> a(in_place, 55), b(unexpect, "3.3");
+    EXPECT_TRUE(a);
+    EXPECT_FALSE(b);
     swap(a, b);
     EXPECT_FALSE(a);
     EXPECT_TRUE(b);

@@ -32,24 +32,24 @@ public:
 
   template <class U = T> requires(is_constructible_v<T, U &&> && !is_optional_v<remove_cvref_t<U>> &&
                                   not_same<in_place_t, remove_cvref_t<U>>) constexpr optional(U &&u) {
-    construct_in_place(forward<U>(u));
+    construct_value(forward<U>(u));
   }
 
   template <class... Args> requires is_constructible_v<T, Args &&...> constexpr explicit optional(in_place_t, Args &&...args) {
-    construct_in_place(forward<Args>(args)...);
+    construct_value(forward<Args>(args)...);
   }
 
   constexpr optional(const optional &rhs) requires(is_trivially_copyable_v<T>) = default;
 
   constexpr optional(const optional &rhs) requires(is_copy_constructible_v<T> && !is_trivially_copyable_v<T>) {
     if (rhs) {
-      construct_in_place(*rhs);
+      construct_value(*rhs);
     }
   }
 
   constexpr optional(optional &&rhs) noexcept {
     if (rhs) {
-      construct_in_place(move(*rhs));
+      construct_value(move(*rhs));
     }
   }
 
@@ -63,7 +63,7 @@ public:
     } else if (has_value()) {
       m_value = *rhs; // copy-assign
     } else {
-      construct_in_place(*rhs);
+      construct_value(*rhs);
     }
     return *this;
   }
@@ -76,7 +76,7 @@ public:
     } else if (has_value()) {
       m_value = move(*rhs); // move-assign
     } else {
-      construct_in_place(move(*rhs)); // in-place move construct
+      construct_value(move(*rhs)); // in-place move construct
     }
     return *this;
   }
@@ -85,7 +85,7 @@ public:
     if (has_value()) {
       m_value = forward<U>(value);
     } else {
-      construct_in_place(forward<U>(value));
+      construct_value(forward<U>(value));
     }
     return *this;
   }
@@ -109,27 +109,26 @@ public:
   }
 
   constexpr void reset() noexcept {
-    if constexpr (!is_trivially_destructible_v<T>) {
-      if (m_has_value)
-        destroy_at(addressof(m_value));
-    }
-    m_has_value = false;
+    if (m_has_value)
+      destroy_value();
   }
 
-  constexpr void swap(optional &rhs) noexcept {
-    if (*this && rhs) {
-      using aria::swap;
-      swap(this->value(), rhs.value());
-    } else if (*this && !rhs) {
-      swap_helper(*this, rhs);
-    } else if (!*this && rhs) {
-      swap_helper(rhs, *this);
+  constexpr void swap(optional &b) noexcept {
+    using aria::swap;
+    auto &a = *this;
+    if (a && b) {
+      swap(*a, *b);
+    } else if (a && !b) {
+      b.construct_value(move(*a));
+      a.destroy_value();
+    } else if (!a && b) {
+      b.swap(a);
     }
   }
 
   template <class... Args> constexpr T &emplace(Args &&...args) {
     reset();
-    construct_in_place(forward<Args>(args)...);
+    construct_value(forward<Args>(args)...);
     return **this;
   }
 
@@ -152,14 +151,15 @@ public:
   }
 
 private:
-  template <class... Args> constexpr void construct_in_place(Args &&...args) {
+  template <class... Args> constexpr void construct_value(Args &&...args) {
     construct_at(addressof(m_value), forward<Args>(args)...);
     m_has_value = true;
   }
 
-  static void swap_helper(optional &has, optional &none) noexcept {
-    none.construct_in_place(move(has.value()));
-    has.reset();
+  constexpr void destroy_value() {
+    if constexpr (!is_trivially_destructible_v<T>)
+      destroy_at(addressof(m_value));
+    m_has_value = false;
   }
 
   struct empty_byte {};
