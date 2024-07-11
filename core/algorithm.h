@@ -403,4 +403,14 @@ template <random_access_iterator It, class Compare> void pop_heap(It first, It l
 
 template <random_access_iterator It> void pop_heap(It first, It last) { pop_heap(first, last, less{}); }
 
+template <random_access_iterator It, class Compare> void sort_heap(It first, It last, Compare comp) {
+  while (first != last)
+    pop_heap(first, last--, comp);
+}
+
+template <random_access_iterator It> void sort_heap(It first, It last) {
+  while (first != last)
+    pop_heap(first, last--);
+}
+
 } // namespace aria

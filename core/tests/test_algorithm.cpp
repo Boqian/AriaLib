@@ -218,4 +218,10 @@ TEST(test_algorithm, heap) {
       EXPECT_TRUE(std::is_heap(v.begin(), v.end()));
     }
   }
+  {
+    vector<int> v{9, 6, 9, 5, 5, 9, 7, 1, 1, 3, 5, 8, 3, 4, 2};
+    EXPECT_TRUE(is_heap(v.begin(), v.end()));
+    sort_heap(v.begin(), v.end());
+    EXPECT_TRUE(is_sorted(v.begin(), v.end()));
+  }
 }
