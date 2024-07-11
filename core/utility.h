@@ -222,7 +222,7 @@ template <class T> struct pointer_traits<T *> {
   using difference_type = ptrdiff_t;
 
   template <class U> using rebind = U *;
-  static pointer pointer_to(element_type &val) noexcept { return std::addressof(val); }
+  static pointer pointer_to(element_type &val) noexcept { return addressof(val); }
 };
 
 template <class T> concept _has_to_address = requires(const T &val) {

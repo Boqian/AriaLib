@@ -184,7 +184,7 @@ constexpr decltype(auto) invoke_memptr(Pointed C::*member, Object &&object, Args
     else if constexpr (is_wrapped)
       return (object.get().*member)(forward<Args>(args)...);
     else
-      return ((*std::forward<Object>(object)).*member)(forward<Args>(args)...);
+      return ((*forward<Object>(object)).*member)(forward<Args>(args)...);
   } else {
     static_assert(is_object_v<Pointed> && sizeof...(args) == 0);
     if constexpr (is_derived_object)
@@ -226,7 +226,7 @@ public:
     return *this;
   }
 
-  function &operator=(std::nullptr_t) noexcept { ptr.reset(); }
+  function &operator=(nullptr_t) noexcept { ptr.reset(); }
 
   template <class F> function &operator=(F &&f) {
     function(forward<F>(f)).swap(*this);

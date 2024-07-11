@@ -1,8 +1,8 @@
 #pragma once
 #include "algorithm.h"
 #include "bit.h"
+#include "stdexcept.h"
 #include "utility.h"
-#include <stdexcept>
 
 namespace aria {
 
@@ -49,7 +49,7 @@ public:
     return *this;
   }
 
-  constexpr bitset &flip(std::size_t i) {
+  constexpr bitset &flip(size_t i) {
     auto [words_idx, bit_idx] = get_idx(i);
     v[words_idx] ^= (T(1) << bit_idx);
     return *this;
@@ -89,7 +89,7 @@ public:
 
   constexpr bool test(size_t i) const {
     if (i >= N)
-      throw std::out_of_range("out of range");
+      throw out_of_range("out of range");
     return get(i);
   }
 
@@ -97,7 +97,7 @@ public:
 
   constexpr unsigned long long to_ullong() const {
     if constexpr (N > bits_per_byte * sizeof(unsigned long long)) {
-      throw std::overflow_error("overflow");
+      throw overflow_error("overflow");
     } else {
       set_unused(false);
       return v[0];
