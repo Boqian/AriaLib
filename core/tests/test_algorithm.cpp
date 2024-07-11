@@ -162,6 +162,15 @@ TEST(test_algorithm, lower_upper_bound) {
   }
 }
 
+TEST(test_algorithm, sort) {
+  {
+    vector<int> a = {1, 2, 3}, b = {2, 1, 3}, c = {2, 2, 3};
+    EXPECT_TRUE(is_sorted(a.begin(), a.end()));
+    EXPECT_FALSE(is_sorted(b.begin(), b.end()));
+    EXPECT_TRUE(is_sorted(c.begin(), c.end()));
+  }
+}
+
 TEST(test_algorithm, heap) {
   {
     vector<int> v{9, 6, 9, 5, 5, 9, 7, 1, 1, 3, 5, 8, 3, 4, 2};
