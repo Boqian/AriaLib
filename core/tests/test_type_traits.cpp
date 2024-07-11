@@ -66,8 +66,8 @@ void test_traits() {
 
   static_assert(is_convertible_v<int, int>);
   static_assert(is_convertible_v<int, double>);
-  static_assert(!is_convertible_v<int, std::string>);
-  static_assert(!is_convertible_v<std::string, int>);
+  static_assert(!is_convertible_v<int, string>);
+  static_assert(!is_convertible_v<string, int>);
 
   assert_same<void, add_lvalue_reference_t<void>>();
   assert_same<int &, add_lvalue_reference_t<int>>();

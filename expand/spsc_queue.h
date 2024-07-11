@@ -7,8 +7,6 @@ namespace aria {
 
 template <class T> class spsc_queue {
 public:
-  using size_t = std::size_t;
-
   spsc_queue(size_t capacity) : m_max_size(capacity + 1), m_buffer(make_unique<T[]>(capacity + 1)) {}
 
   bool push(const T &x) {
