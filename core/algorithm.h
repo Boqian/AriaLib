@@ -284,32 +284,6 @@ template <forward_iterator It, class T> bool binary_search(It first, It last, co
   return binary_search(first, last, value, less{});
 }
 
-//-----------------------Sorting operations-----------------------
-template <forward_iterator It, class Compare> constexpr bool is_sorted(It first, It last, Compare comp) {
-  if (first == last)
-    return true;
-  for (auto second = next(first); second != last; first = second++) {
-    if (comp(*second, *first))
-      return false;
-  }
-  return true;
-}
-
-template <forward_iterator It> constexpr bool is_sorted(It first, It last) { return is_sorted(first, last, less{}); }
-
-// todo use introsort
-template <random_access_iterator It, class Compare> void sort(It first, It last, Compare comp) {
-  if (last - first <= 1)
-    return;
-  auto pivot = prev(last);
-  auto mid = partition(first, pivot, [&](const auto &val) { return comp(val, *pivot); });
-  iter_swap(mid, pivot);
-  sort(first, mid, comp);
-  sort(mid + 1, last, comp);
-}
-
-template <random_access_iterator It> void sort(It first, It last) { return sort(first, last, less{}); }
-
 //-----------------------Heap operations-----------------------
 namespace _heap {
 template <integral I> auto left(I i) { return i * 2 + 1; }
@@ -412,5 +386,47 @@ template <random_access_iterator It> void sort_heap(It first, It last) {
   while (first != last)
     pop_heap(first, last--);
 }
+
+//-----------------------Sorting operations-----------------------
+template <forward_iterator It, class Compare> constexpr bool is_sorted(It first, It last, Compare comp) {
+  if (first == last)
+    return true;
+  for (auto second = next(first); second != last; first = second++) {
+    if (comp(*second, *first))
+      return false;
+  }
+  return true;
+}
+
+template <forward_iterator It> constexpr bool is_sorted(It first, It last) { return is_sorted(first, last, less{}); }
+
+template <bidirectional_iterator It, class Compare> constexpr void insertion_sort(It first, It last, Compare comp) {
+  for (auto i = first; i != last; ++i) {
+    for (auto j = i; j != first;) {
+      auto pre = prev(j);
+      if (comp(*j, *pre)) {
+        iter_swap(j, pre);
+        j = pre;
+      } else {
+        break;
+      }
+    }
+  }
+}
+
+template <bidirectional_iterator It> constexpr void insertion_sort(It first, It last) { return insertion_sort(first, last, less{}); }
+
+// todo use introsort
+template <random_access_iterator It, class Compare> void sort(It first, It last, Compare comp) {
+  if (last - first <= 1)
+    return;
+  auto pivot = prev(last);
+  auto mid = partition(first, pivot, [&](const auto &val) { return comp(val, *pivot); });
+  iter_swap(mid, pivot);
+  sort(first, mid, comp);
+  sort(mid + 1, last, comp);
+}
+
+template <random_access_iterator It> void sort(It first, It last) { return sort(first, last, less{}); }
 
 } // namespace aria

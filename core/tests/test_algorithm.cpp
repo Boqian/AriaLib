@@ -162,25 +162,6 @@ TEST(test_algorithm, lower_upper_bound) {
   }
 }
 
-TEST(test_algorithm, sort) {
-  {
-    vector<int> a = {1, 2, 3}, b = {2, 1, 3}, c = {2, 2, 3};
-    EXPECT_TRUE(is_sorted(a.begin(), a.end()));
-    EXPECT_FALSE(is_sorted(b.begin(), b.end()));
-    EXPECT_TRUE(is_sorted(c.begin(), c.end()));
-  }
-  {
-    vector<int> a = {3, 2, 1}, b = {1, 2, 3};
-    sort(a.begin(), a.end());
-    EXPECT_EQ(a, b);
-  }
-  {
-    vector<int> a = {1, 4, 7, 2, 5, 8, 3, 6, 9}, b = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    sort(a.begin(), a.end());
-    EXPECT_EQ(a, b);
-  }
-}
-
 TEST(test_algorithm, heap) {
   {
     vector<int> v{9, 6, 9, 5, 5, 9, 7, 1, 1, 3, 5, 8, 3, 4, 2};
@@ -223,5 +204,28 @@ TEST(test_algorithm, heap) {
     EXPECT_TRUE(is_heap(v.begin(), v.end()));
     sort_heap(v.begin(), v.end());
     EXPECT_TRUE(is_sorted(v.begin(), v.end()));
+  }
+}
+
+TEST(test_algorithm, sort) {
+  {
+    vector<int> a = {1, 4, 7, 2, 5, 8, 3, 6, 9}, b = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    insertion_sort(a.begin(), a.end());
+  }
+  {
+    vector<int> a = {1, 2, 3}, b = {2, 1, 3}, c = {2, 2, 3};
+    EXPECT_TRUE(is_sorted(a.begin(), a.end()));
+    EXPECT_FALSE(is_sorted(b.begin(), b.end()));
+    EXPECT_TRUE(is_sorted(c.begin(), c.end()));
+  }
+  {
+    vector<int> a = {3, 2, 1}, b = {1, 2, 3};
+    sort(a.begin(), a.end());
+    EXPECT_EQ(a, b);
+  }
+  {
+    vector<int> a = {1, 4, 7, 2, 5, 8, 3, 6, 9}, b = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    sort(a.begin(), a.end());
+    EXPECT_EQ(a, b);
   }
 }
