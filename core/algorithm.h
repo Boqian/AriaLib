@@ -297,6 +297,19 @@ template <forward_iterator It, class Compare> constexpr bool is_sorted(It first,
 
 template <forward_iterator It> constexpr bool is_sorted(It first, It last) { return is_sorted(first, last, less{}); }
 
+// todo use introsort
+template <random_access_iterator It, class Compare> void sort(It first, It last, Compare comp) {
+  if (last - first <= 1)
+    return;
+  auto pivot = prev(last);
+  auto mid = partition(first, pivot, [&](const auto &val) { return comp(val, *pivot); });
+  iter_swap(mid, pivot);
+  sort(first, mid, comp);
+  sort(mid + 1, last, comp);
+}
+
+template <random_access_iterator It> void sort(It first, It last) { return sort(first, last, less{}); }
+
 //-----------------------Heap operations-----------------------
 namespace _heap {
 template <integral I> auto left(I i) { return i * 2 + 1; }

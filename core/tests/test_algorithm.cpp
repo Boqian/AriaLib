@@ -169,6 +169,16 @@ TEST(test_algorithm, sort) {
     EXPECT_FALSE(is_sorted(b.begin(), b.end()));
     EXPECT_TRUE(is_sorted(c.begin(), c.end()));
   }
+  {
+    vector<int> a = {3, 2, 1}, b = {1, 2, 3};
+    sort(a.begin(), a.end());
+    EXPECT_EQ(a, b);
+  }
+  {
+    vector<int> a = {1, 4, 7, 2, 5, 8, 3, 6, 9}, b = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    sort(a.begin(), a.end());
+    EXPECT_EQ(a, b);
+  }
 }
 
 TEST(test_algorithm, heap) {
