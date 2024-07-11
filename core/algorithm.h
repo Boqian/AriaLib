@@ -3,6 +3,7 @@
 #include "iterator.h"
 #include "ranges.h"
 #include "utility.h"
+#include <cmath>
 
 // https://en.cppreference.com/w/cpp/algorithm
 namespace aria {
@@ -404,27 +405,44 @@ template <bidirectional_iterator It, class Compare> constexpr void insertion_sor
   for (auto i = first; i != last; ++i) {
     for (auto j = i; j != first;) {
       auto pre = prev(j);
-      if (comp(*j, *pre)) {
-        iter_swap(j, pre);
-        j = pre;
-      } else {
+      if (!comp(*j, *pre))
         break;
-      }
+      iter_swap(j, pre);
+      j = pre;
     }
   }
 }
 
 template <bidirectional_iterator It> constexpr void insertion_sort(It first, It last) { return insertion_sort(first, last, less{}); }
 
-// todo use introsort
-template <random_access_iterator It, class Compare> void sort(It first, It last, Compare comp) {
+namespace _sort {
+template <input_iterator It, class Compare> It quick_select(It first, It last, Compare comp) {
+  auto pivot = prev(last);
+  auto pos = partition(first, pivot, [&](const auto &val) { return comp(val, *pivot); });
+  iter_swap(pos, pivot);
+  return pos;
+}
+
+template <random_access_iterator It, class Compare> void introsort(It first, It last, Compare comp, int max_depth) {
+  static constexpr int max_length_for_insertion_sort = 16;
   if (last - first <= 1)
     return;
-  auto pivot = prev(last);
-  auto mid = partition(first, pivot, [&](const auto &val) { return comp(val, *pivot); });
-  iter_swap(mid, pivot);
-  sort(first, mid, comp);
-  sort(mid + 1, last, comp);
+  if (last - first <= max_length_for_insertion_sort) {
+    insertion_sort(first, last, comp);
+  } else if (max_depth == 0) {
+    make_heap(first, last, comp);
+    sort_heap(first, last, comp);
+  } else {
+    auto mid = quick_select(first, last, comp);
+    introsort(first, mid, comp, max_depth - 1);
+    introsort(mid + 1, last, comp, max_depth - 1);
+  }
+}
+
+} // namespace _sort
+
+template <random_access_iterator It, class Compare> void sort(It first, It last, Compare comp) {
+  _sort::introsort(first, last, comp, 2 * log2(last - first + 1));
 }
 
 template <random_access_iterator It> void sort(It first, It last) { return sort(first, last, less{}); }

@@ -228,4 +228,16 @@ TEST(test_algorithm, sort) {
     sort(a.begin(), a.end());
     EXPECT_EQ(a, b);
   }
+  {
+    const int n = 10000;
+    vector<int> v;
+    for (int i = 0; i < n; i += 2) {
+      v.push_back(n - i);
+      v.push_back(i + 1);
+    }
+    auto u = v;
+    std::sort(u.begin(), u.end());
+    sort(v.begin(), v.end());
+    EXPECT_EQ(u, v);
+  }
 }
