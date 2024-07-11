@@ -1,5 +1,6 @@
 #pragma once
 
+#include "algorithm.h"
 #include "iterator.h"
 #include "ranges.h"
 #include "type_traits.h"
@@ -26,7 +27,8 @@ public:
   constexpr basic_string_view(const CharT *s) noexcept : m_ptr(s), m_size(strlen(s)) {}
   constexpr basic_string_view(nullptr_t) = delete;
 
-  template <class It, class End> constexpr basic_string_view(It it, End end) : m_ptr(to_address(it)), m_size(end - it) {}
+  template <class It, class End> requires ranges::sized_sentinel_for<End, It>
+  constexpr basic_string_view(It it, End end) : m_ptr(to_address(it)), m_size(end - it) {}
   template <ranges::range R> constexpr basic_string_view(const R &r) : m_ptr(ranges::data(r)), m_size(ranges::size(r)) {}
 
   constexpr const_reference operator[](size_type i) const noexcept { return *(m_ptr + i); }
@@ -55,11 +57,27 @@ public:
     return basic_string_view(m_ptr + pos, len);
   }
 
+  constexpr int compare(basic_string_view v) const noexcept {
+    auto res = (*this) <=> v;
+    return (res == 0) ? 0 : (res < 0 ? -1 : 1);
+  }
+
+  constexpr bool starts_with(basic_string_view sv) const noexcept { return substr(0, sv.size()) == sv; }
+  constexpr bool ends_with(basic_string_view sv) const noexcept { return size() >= sv.size() && substr(size() - sv.size()) == sv; }
+
 private:
   const_pointer m_ptr{};
   size_type m_size{};
 };
 
 using string_view = basic_string_view<char>;
+
+template <class CharT> constexpr bool operator==(basic_string_view<CharT> a, type_identity_t<basic_string_view<CharT>> b) noexcept {
+  return equal(a.begin(), a.end(), b.begin(), b.end());
+}
+
+template <class CharT> constexpr auto operator<=>(basic_string_view<CharT> a, type_identity_t<basic_string_view<CharT>> b) noexcept {
+  return lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end());
+}
 
 } // namespace aria

@@ -1,11 +1,15 @@
 #include "list.h"
+#include "mystring.h"
 #include "ranges.h"
+#include "string_view.h"
 #include "vector.h"
 #include "gtest/gtest.h"
 
 using namespace aria;
 
 static_assert(ranges::range<vector<int>>);
+static_assert(ranges::range<string>);
+static_assert(ranges::range<string_view>);
 
 TEST(test_ranges, begin_end_size) {
   {

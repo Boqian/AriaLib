@@ -63,6 +63,7 @@ template <class Fn, class... Args> using invoke_result_t = invoke_result<Fn, Arg
 template <class T> struct type_identity {
   using type = T;
 };
+template <class T> using type_identity_t = type_identity<T>::type;
 
 template <bool B, class T, class F> struct conditional : type_identity<T> {};
 template <class T, class F> struct conditional<false, T, F> : type_identity<F> {};
