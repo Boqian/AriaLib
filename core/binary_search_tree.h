@@ -127,26 +127,18 @@ template <class T> struct node : public node_base {
 };
 
 template <class Key, class T> struct Traits {
-  using type = pair<const Key, T>;
-  using key_type = const Key;
-  using mapped_type = T;
-  using internal_node_type = node<type>;
-  using node_handle_type = node_handle<internal_node_type, _nh::map_base<Key, T>>;
+  using value_type = pair<const Key, T>;
+  using internal_node_type = node<value_type>;
+  using node_handle_type = node_handle<internal_node_type, _node_handle::map_base<Key, T>>;
+  static const auto &get_key(const value_type &val) { return val.first; }
 };
 
 template <class Key> struct Traits<Key, void> {
-  using type = Key;
   using value_type = Key;
-  using internal_node_type = node<type>;
-  using node_handle_type = node_handle<internal_node_type, _nh::set_base<Key>>;
+  using internal_node_type = node<value_type>;
+  using node_handle_type = node_handle<internal_node_type, _node_handle::set_base<Key>>;
+  static const auto &get_key(const value_type &val) { return val; }
 };
-
-template <class T> const auto &get_key(const T &x) {
-  if constexpr (is_pair_v<T>) {
-    return x.first;
-  } else
-    return x;
-}
 
 } // namespace _bst
 
@@ -201,7 +193,8 @@ private:
 template <class Key, class T, class Compare = less<Key>> class binary_search_tree : public iterable {
 public:
   using key_type = Key;
-  using value_type = typename _bst::Traits<Key, T>::type;
+  using traits = _bst::Traits<Key, T>;
+  using value_type = traits::value_type;
   using pointer = value_type *;
   using mapped_type = T;
   using size_type = size_t;
@@ -213,7 +206,7 @@ public:
   using const_iterator = basic_const_iterator<iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
-  using node_handle_type = _bst::Traits<Key, T>::node_handle_type;
+  using node_handle_type = traits::node_handle_type;
 
   binary_search_tree() = default;
 
@@ -366,7 +359,7 @@ private:
     return p;
   }
 
-  static const key_type &get_key(const node_base_type *p) { return _bst::get_key(static_cast<const node_type *>(p)->value); }
+  static const key_type &get_key(const node_base_type *p) { return traits::get_key(static_cast<const node_type *>(p)->value); }
   bool compare(const key_type &key, const node_base_type *p) const { return (p == m_root_end) || m_compare(key, get_key(p)); }
   bool compare(const node_base_type *p, const key_type &key) const { return (p != m_root_end) && m_compare(get_key(p), key); }
 
@@ -417,7 +410,7 @@ private:
   }
 
   pair<node_base_type *, bool> insert(node_base_type *root, const_reference value) {
-    if (compare(_bst::get_key(value), root)) {
+    if (compare(traits::get_key(value), root)) {
       if (root->left) {
         return insert(root->left, value);
       } else {
@@ -425,7 +418,7 @@ private:
         insert_at(root, root->left, p);
         return {p, true};
       }
-    } else if (compare(root, _bst::get_key(value))) {
+    } else if (compare(root, traits::get_key(value))) {
       if (root->right) {
         return insert(root->right, value);
       } else {

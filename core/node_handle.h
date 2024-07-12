@@ -4,8 +4,7 @@
 
 namespace aria {
 
-namespace _nh {
-
+namespace _node_handle {
 template <class Key> struct set_base {
 public:
   using value_type = const Key;
@@ -24,9 +23,9 @@ public:
 template <class T> concept node = requires(T t) { t.get_value(); };
 template <class T> concept base = is_specialization_of_v<T, set_base> || is_specialization_of_v<T, map_base>;
 
-} // namespace _nh
+} // namespace _node_handle
 
-template <_nh::node Node, _nh::base Base> class node_handle : public Base {
+template <_node_handle::node Node, _node_handle::base Base> class node_handle : public Base {
 public:
   using pointer = Node *;
 
