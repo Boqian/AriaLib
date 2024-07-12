@@ -126,10 +126,13 @@ template <class T> struct node : public node_base {
 
 template <class Key, class T> struct KeyVal {
   using type = pair<const Key, T>;
+  using key_type = const Key;
+  using mapped_type = T;
 };
 
 template <class Key> struct KeyVal<Key, void> {
   using type = Key;
+  using value_type = Key;
 };
 
 template <class T> const auto &get_key(const T &x) {
@@ -138,6 +141,41 @@ template <class T> const auto &get_key(const T &x) {
   } else
     return x;
 }
+
+template <class Key, class T> class node_handle {
+public:
+  using data_type = node<typename KeyVal<Key, T>::type>;
+  // using key_type = typename KeyVal<Key, T>::key_type;
+  // using mapped_type = typename KeyVal<Key, T>::mapped_type;
+  // using value_type = typename KeyVal<Key, T>::value_type;
+
+  node_handle() = default;
+  node_handle(data_type *const p) : ptr(p) {}
+  ~node_handle() {
+    if (ptr)
+      delete (ptr); // todo use allocator
+  }
+
+  node_handle(const node_handle &) = delete;
+  node_handle(node_handle &&rhs) noexcept { swap(rhs); }
+  node_handle &operator=(const node_handle &) = delete;
+  node_handle &operator=(const node_handle &&rhs) noexcept {
+    node_handle(move(rhs)).swap(*this);
+    return *this;
+  }
+
+  bool empty() const noexcept { return ptr; }
+  explicit operator bool() const noexcept { return ptr; }
+  void swap(node_handle &rhs) noexcept { aria::swap(ptr, rhs.ptr); }
+  data_type *release() noexcept { return exchange(ptr, nullptr); }
+
+  auto &key() const { return ptr->value.first; }
+  auto &mapped() const { return ptr->value.second; }
+  auto &value() const { return ptr->value; }
+
+private:
+  data_type *ptr{};
+};
 
 } // namespace _bst
 
@@ -204,6 +242,7 @@ public:
   using const_iterator = basic_const_iterator<iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+  using node_handle_type = _bst::node_handle<Key, T>;
 
   binary_search_tree() = default;
 
@@ -315,6 +354,15 @@ public:
     return 0;
   }
 
+  node_handle_type extract(iterator pos) {
+    if (pos == end())
+      return {};
+    extract_node(pos.ptr);
+    return node_handle_type(static_cast<node_type *>(pos.ptr));
+  }
+
+  node_handle_type extract(const Key &key) { return extract(find(key)); }
+
   const_iterator lower_bound(const Key &key) const {
     auto [p, par] = find(root(), m_root_end, key);
     if (p)
@@ -355,7 +403,6 @@ private:
     auto q = static_cast<node_type *>(p);
     destroy_at(q);
     m_alloc.deallocate(q, 1);
-    m_size--;
   }
 
   void destroy_tree(node_base_type *p) {
@@ -364,6 +411,7 @@ private:
     destroy_tree(p->left);
     destroy_tree(p->right);
     destroy_node(p);
+    m_size--;
   }
 
   void adjust_on_empty() noexcept {
@@ -419,21 +467,26 @@ private:
     }
   }
 
-  void erase_node(node_base_type *p) {
+  void extract_node(node_base_type *p) {
     if (!p->left && !p->right) {
       _bst::parent_ref(p) = nullptr;
-      destroy_node(p);
+      --m_size;
     } else if (p->left && !p->right) {
       link(p->parent, _bst::parent_ref(p), p->left);
-      destroy_node(p);
+      --m_size;
     } else if (p->right && !p->left) {
       link(p->parent, _bst::parent_ref(p), p->right);
-      destroy_node(p);
+      --m_size;
     } else {
       auto prev_p = prev(p);
       _bst::swap(*prev_p, *p);
-      erase_node(p);
+      extract_node(p);
     }
+  }
+
+  void erase_node(node_base_type *p) {
+    extract_node(p);
+    destroy_node(p);
   }
 
   node_base_type m_root_node{};

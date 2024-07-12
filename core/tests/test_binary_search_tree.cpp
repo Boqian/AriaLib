@@ -203,3 +203,11 @@ TEST(test_binary_search_tree, erase) {
     EXPECT_EQ(a, b);
   }
 }
+
+TEST(test_binary_search_tree, extract) {
+  binary_search_tree<int, void> a = {2, 1, 3}, b = {1, 3};
+  auto nh = a.extract(2);
+  EXPECT_EQ(a, b);
+  EXPECT_TRUE(nh);
+  EXPECT_EQ(nh.value(), 2);
+}
