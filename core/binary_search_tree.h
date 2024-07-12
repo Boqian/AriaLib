@@ -2,6 +2,7 @@
 #include "algorithm.h"
 #include "allocator.h"
 #include "iterator.h"
+#include "node_handle.h"
 #include "utility.h"
 
 namespace aria {
@@ -121,18 +122,23 @@ void swap(node_base &a, node_base &b) {
 
 template <class T> struct node : public node_base {
   template <class... Args> requires is_constructible_v<T, Args...> node(Args &&...args) : value(forward<Args>(args)...) {}
+  T &get_value() { return value; }
   T value;
 };
 
-template <class Key, class T> struct KeyVal {
+template <class Key, class T> struct Traits {
   using type = pair<const Key, T>;
   using key_type = const Key;
   using mapped_type = T;
+  using internal_node_type = node<type>;
+  using node_handle_type = node_handle<internal_node_type, _nh::map_base<Key, T>>;
 };
 
-template <class Key> struct KeyVal<Key, void> {
+template <class Key> struct Traits<Key, void> {
   using type = Key;
   using value_type = Key;
+  using internal_node_type = node<type>;
+  using node_handle_type = node_handle<internal_node_type, _nh::set_base<Key>>;
 };
 
 template <class T> const auto &get_key(const T &x) {
@@ -141,41 +147,6 @@ template <class T> const auto &get_key(const T &x) {
   } else
     return x;
 }
-
-template <class Key, class T> class node_handle {
-public:
-  using data_type = node<typename KeyVal<Key, T>::type>;
-  // using key_type = typename KeyVal<Key, T>::key_type;
-  // using mapped_type = typename KeyVal<Key, T>::mapped_type;
-  // using value_type = typename KeyVal<Key, T>::value_type;
-
-  node_handle() = default;
-  node_handle(data_type *const p) : ptr(p) {}
-  ~node_handle() {
-    if (ptr)
-      delete (ptr); // todo use allocator
-  }
-
-  node_handle(const node_handle &) = delete;
-  node_handle(node_handle &&rhs) noexcept { swap(rhs); }
-  node_handle &operator=(const node_handle &) = delete;
-  node_handle &operator=(const node_handle &&rhs) noexcept {
-    node_handle(move(rhs)).swap(*this);
-    return *this;
-  }
-
-  bool empty() const noexcept { return ptr; }
-  explicit operator bool() const noexcept { return ptr; }
-  void swap(node_handle &rhs) noexcept { aria::swap(ptr, rhs.ptr); }
-  data_type *release() noexcept { return exchange(ptr, nullptr); }
-
-  auto &key() const { return ptr->value.first; }
-  auto &mapped() const { return ptr->value.second; }
-  auto &value() const { return ptr->value; }
-
-private:
-  data_type *ptr{};
-};
 
 } // namespace _bst
 
@@ -230,7 +201,7 @@ private:
 template <class Key, class T, class Compare = less<Key>> class binary_search_tree : public iterable {
 public:
   using key_type = Key;
-  using value_type = typename _bst::KeyVal<Key, T>::type;
+  using value_type = typename _bst::Traits<Key, T>::type;
   using pointer = value_type *;
   using mapped_type = T;
   using size_type = size_t;
@@ -242,7 +213,7 @@ public:
   using const_iterator = basic_const_iterator<iterator>;
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
-  using node_handle_type = _bst::node_handle<Key, T>;
+  using node_handle_type = _bst::Traits<Key, T>::node_handle_type;
 
   binary_search_tree() = default;
 
