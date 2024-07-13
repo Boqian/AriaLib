@@ -216,8 +216,7 @@ public:
       insert(x);
   }
 
-  template <input_or_output_iterator InputIt>
-  binary_search_tree(InputIt first, InputIt last, const Compare &comp = Compare()) : m_compare(comp) {
+  template <input_iterator It> binary_search_tree(It first, It last, const Compare &comp = Compare()) : m_compare(comp) {
     for (; first != last; ++first)
       insert(*first);
   }

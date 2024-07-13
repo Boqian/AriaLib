@@ -48,7 +48,7 @@ public:
     }
   }
 
-  template <input_or_output_iterator InputIt> constexpr vector(InputIt first, InputIt last) {
+  template <input_iterator It> constexpr vector(It first, It last) {
     const int cap = distance(first, last);
     reserve(cap);
     m_size = cap;
