@@ -3,33 +3,38 @@
 #include "algorithm.h"
 #include "functional.h"
 #include "list.h"
+#include "node_handle.h"
 #include "utility.h"
 #include "vector.h"
 #include <cmath> //ceil
 
+// hash_table is used to implement unordered_set and unordered_map
+
 namespace aria {
 
 namespace _hash_table {
-template <class Key, class T> struct KeyVal {
-  using type = pair<const Key, T>;
+
+template <class Key, class T> struct Traits {
+  using value_type = pair<const Key, T>;
+  using internal_node_type = _list::node<value_type>;
+  using node_handle_type = node_handle<internal_node_type, _node_handle::map_base<Key, T>>;
+  static const auto &get_key(const value_type &val) { return val.first; }
 };
 
-template <class Key> struct KeyVal<Key, void> {
-  using type = Key;
+template <class Key> struct Traits<Key, void> {
+  using value_type = Key;
+  using internal_node_type = _list::node<value_type>;
+  using node_handle_type = node_handle<internal_node_type, _node_handle::set_base<Key>>;
+  static const auto &get_key(const value_type &val) { return val; }
 };
 
-template <class T> const auto &get_key(const T &x) {
-  if constexpr (is_pair_v<T>) {
-    return x.first;
-  } else
-    return x;
-}
 } // namespace _hash_table
 
 template <class Key, class T, class Hash = hash<Key>, class KeyEqual = equal_to<Key>> class hash_table : iterable {
 public:
+  using traits = _hash_table::Traits<Key, T>;
   using key_type = Key;
-  using value_type = typename _hash_table::KeyVal<Key, T>::type;
+  using value_type = traits::value_type;
   using mapped_type = T;
   using size_type = size_t;
   using difference_type = ptrdiff_t;
@@ -39,6 +44,7 @@ public:
   using key_equal = KeyEqual;
   using iterator = list<value_type>::iterator;
   using const_iterator = list<value_type>::const_iterator;
+  using node_handle_type = traits::node_handle_type;
 
   hash_table() = default;
   ~hash_table() = default;
@@ -100,9 +106,9 @@ public:
   pair<iterator, bool> insert(const_reference value) {
     resize_if_needed(1);
 
-    auto &bucket = get_bucket(_hash_table::get_key(value));
+    auto &bucket = get_bucket(traits::get_key(value));
 
-    if (auto it = find(bucket, _hash_table::get_key(value)); it != m_list.end())
+    if (auto it = find(bucket, traits::get_key(value)); it != m_list.end())
       return {it, false};
 
     auto insert_pos = m_list.insert(bucket ? bucket.first : m_list.end(), value);
@@ -126,7 +132,7 @@ public:
     if (pos == m_list.end())
       return pos;
 
-    auto &bucket = get_bucket(_hash_table::get_key(*pos));
+    auto &bucket = get_bucket(traits::get_key(*pos));
     iterator res;
     if (bucket.first == pos) {
       res = bucket.first = m_list.erase(pos);
@@ -175,7 +181,7 @@ protected:
   iterator find(const bucket_type &bucket, const key_type &key) const {
     auto it = bucket.first;
     for (int j = 0; j < bucket.size; j++, it++) {
-      if (m_key_equal(_hash_table::get_key(*it), key))
+      if (m_key_equal(traits::get_key(*it), key))
         return it;
     }
     return m_list.end();

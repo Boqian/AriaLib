@@ -6,11 +6,6 @@ using namespace aria;
 static_assert(bidirectional_iterator<hash_table<int, int>::iterator>);
 static_assert(bidirectional_iterator<hash_table<int, int>::const_iterator>);
 
-TEST(test_hash_map, _KeyVal) {
-  auto kv = pair(1, 2);
-  EXPECT_EQ(_hash_table::get_key(kv), 1);
-}
-
 TEST(test_hash_map, basic) {
   hash_table<int, int> m;
   EXPECT_TRUE(m.empty());

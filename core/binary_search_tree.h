@@ -193,8 +193,8 @@ private:
 
 template <class Key, class T, class Compare = less<Key>> class binary_search_tree : public iterable {
 public:
-  using key_type = Key;
   using traits = _bst::Traits<Key, T>;
+  using key_type = Key;
   using value_type = traits::value_type;
   using pointer = value_type *;
   using mapped_type = T;
