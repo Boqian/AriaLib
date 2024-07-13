@@ -288,8 +288,8 @@ public:
   auto end() noexcept { return iterator(m_root_end); }
 
   const_iterator find(const key_type &key) const {
-    auto [p, par] = find(root(), m_root_end, key);
-    return const_iterator(p ? p : m_root_end);
+    auto [pp, par] = find_insert_position(key);
+    return const_iterator(*pp ? *pp : m_root_end);
   }
   iterator find(const key_type &key) { return as_const(*this).find(key); }
   bool contains(const key_type &key) const { return find(key) != end(); }
@@ -333,8 +333,8 @@ public:
   node_handle_type extract(const Key &key) { return extract(find(key)); }
 
   const_iterator lower_bound(const Key &key) const {
-    auto [p, par] = find(root(), m_root_end, key);
-    if (p)
+    auto [pp, par] = find_insert_position(key);
+    if (auto p = *pp; p)
       return const_iterator(p);
     else if (compare(key, par))
       return const_iterator(par);
@@ -344,8 +344,8 @@ public:
   iterator lower_bound(const Key &key) { return as_const(*this).lower_bound(key); }
 
   const_iterator upper_bound(const Key &key) const {
-    auto [p, par] = find(root(), m_root_end, key);
-    if (p)
+    auto [pp, par] = find_insert_position(key);
+    if (auto p = *pp; p)
       return const_iterator(_bst::next(const_cast<node_base_type *>(p)));
     else if (compare(key, par))
       return const_iterator(par);
@@ -413,19 +413,6 @@ private:
         break;
     }
     return {const_cast<node_base_type **>(pp), parent};
-  }
-
-  pair<const node_base_type *, const node_base_type *> find(const node_base_type *p, const node_base_type *parent,
-                                                            const key_type &key) const {
-    if (!p)
-      return {p, parent};
-    if (compare(key, p)) {
-      return find(p->left, p, key);
-    } else if (compare(p, key)) {
-      return find(p->right, p, key);
-    } else {
-      return {p, parent};
-    }
   }
 
   void insert_at(insert_position pos, node_base_type *p) {
