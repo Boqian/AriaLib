@@ -112,3 +112,22 @@ TEST(test_unordered_set, basic) {
     EXPECT_EQ(a, b);
   }
 }
+
+TEST(test_unordered_set, node_handle) {
+  {
+    unordered_set<int> a = {1, 2, 3}, b = {1, 3};
+    auto nh = a.extract(a.find(2));
+    EXPECT_EQ(nh.value(), 2);
+    EXPECT_EQ(b, a);
+  }
+}
+
+TEST(test_unordered_map, node_handle) {
+  {
+    unordered_map<int, int> a = {{1, 10}, {2, 20}, {3, 30}}, b = {{1, 10}, {3, 30}};
+    auto nh = a.extract(a.find(2));
+    EXPECT_EQ(nh.key(), 2);
+    EXPECT_EQ(nh.mapped(), 20);
+    EXPECT_EQ(b, a);
+  }
+}

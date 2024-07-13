@@ -155,6 +155,14 @@ public:
     swap(m_key_equal, rhs.m_key_equal);
   }
 
+  node_handle_type extract(iterator pos) noexcept {
+    if (pos == end())
+      return {};
+    get_bucket(traits::get_key(*pos)).remove(pos);
+    auto nh = m_list.extract(pos);
+    return node_handle_type(nh.release());
+  }
+
 protected:
   class bucket_type {
   public:
