@@ -12,6 +12,7 @@ struct node_base {
   node_base *parent{};
   node_base *left{};
   node_base *right{};
+  void reset_edge() noexcept { parent = left = right = nullptr; }
 };
 
 node_base *next(node_base *p) {
@@ -437,21 +438,24 @@ private:
     }
   }
 
+  // the extracted node need to be destroyed or managered by node handle after the call
   void extract_node(node_base_type *p) {
-    if (!p->left && !p->right) {
-      _bst::parent_ref(p) = nullptr;
-      --m_size;
-    } else if (p->left && !p->right) {
-      link(p->parent, _bst::parent_ref(p), p->left);
-      --m_size;
-    } else if (p->right && !p->left) {
-      link(p->parent, _bst::parent_ref(p), p->right);
-      --m_size;
-    } else {
+    if (p->left && p->right) {
       auto prev_p = prev(p);
       _bst::swap(*prev_p, *p);
-      extract_node(p);
+      return extract_node(p);
     }
+
+    if (!p->left && !p->right) {
+      _bst::parent_ref(p) = nullptr;
+    } else if (p->left && !p->right) {
+      link(p->parent, _bst::parent_ref(p), p->left);
+    } else if (p->right && !p->left) {
+      link(p->parent, _bst::parent_ref(p), p->right);
+    }
+
+    p->reset_edge();
+    --m_size;
   }
 
   void erase_node(node_base_type *p) {
