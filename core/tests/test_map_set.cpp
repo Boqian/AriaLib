@@ -67,6 +67,19 @@ TEST(test_unordered_map, more) {
   }
 }
 
+TEST(test_map, node_handle) {
+  {
+    map<int, int> a = {{2, 100}, {1, 1}, {3, 3}}, b = {{1, 1}, {3, 3}}, c = {{5, 5}}, d = {{2, 100}, {5, 5}};
+    auto nh = a.extract(2);
+    EXPECT_EQ(a, b);
+    EXPECT_TRUE(nh);
+    EXPECT_EQ(nh.key(), 2);
+    EXPECT_EQ(nh.mapped(), 100);
+    c.insert(move(nh));
+    EXPECT_EQ(c, d);
+  }
+}
+
 TEST(test_set, basic) {
   {
     set<int> st;
@@ -131,5 +144,17 @@ TEST(test_set, lower_upper_bound) {
       EXPECT_EQ(*a.upper_bound(x * 2 - 1), x * 2);
       EXPECT_EQ(*a.upper_bound(x * 2 - 2), x * 2);
     }
+  }
+}
+
+TEST(test_set, node_handle) {
+  {
+    set<int> a = {2, 1, 3}, b = {1, 3}, c = {5}, d = {2, 5};
+    auto nh = a.extract(2);
+    EXPECT_EQ(a, b);
+    EXPECT_TRUE(nh);
+    EXPECT_EQ(nh.value(), 2);
+    c.insert(move(nh));
+    EXPECT_EQ(c, d);
   }
 }
