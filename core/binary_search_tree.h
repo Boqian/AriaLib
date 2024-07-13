@@ -393,6 +393,28 @@ private:
   node_base_type *root() { return m_root_end->left; }
   const node_base_type *root() const { return m_root_end->left; }
 
+  struct insert_position {
+    node_base_type *parent{};
+    node_base_type **pp{};
+  };
+
+  insert_position find_insert_position(const key_type &key) const {
+    auto pp = &m_root_end;
+    node_base_type *parent{};
+    while (*pp) {
+      auto p = *pp;
+      if (compare(key, p)) {
+        parent = p;
+        pp = &(p->left);
+      } else if (compare(p, key)) {
+        parent = p;
+        pp = &(p->right);
+      } else
+        break;
+    }
+    return {parent, const_cast<node_base_type **>(pp)};
+  }
+
   pair<const node_base_type *, const node_base_type *> find(const node_base_type *p, const node_base_type *parent,
                                                             const key_type &key) const {
     if (!p)
@@ -406,33 +428,25 @@ private:
     }
   }
 
-  void insert_at(node_base_type *parent, node_base_type *&pos, node_base_type *p) {
-    if (&pos == &parent->left && m_first == parent) {
+  void insert_at(insert_position pos, node_base_type *p) {
+    auto [parent, pp] = pos;
+    *pp = p;
+    p->parent = parent;
+    if (pp == &parent->left && m_first == parent) {
       m_first = p;
     }
-    link(parent, pos, p);
     m_size++;
   }
 
   template <class U = value_type> pair<node_base_type *, bool> insert(node_base_type *root, U &&value) {
-    if (compare(traits::get_key(value), root)) {
-      if (root->left) {
-        return insert(root->left, forward<U>(value));
-      } else {
-        auto p = create_node(value);
-        insert_at(root, root->left, p);
-        return {p, true};
-      }
-    } else if (compare(root, traits::get_key(value))) {
-      if (root->right) {
-        return insert(root->right, forward<U>(value));
-      } else {
-        auto p = create_node(value);
-        insert_at(root, root->right, p);
-        return {p, true};
-      }
+    auto pos = find_insert_position(traits::get_key(value));
+    auto p = *(pos.pp);
+    if (!p) {
+      auto q = create_node(value);
+      insert_at(pos, q);
+      return {q, true};
     } else {
-      return {root, false};
+      return {p, false};
     }
   }
 
