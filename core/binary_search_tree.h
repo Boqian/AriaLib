@@ -294,8 +294,13 @@ public:
   iterator find(const key_type &key) { return as_const(*this).find(key); }
   bool contains(const key_type &key) const { return find(key) != end(); }
 
-  pair<iterator, bool> insert(const_reference value) {
+  pair<iterator, bool> insert(const value_type &value) {
     auto [p, flag] = insert(m_root_end, value);
+    return {iterator(p), flag};
+  }
+
+  pair<iterator, bool> insert(value_type &&value) {
+    auto [p, flag] = insert(m_root_end, move(value));
     return {iterator(p), flag};
   }
 
@@ -409,10 +414,10 @@ private:
     m_size++;
   }
 
-  pair<node_base_type *, bool> insert(node_base_type *root, const_reference value) {
+  template <class U = value_type> pair<node_base_type *, bool> insert(node_base_type *root, U &&value) {
     if (compare(traits::get_key(value), root)) {
       if (root->left) {
-        return insert(root->left, value);
+        return insert(root->left, forward<U>(value));
       } else {
         auto p = create_node(value);
         insert_at(root, root->left, p);
@@ -420,7 +425,7 @@ private:
       }
     } else if (compare(root, traits::get_key(value))) {
       if (root->right) {
-        return insert(root->right, value);
+        return insert(root->right, forward<U>(value));
       } else {
         auto p = create_node(value);
         insert_at(root, root->right, p);
