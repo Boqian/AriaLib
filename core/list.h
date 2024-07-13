@@ -89,7 +89,7 @@ public:
 
   list(const list &rhs) {
     for (auto &x : rhs)
-      push_back(x);
+      emplace_back(x);
   }
 
   list &operator=(const list &rhs) {
@@ -106,6 +106,12 @@ public:
     auto temp = move(rhs);
     swap(temp);
     return *this;
+  }
+
+  template <input_iterator It> list(It first, It last) {
+    for (; first != last; ++first) {
+      emplace_back(*first);
+    }
   }
 
   template <class... Args> reference emplace_back(Args &&...args) { return *iterator(insert_value(m_end, forward<Args>(args)...)); }

@@ -1,4 +1,5 @@
 #include "list.h"
+#include "vector.h"
 #include "gtest/gtest.h"
 
 using namespace aria;
@@ -158,6 +159,12 @@ TEST(test_list, construct) {
     auto u = move(v);
     test_iterate(v);
     test_iterate(u);
+  }
+  {
+    vector<int> v = {1, 2, 3};
+    const list<int> ans = {1, 2, 3};
+    list<int> li(v.begin(), v.end());
+    EXPECT_EQ(li, ans);
   }
 }
 
