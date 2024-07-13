@@ -204,10 +204,14 @@ TEST(test_binary_search_tree, erase) {
   }
 }
 
-TEST(test_binary_search_tree, extract) {
-  binary_search_tree<int, void> a = {2, 1, 3}, b = {1, 3};
-  auto nh = a.extract(2);
-  EXPECT_EQ(a, b);
-  EXPECT_TRUE(nh);
-  EXPECT_EQ(nh.value(), 2);
+TEST(test_binary_search_tree, node_handle) {
+  {
+    binary_search_tree<int, void> a = {2, 1, 3}, b = {1, 3}, c = {5}, d = {2, 5};
+    auto nh = a.extract(2);
+    EXPECT_EQ(a, b);
+    EXPECT_TRUE(nh);
+    EXPECT_EQ(nh.value(), 2);
+    c.insert(move(nh));
+    EXPECT_EQ(c, d);
+  }
 }

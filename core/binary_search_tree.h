@@ -305,6 +305,18 @@ public:
     return {iterator(p), flag};
   }
 
+  pair<iterator, bool> insert(node_handle_type &&nh) {
+    if (!nh)
+      return {end(), false};
+    auto [pp, parent] = find_insert_position(traits::get_key(nh.get()->value));
+    if (auto p = *pp; !p) {
+      insert_at(pp, parent, nh.release());
+      return {*pp, true};
+    } else {
+      return {p, false};
+    }
+  }
+
   iterator erase(iterator pos) {
     if (pos == end())
       return pos;
@@ -415,8 +427,7 @@ private:
     return {const_cast<node_base_type **>(pp), parent};
   }
 
-  void insert_at(insert_position pos, node_base_type *p) {
-    auto [pp, parent] = pos;
+  void insert_at(node_base_type **pp, node_base_type *parent, node_base_type *p) {
     *pp = p;
     p->parent = parent;
     if (pp == &parent->left && m_first == parent) {
@@ -426,11 +437,10 @@ private:
   }
 
   template <class U = value_type> pair<node_base_type *, bool> insert(node_base_type *root, U &&value) {
-    auto pos = find_insert_position(traits::get_key(value));
-    auto p = *(pos.pp);
-    if (!p) {
+    auto [pp, parent] = find_insert_position(traits::get_key(value));
+    if (auto p = *pp; !p) {
       auto q = create_node(value);
-      insert_at(pos, q);
+      insert_at(pp, parent, q);
       return {q, true};
     } else {
       return {p, false};
