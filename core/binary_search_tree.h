@@ -308,7 +308,7 @@ public:
   pair<iterator, bool> insert(node_handle_type &&nh) {
     if (!nh)
       return {end(), false};
-    auto [pp, parent] = find_insert_position(traits::get_key(nh.get()->value));
+    auto [pp, parent] = find_insert_position(traits::get_key(nh->get_value()));
     if (auto p = *pp; !p) {
       insert_at(pp, parent, nh.release());
       return {*pp, true};
