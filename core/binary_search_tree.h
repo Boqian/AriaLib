@@ -394,8 +394,8 @@ private:
   const node_base_type *root() const { return m_root_end->left; }
 
   struct insert_position {
-    node_base_type *parent{};
     node_base_type **pp{};
+    node_base_type *parent{};
   };
 
   insert_position find_insert_position(const key_type &key) const {
@@ -412,7 +412,7 @@ private:
       } else
         break;
     }
-    return {parent, const_cast<node_base_type **>(pp)};
+    return {const_cast<node_base_type **>(pp), parent};
   }
 
   pair<const node_base_type *, const node_base_type *> find(const node_base_type *p, const node_base_type *parent,
@@ -429,7 +429,7 @@ private:
   }
 
   void insert_at(insert_position pos, node_base_type *p) {
-    auto [parent, pp] = pos;
+    auto [pp, parent] = pos;
     *pp = p;
     p->parent = parent;
     if (pp == &parent->left && m_first == parent) {
