@@ -327,8 +327,7 @@ public:
   node_handle_type extract(iterator pos) {
     if (pos == end())
       return {};
-    extract_node(pos.ptr);
-    return node_handle_type(static_cast<node_type *>(pos.ptr));
+    return node_handle_type(static_cast<node_type *>(extract_node(pos.ptr)));
   }
 
   node_handle_type extract(const Key &key) { return extract(find(key)); }
@@ -439,7 +438,7 @@ private:
   }
 
   // the extracted node need to be destroyed or managered by node handle after the call
-  void extract_node(node_base_type *p) {
+  node_base_type *extract_node(node_base_type *p) {
     if (p->left && p->right) {
       auto prev_p = prev(p);
       _bst::swap(*prev_p, *p);
@@ -456,12 +455,10 @@ private:
 
     p->reset_edge();
     --m_size;
+    return p;
   }
 
-  void erase_node(node_base_type *p) {
-    extract_node(p);
-    destroy_node(p);
-  }
+  void erase_node(node_base_type *p) { destroy_node(extract_node(p)); }
 
   node_base_type m_root_node{};
   node_base_type *const m_root_end = &m_root_node;
