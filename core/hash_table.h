@@ -105,13 +105,12 @@ public:
 
   pair<iterator, bool> insert(const_reference value) {
     resize_if_needed(1);
-
-    auto &bucket = get_bucket(traits::get_key(value));
-
-    if (auto it = find(bucket, traits::get_key(value)); it != m_list.end())
+    const auto &key = traits::get_key(value);
+    auto &bucket = get_bucket(key);
+    if (auto it = find(bucket, key); it != m_list.end())
       return {it, false};
 
-    auto insert_pos = m_list.insert(bucket ? bucket.first : m_list.end(), value);
+    auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), value);
     bucket.add(insert_pos);
     return {insert_pos, true};
   }
@@ -157,32 +156,32 @@ public:
   }
 
 protected:
-  struct bucket_type {
-    bucket_type() = default;
-
+  class bucket_type {
+  public:
     void add(iterator it) noexcept {
-      first = it;
-      size++;
+      m_first = it;
+      m_size++;
     }
-
     void remove(iterator it) noexcept {
-      if (first == it) {
-        ++first;
-      }
-      --size;
+      if (m_first == it)
+        ++m_first;
+      --m_size;
     }
+    bool empty() const noexcept { return m_size == 0; }
+    iterator first() const noexcept { return m_first; }
+    size_t size() const noexcept { return m_size; }
 
-    operator bool() const noexcept { return size > 0; }
-    iterator first{};
-    size_t size{};
+  private:
+    iterator m_first{};
+    size_t m_size{};
   };
 
   size_type bucket_index(const key_type &key) const noexcept { return m_hasher(key) % bucket_count(); }
   bucket_type &get_bucket(const key_type &key) noexcept { return m_table[bucket_index(key)]; }
 
   iterator find(const bucket_type &bucket, const key_type &key) const {
-    auto it = bucket.first;
-    for (int j = 0; j < bucket.size; j++, it++) {
+    auto it = bucket.first();
+    for (int j = 0; j < bucket.size(); ++j, ++it) {
       if (m_key_equal(traits::get_key(*it), key))
         return it;
     }
