@@ -299,3 +299,13 @@ TEST(test_list, splice) {
     EXPECT_EQ(v, list<int>({1, 2, 4, 5, 3}));
   }
 }
+
+TEST(test_list, node_handle) {
+  {
+    list<int> a = {1, 3, 5}, b = {2, 4};
+    auto nh = a.extract(find(a.begin(), a.end(), 3));
+    b.insert(next(b.begin()), move(nh));
+    EXPECT_EQ(a, list<int>({1, 5}));
+    EXPECT_EQ(b, list<int>({2, 3, 4}));
+  }
+}

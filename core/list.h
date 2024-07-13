@@ -2,6 +2,7 @@
 #include "algorithm.h"
 #include "allocator.h"
 #include "iterator.h"
+#include "node_handle.h"
 #include "utility.h"
 
 namespace aria {
@@ -58,7 +59,7 @@ public:
 
   operator bool() const noexcept { return ptr; }
 
-private:
+protected:
   reference value() const noexcept { return static_cast<const node_type *>(ptr)->value; }
   const node_base_type *ptr;
 };
@@ -77,6 +78,7 @@ public:
   using iterator = mutable_iterator<const_iterator>;
   using reverse_iterator = reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<iterator>;
+  using node_handle_type = node_handle<_list::node<T>, _node_handle::set_base<T>>;
 
   list() noexcept = default;
   ~list() noexcept { clear(); }
@@ -222,6 +224,21 @@ public:
 
     auto p = other.extract_node(const_cast<node_base_type *>(it.ptr));
     insert_node(const_cast<node_base_type *>(pos.ptr), p);
+  }
+
+  node_handle_type extract(const_iterator it) noexcept {
+    if (it == end())
+      return {};
+    auto p = extract_node(const_cast<node_base_type *>(it.ptr));
+    return node_handle_type(static_cast<node_type *>(p));
+  }
+
+  iterator insert(const_iterator pos, node_handle_type &&nh) noexcept {
+    if (!nh)
+      return end();
+    node_base_type *p = nh.release();
+    auto inserted = insert_node(const_cast<node_base_type *>(pos.ptr), p);
+    return iterator(inserted);
   }
 
 private:
