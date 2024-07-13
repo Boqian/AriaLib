@@ -98,7 +98,7 @@ public:
   constexpr void pop_back() {
     if (m_size > 0) {
       m_size--;
-      decstuct_at(m_size);
+      destruct_at(m_size);
     }
   }
 
@@ -109,7 +109,7 @@ public:
 
   constexpr void clear() {
     for (int i = 0; i < m_size; i++)
-      decstuct_at(i);
+      destruct_at(i);
     m_size = 0;
   }
 
@@ -190,7 +190,7 @@ private:
       throw out_of_range("");
   }
 
-  constexpr void decstuct_at(size_type i) { destroy_at(get(i)); }
+  constexpr void destruct_at(size_type i) { destroy_at(get(i)); }
 
   constexpr void reallocate(size_type cap) {
     auto p = m_alloc.allocate(cap);
@@ -202,7 +202,7 @@ private:
       }
     }
     for (int i = 0; i < m_size; i++) {
-      decstuct_at(i);
+      destruct_at(i);
     }
     m_alloc.deallocate(m_ptr, m_capacity);
     m_ptr = p;
