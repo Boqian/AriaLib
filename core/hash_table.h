@@ -155,12 +155,29 @@ public:
     swap(m_key_equal, rhs.m_key_equal);
   }
 
-  node_handle_type extract(iterator pos) noexcept {
+  node_handle_type extract(iterator pos) {
     if (pos == end())
       return {};
     get_bucket(traits::get_key(*pos)).remove(pos);
     auto nh = m_list.extract(pos);
     return node_handle_type(nh.release());
+  }
+
+  node_handle_type extract(const key_type &key) { return extract(find(key)); }
+
+  pair<iterator, bool> insert(node_handle_type &&nh) {
+    if (!nh)
+      return {end(), false};
+    resize_if_needed(1);
+    const auto &key = traits::get_key(nh->get_value());
+    auto &bucket = get_bucket(key);
+    if (auto it = find(bucket, key); it != m_list.end())
+      return {it, false};
+
+    typename list<value_type>::node_handle_type list_nh(nh.release());
+    auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), move(list_nh));
+    bucket.add(insert_pos);
+    return {insert_pos, true};
   }
 
 protected:
