@@ -133,19 +133,12 @@ public:
       return pos;
 
     auto &bucket = get_bucket(traits::get_key(*pos));
-    iterator res;
-    if (bucket.first == pos) {
-      res = bucket.first = m_list.erase(pos);
-    } else {
-      res = m_list.erase(pos);
-    }
-    bucket.size--;
-    return res;
+    bucket.remove(pos);
+    return m_list.erase(pos);
   }
 
   size_type erase(const key_type &key) {
-    auto it = find(key);
-    if (it != end()) {
+    if (auto it = find(key); it != end()) {
       erase(it);
       return 1;
     }
@@ -166,10 +159,19 @@ public:
 protected:
   struct bucket_type {
     bucket_type() = default;
-    void add(iterator it) {
+
+    void add(iterator it) noexcept {
       first = it;
       size++;
     }
+
+    void remove(iterator it) noexcept {
+      if (first == it) {
+        ++first;
+      }
+      --size;
+    }
+
     operator bool() const noexcept { return size > 0; }
     iterator first{};
     size_t size{};
