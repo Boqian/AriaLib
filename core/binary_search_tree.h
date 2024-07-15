@@ -316,6 +316,10 @@ public:
     }
   }
 
+  template <class... Args> pair<iterator, bool> emplace(Args &&...args) {
+    return insert(node_handle_type(static_cast<node_type *>(create_node(forward<Args>(args)...))));
+  }
+
   iterator erase(iterator pos) {
     if (pos == end())
       return pos;
