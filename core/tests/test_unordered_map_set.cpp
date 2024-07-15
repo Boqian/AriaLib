@@ -149,3 +149,15 @@ TEST(test_unordered_map_set, emplace) {
     EXPECT_EQ(b, a);
   }
 }
+
+TEST(test_unordered_map, insert_or_assign) {
+  {
+    unordered_map<int, int> a;
+    auto [it, flag] = a.insert_or_assign(1, 10);
+    EXPECT_TRUE(flag);
+    EXPECT_TRUE(it->first == 1 && it->second == 10);
+    auto [it2, flag2] = a.insert_or_assign(1, 20);
+    EXPECT_FALSE(flag2);
+    EXPECT_TRUE(it->first == 1 && it->second == 20);
+  }
+}

@@ -7,6 +7,7 @@
 #include "node_handle.h"
 #include "utility.h"
 #include "vector.h"
+#include <cassert>
 #include <cmath> //ceil
 
 // hash_table is used to implement unordered_set and unordered_map
@@ -92,8 +93,9 @@ public:
   bool empty() const noexcept { return m_list.empty(); }
 
   //--------------------  Lookup--------------------
-  iterator find(const key_type &key) { return find(get_bucket(key), key); }
-  const_iterator find(const key_type &key) const { return find(get_bucket(key), key); }
+
+  iterator find(const key_type &key) { return as_const(*this).find(key); }
+  const_iterator find(const key_type &key) const { return m_buckets.empty() ? end() : find(get_bucket(key), key); }
   bool contains(const key_type &key) const { return find(key) != m_list.end(); }
 
   //--------------------  Bucket interface--------------------
@@ -196,11 +198,12 @@ protected:
     size_t m_size{};
   };
 
-  template <class Self> decltype(auto) get_bucket(this Self &&self, const key_type &key) noexcept {
+  template <class Self> decltype(auto) get_bucket(this Self &&self, const key_type &key) {
+    assert(!self.m_buckets.empty());
     return self.m_buckets[self.bucket(key)];
   }
 
-  iterator find(const bucket_type &bucket, const key_type &key) const {
+  const_iterator find(const bucket_type &bucket, const key_type &key) const {
     auto it = bucket.first();
     for (int j = 0; j < bucket.size(); ++j, ++it) {
       if (m_key_equal(traits::get_key(*it), key))

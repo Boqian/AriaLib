@@ -39,7 +39,14 @@ public:
 
   T &at(const Key &key) { return const_cast<T &>(as_const(*this).at(key)); }
 
-  template <class M> pair<iterator, bool> insert_or_assign(const Key &k, M &&obj) { auto res = insert(k, obj); }
+  template <class M> pair<iterator, bool> insert_or_assign(const Key &key, M &&obj) {
+    if (auto it = Base::find(key); it == Base::end()) {
+      return Base::emplace(key, forward<M>(obj));
+    } else {
+      it->second = forward<M>(obj);
+      return {it, false};
+    }
+  }
 
 private:
 };
