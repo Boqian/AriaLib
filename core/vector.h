@@ -2,6 +2,7 @@
 
 #include "algorithm.h"
 #include "allocator.h"
+#include "bit.h"
 #include "iterator.h"
 #include "stdexcept.h"
 #include "utility.h"
@@ -84,14 +85,14 @@ public:
   }
 
   constexpr void push_back(const T &value) {
-    reserve(new_capacity(1));
+    reserve_more(1);
     construct_at(get(m_size), value);
     m_size++;
   }
 
   template <class... Args> constexpr void emplace_back(Args &&...args) {
-    reserve(new_capacity(1));
-    aria::construct_at(get(m_size), ::aria::forward<Args>(args)...);
+    reserve_more(1);
+    construct_at(get(m_size), forward<Args>(args)...);
     m_size++;
   }
 
@@ -209,14 +210,9 @@ private:
     m_capacity = cap;
   }
 
-  constexpr size_type new_capacity(size_type add_size) {
-    if (capacity() == 0)
-      return add_size;
-    auto min_capacity = m_size + add_size;
-    auto new_capacity = capacity();
-    while (new_capacity < min_capacity)
-      new_capacity *= 2;
-    return new_capacity;
+  void reserve_more(size_type added_size) {
+    if (auto new_size = size() + added_size; new_size > capacity())
+      reserve(bit_ceil(new_size));
   }
 
   template <class... Args> void resize_helper(size_type count, Args... args) {
@@ -227,7 +223,7 @@ private:
       return;
     }
     auto added_size = count - size();
-    reserve(new_capacity(added_size));
+    reserve_more(added_size);
     while (added_size--)
       emplace_back(forward<Args>(args)...);
   }

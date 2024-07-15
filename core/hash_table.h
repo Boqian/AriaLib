@@ -10,11 +10,9 @@
 #include <cmath> //ceil
 
 // hash_table is used to implement unordered_set and unordered_map
-
 namespace aria {
 
 namespace _hash_table {
-
 template <class Key, class T> struct Traits {
   using value_type = pair<const Key, T>;
   using internal_node_type = _list::node<value_type>;
@@ -28,7 +26,6 @@ template <class Key> struct Traits<Key, void> {
   using node_handle_type = node_handle<internal_node_type, _node_handle::set_base<Key>>;
   static const auto &get_key(const value_type &val) { return val; }
 };
-
 } // namespace _hash_table
 
 template <class Key, class T, class Hash = hash<Key>, class KeyEqual = equal_to<Key>> class hash_table : iterable {
