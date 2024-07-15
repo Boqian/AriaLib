@@ -96,15 +96,15 @@ public:
   auto end() noexcept { return m_list.end(); }
 
   void rehash(size_type bucket_count) {
-    auto num_buckets = max<size_type>(bucket_count, size() / max_load_factor());
+    auto num_buckets = max<size_type>(bucket_count, std::ceil(size() / max_load_factor()));
     if (num_buckets > m_table.size())
-      force_rehash(bucket_count);
+      force_rehash(num_buckets);
   }
 
   void reserve(size_type count) { rehash(std::ceil(count / max_load_factor())); }
 
   pair<iterator, bool> insert(const_reference value) {
-    resize_if_needed(1);
+    reserve(size() + 1);
     const auto &key = traits::get_key(value);
     auto &bucket = get_bucket(key);
     if (auto it = find(bucket, key); it != m_list.end())
@@ -112,7 +112,6 @@ public:
 
     auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), value);
     bucket.add(insert_pos);
-
     return {insert_pos, true};
   }
 
@@ -168,7 +167,7 @@ public:
   pair<iterator, bool> insert(node_handle_type &&nh) {
     if (!nh)
       return {end(), false};
-    resize_if_needed(1);
+    reserve(size() + 1);
     const auto &key = traits::get_key(nh->get_value());
     auto &bucket = get_bucket(key);
     if (auto it = find(bucket, key); it != m_list.end())
@@ -176,7 +175,6 @@ public:
 
     auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), move(nh));
     bucket.add(insert_pos);
-
     return {insert_pos, true};
   }
 
@@ -219,13 +217,6 @@ protected:
     auto input = move(m_list);
     while (!input.empty())
       insert(input.extract(input.begin()));
-  }
-
-  void resize_if_needed(size_type added_size) {
-    const size_type new_size = size() + added_size;
-    const size_type num_bucket_needed = ceil(m_max_load_factor * new_size);
-    if (bucket_count() < num_bucket_needed)
-      reserve(num_bucket_needed * 2);
   }
 
   float m_max_load_factor = 1.0;
