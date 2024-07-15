@@ -2,6 +2,7 @@
 
 #include "algorithm.h"
 #include "allocator.h"
+#include "bit.h"
 #include "iterator.h"
 #include "stdexcept.h"
 #include "type_list.h"
@@ -171,14 +172,8 @@ private:
   }
 
   void reserve_more(size_type added_size) {
-    const size_type new_size = size() + added_size;
-    size_type cap = max(s_stack_cap, m_capacity);
-    if (new_size + 1 <= cap)
-      return;
-
-    while (new_size + 1 > cap)
-      cap *= 2;
-    reserve(cap - 1);
+    if (auto new_size = size() + added_size; new_size > capacity())
+      reserve(bit_ceil(new_size));
   }
 
   void set_size(size_t new_size) {
