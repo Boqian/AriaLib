@@ -84,15 +84,38 @@ public:
     return *this;
   }
 
-  size_type size() const noexcept { return m_list.size(); }
-  bool empty() const noexcept { return m_list.empty(); }
-  float max_load_factor() const noexcept { return m_max_load_factor; }
-
+  //--------------------  Iterators (cbegin and rebegin are derived from iterable )--------------------
   auto begin() const noexcept { return m_list.begin(); }
   auto end() const noexcept { return m_list.end(); }
   auto begin() noexcept { return m_list.begin(); }
   auto end() noexcept { return m_list.end(); }
 
+  //--------------------  Capacity--------------------
+  size_type size() const noexcept { return m_list.size(); }
+  bool empty() const noexcept { return m_list.empty(); }
+
+  //--------------------  Lookup--------------------
+  iterator find(const key_type &key) { return find(get_bucket(key), key); }
+  const_iterator find(const key_type &key) const { return find(get_bucket(key), key); }
+  bool contains(const key_type &key) const { return find(key) != m_list.end(); }
+
+  //--------------------  Bucket interface--------------------
+  size_type bucket_count() const noexcept { return m_buckets.size(); }
+  size_type bucket(const Key &key) const { return m_hasher(key) % bucket_count(); }
+
+  //--------------------Hash policy--------------------
+  void rehash(size_type bucket_count) {
+    auto num_buckets = max<size_type>(bucket_count, std::ceil(size() / max_load_factor()));
+    if (num_buckets > m_buckets.size())
+      force_rehash(num_buckets);
+  }
+
+  void reserve(size_type count) { rehash(std::ceil(count / max_load_factor())); }
+  float load_factor() const noexcept { return empty() ? 1.0 : float(size()) / bucket_count(); }
+  float max_load_factor() const noexcept { return m_max_load_factor; }
+  void max_load_factor(float ml) noexcept { m_max_load_factor = ml; }
+
+  //--------------------Modifiers--------------------
   pair<iterator, bool> insert(const_reference value) {
     reserve(size() + 1);
     const auto &key = traits::get_key(value);
@@ -104,11 +127,6 @@ public:
     bucket.add(insert_pos);
     return {insert_pos, true};
   }
-
-  iterator find(const key_type &key) { return find(get_bucket(key), key); }
-  const_iterator find(const key_type &key) const { return find(get_bucket(key), key); }
-
-  bool contains(const key_type &key) const { return find(key) != m_list.end(); }
 
   iterator erase(const_iterator pos) {
     if (pos == m_list.end())
@@ -160,20 +178,6 @@ public:
     bucket.add(insert_pos);
     return {insert_pos, true};
   }
-
-  //--------------------  Bucket interface--------------------
-  size_type bucket_count() const noexcept { return m_buckets.size(); }
-  size_type bucket(const Key &key) const { return m_hasher(key) % bucket_count(); }
-
-  //--------------------Hash policy--------------------
-  void rehash(size_type bucket_count) {
-    auto num_buckets = max<size_type>(bucket_count, std::ceil(size() / max_load_factor()));
-    if (num_buckets > m_buckets.size())
-      force_rehash(num_buckets);
-  }
-
-  void reserve(size_type count) { rehash(std::ceil(count / max_load_factor())); }
-  float load_factor() const { return empty() ? 1.0 : float(size()) / bucket_count(); }
 
 protected:
   class bucket_type {
