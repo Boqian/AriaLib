@@ -222,22 +222,22 @@ public:
     if (&other == this && pos == it)
       return;
 
-    auto p = other.extract_node(const_cast<node_base_type *>(it.ptr));
-    insert_node(const_cast<node_base_type *>(pos.ptr), p);
+    auto p = other.extract_node(get_ptr(it));
+    insert_node(get_ptr(pos), p);
   }
 
   node_handle_type extract(const_iterator it) noexcept {
     if (it == end())
       return {};
-    auto p = extract_node(const_cast<node_base_type *>(it.ptr));
-    return node_handle_type(static_cast<node_type *>(p));
+    auto p = extract_node(get_ptr(it));
+    return node_handle_type(cast(p));
   }
 
   iterator insert(const_iterator pos, node_handle_type &&nh) noexcept {
     if (!nh)
       return end();
     node_base_type *p = nh.release();
-    auto inserted = insert_node(const_cast<node_base_type *>(pos.ptr), p);
+    auto inserted = insert_node(get_ptr(pos), p);
     return iterator(inserted);
   }
 
@@ -245,12 +245,11 @@ private:
   using node_type = _list::node<value_type>;
   using node_base_type = _list::node_base;
   using node_allocator_type = typename allocator_traits<Allocator>::template rebind_alloc<node_type>;
-  // using node_allocator_type = typename Allocator::template rebind_alloc<node_type>;
 
   node_type *cast(node_base_type *p) const noexcept { return static_cast<node_type *>(p); }
   node_type *last() const noexcept { return cast(m_end->prev); }
   node_type *first() const noexcept { return cast(m_first); }
-  static node_base_type *get_ptr(const_iterator pos) noexcept { return const_cast<node_base_type *>(pos.ptr); }
+  static node_base_type *get_ptr(const_iterator it) noexcept { return const_cast<node_base_type *>(it.ptr); }
 
   static void link(node_base_type *first, node_base_type *second) noexcept {
     first->next = second;
@@ -331,7 +330,7 @@ private:
     node_base_type fake_head{};
     link(&fake_head, p1);
     while ((p1 != end1) && (p2 != end2)) {
-      if (cmp(static_cast<node_type *>(p1)->value, static_cast<node_type *>(p2)->value)) {
+      if (cmp(cast(p1)->value, cast(p2)->value)) {
         p1 = p1->next;
       } else {
         auto next_p2 = p2->next;

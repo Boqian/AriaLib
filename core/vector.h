@@ -43,7 +43,7 @@ public:
 
   constexpr vector(size_type n, const T &value = T()) {
     reserve(n);
-    m_size += n;
+    m_size = n;
     for (int i = 0; i < n; i++) {
       construct_at(get(i), value);
     }
