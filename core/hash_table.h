@@ -123,10 +123,6 @@ public:
     return {insert_pos, true};
   }
 
-  template <class... Args> pair<iterator, bool> emplace(Args &&...args) {
-    return insert(node_handle_type(m_list.create_node(forward<Args>(args)...)));
-  }
-
   pair<iterator, bool> insert(node_handle_type &&nh) {
     if (!nh)
       return {end(), false};
@@ -139,12 +135,15 @@ public:
     return {insert_pos, true};
   }
 
+  template <class... Args> pair<iterator, bool> emplace(Args &&...args) {
+    return insert(node_handle_type(m_list.create_node(forward<Args>(args)...)));
+  }
+
   iterator erase(const_iterator pos) {
     if (pos == m_list.end())
       return pos;
 
-    auto &bucket = get_bucket(traits::get_key(*pos));
-    bucket.remove(pos);
+    get_bucket(traits::get_key(*pos)).remove(pos);
     return m_list.erase(pos);
   }
 
@@ -181,7 +180,7 @@ protected:
   public:
     void add(iterator it) noexcept {
       m_first = it;
-      m_size++;
+      ++m_size;
     }
     void remove(iterator it) noexcept {
       if (m_first == it)
