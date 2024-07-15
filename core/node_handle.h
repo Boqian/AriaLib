@@ -31,6 +31,7 @@ public:
 
   node_handle() = default;
   explicit node_handle(pointer const p) : ptr(p) {}
+
   virtual ~node_handle() {
     if (ptr)
       delete (ptr); // todo use allocator
@@ -43,6 +44,8 @@ public:
     node_handle(move(rhs)).swap(*this);
     return *this;
   }
+
+  template <_node_handle::base Base2> requires(not_same<Base2, Base>) node_handle(node_handle<Node, Base2> &&rhs) : ptr(rhs.release()) {}
 
   bool empty() const noexcept { return ptr; }
   explicit operator bool() const noexcept { return ptr; }

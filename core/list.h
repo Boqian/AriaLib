@@ -283,6 +283,9 @@ private:
       m_first = p->next;
       p->next->prev = nullptr;
     } else {
+      if (!p->next) {
+        int x = 0;
+      }
       link(p->prev, p->next);
     }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "algorithm.h"
+#include "bit.h"
 #include "functional.h"
 #include "list.h"
 #include "node_handle.h"
@@ -94,14 +95,13 @@ public:
   auto begin() noexcept { return m_list.begin(); }
   auto end() noexcept { return m_list.end(); }
 
-  void reserve(size_type n) {
-    if (n <= bucket_count())
-      return;
-    m_table = vector<bucket_type>(n);
-    auto input = move(m_list);
-    for (auto &val : input)
-      insert(val);
+  void rehash(size_type bucket_count) {
+    auto num_buckets = max<size_type>(bucket_count, size() / max_load_factor());
+    if (num_buckets > m_table.size())
+      force_rehash(bucket_count);
   }
+
+  void reserve(size_type count) { rehash(std::ceil(count / max_load_factor())); }
 
   pair<iterator, bool> insert(const_reference value) {
     resize_if_needed(1);
@@ -112,6 +112,7 @@ public:
 
     auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), value);
     bucket.add(insert_pos);
+
     return {insert_pos, true};
   }
 
@@ -159,8 +160,7 @@ public:
     if (pos == end())
       return {};
     get_bucket(traits::get_key(*pos)).remove(pos);
-    auto nh = m_list.extract(pos);
-    return node_handle_type(nh.release());
+    return m_list.extract(pos);
   }
 
   node_handle_type extract(const key_type &key) { return extract(find(key)); }
@@ -174,9 +174,9 @@ public:
     if (auto it = find(bucket, key); it != m_list.end())
       return {it, false};
 
-    typename list<value_type>::node_handle_type list_nh(nh.release());
-    auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), move(list_nh));
+    auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), move(nh));
     bucket.add(insert_pos);
+
     return {insert_pos, true};
   }
 
@@ -211,6 +211,14 @@ protected:
         return it;
     }
     return m_list.end();
+  }
+
+  void force_rehash(size_t bucket_count) {
+    bucket_count = bit_ceil(bucket_count); // always power of 2
+    m_table = vector<bucket_type>(bucket_count);
+    auto input = move(m_list);
+    while (!input.empty())
+      insert(input.extract(input.begin()));
   }
 
   void resize_if_needed(size_type added_size) {

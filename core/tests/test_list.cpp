@@ -302,6 +302,19 @@ TEST(test_list, splice) {
 
 TEST(test_list, node_handle) {
   {
+    list<int> a = {1, 3, 5};
+    while (!a.empty())
+      a.extract(a.begin());
+    EXPECT_TRUE(a.empty());
+  }
+  {
+    list<int> a = {1, 3, 5};
+    for (auto it = a.begin(); it != a.end();) {
+      a.extract(it++);
+    }
+    EXPECT_TRUE(a.empty());
+  }
+  {
     list<int> a = {1, 3, 5}, b = {2, 4};
     auto nh = a.extract(find(a.begin(), a.end(), 3));
     b.insert(next(b.begin()), move(nh));
