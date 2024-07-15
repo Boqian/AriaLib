@@ -50,20 +50,20 @@ public:
   hash_table() = default;
   ~hash_table() = default;
 
-  explicit hash_table(size_type bucket_count) : m_table(bucket_count) {}
+  explicit hash_table(size_type bucket_count) : m_buckets(bucket_count) {}
 
-  hash_table(initializer_list<value_type> ilist) : m_table(ilist.size()) {
+  hash_table(initializer_list<value_type> ilist) : m_buckets(ilist.size()) {
     for (auto &x : ilist)
       insert(x);
   }
 
-  template <class InputIt> hash_table(InputIt first, InputIt last) : m_table(16) {
+  template <class InputIt> hash_table(InputIt first, InputIt last) : m_buckets(16) {
     for (; first != last; ++first)
       insert(*first);
   }
 
   hash_table(const hash_table &rhs)
-      : m_max_load_factor(rhs.m_max_load_factor), m_list(rhs.m_list), m_table(rhs.m_table), m_hasher(rhs.m_hasher),
+      : m_max_load_factor(rhs.m_max_load_factor), m_list(rhs.m_list), m_buckets(rhs.m_buckets), m_hasher(rhs.m_hasher),
         m_key_equal(rhs.m_key_equal) {}
 
   hash_table(hash_table &&rhs) noexcept { swap(rhs); }
@@ -86,22 +86,12 @@ public:
 
   size_type size() const noexcept { return m_list.size(); }
   bool empty() const noexcept { return m_list.empty(); }
-  size_type bucket_count() const noexcept { return m_table.size(); }
-  float load_factor() const { return empty() ? 1.0 : float(size()) / bucket_count(); }
   float max_load_factor() const noexcept { return m_max_load_factor; }
 
   auto begin() const noexcept { return m_list.begin(); }
   auto end() const noexcept { return m_list.end(); }
   auto begin() noexcept { return m_list.begin(); }
   auto end() noexcept { return m_list.end(); }
-
-  void rehash(size_type bucket_count) {
-    auto num_buckets = max<size_type>(bucket_count, std::ceil(size() / max_load_factor()));
-    if (num_buckets > m_table.size())
-      force_rehash(num_buckets);
-  }
-
-  void reserve(size_type count) { rehash(std::ceil(count / max_load_factor())); }
 
   pair<iterator, bool> insert(const_reference value) {
     reserve(size() + 1);
@@ -115,15 +105,8 @@ public:
     return {insert_pos, true};
   }
 
-  iterator find(const key_type &key) {
-    const auto &bucket = m_table[bucket_index(key)];
-    return find(bucket, key);
-  }
-
-  const_iterator find(const key_type &key) const {
-    const auto &bucket = m_table[bucket_index(key)];
-    return find(bucket, key);
-  }
+  iterator find(const key_type &key) { return find(get_bucket(key), key); }
+  const_iterator find(const key_type &key) const { return find(get_bucket(key), key); }
 
   bool contains(const key_type &key) const { return find(key) != m_list.end(); }
 
@@ -150,7 +133,7 @@ public:
     using aria::swap;
     swap(m_max_load_factor, rhs.m_max_load_factor);
     swap(m_list, rhs.m_list);
-    swap(m_table, rhs.m_table);
+    swap(m_buckets, rhs.m_buckets);
     swap(m_hasher, rhs.m_hasher);
     swap(m_key_equal, rhs.m_key_equal);
   }
@@ -178,6 +161,20 @@ public:
     return {insert_pos, true};
   }
 
+  //--------------------  Bucket interface--------------------
+  size_type bucket_count() const noexcept { return m_buckets.size(); }
+  size_type bucket(const Key &key) const { return m_hasher(key) % bucket_count(); }
+
+  //--------------------Hash policy--------------------
+  void rehash(size_type bucket_count) {
+    auto num_buckets = max<size_type>(bucket_count, std::ceil(size() / max_load_factor()));
+    if (num_buckets > m_buckets.size())
+      force_rehash(num_buckets);
+  }
+
+  void reserve(size_type count) { rehash(std::ceil(count / max_load_factor())); }
+  float load_factor() const { return empty() ? 1.0 : float(size()) / bucket_count(); }
+
 protected:
   class bucket_type {
   public:
@@ -199,8 +196,9 @@ protected:
     size_t m_size{};
   };
 
-  size_type bucket_index(const key_type &key) const noexcept { return m_hasher(key) % bucket_count(); }
-  bucket_type &get_bucket(const key_type &key) noexcept { return m_table[bucket_index(key)]; }
+  template <class Self> decltype(auto) get_bucket(this Self &&self, const key_type &key) noexcept {
+    return self.m_buckets[self.bucket(key)];
+  }
 
   iterator find(const bucket_type &bucket, const key_type &key) const {
     auto it = bucket.first();
@@ -213,7 +211,7 @@ protected:
 
   void force_rehash(size_t bucket_count) {
     bucket_count = bit_ceil(bucket_count); // always power of 2
-    m_table = vector<bucket_type>(bucket_count);
+    m_buckets = vector<bucket_type>(bucket_count);
     auto input = move(m_list);
     while (!input.empty())
       insert(input.extract(input.begin()));
@@ -221,7 +219,7 @@ protected:
 
   float m_max_load_factor = 1.0;
   list<value_type> m_list;
-  vector<bucket_type> m_table;
+  vector<bucket_type> m_buckets;
   hasher m_hasher;
   key_equal m_key_equal;
 };
