@@ -25,7 +25,7 @@ template <class T> struct extent_type<T, dynamic_extent> {
 
 } // namespace _span
 
-template <class T, size_t Extent = dynamic_extent> class span : public iterable, private _span::extent_type<T, Extent> {
+template <class T, size_t Extent = dynamic_extent> class span : public iterable_mixin, private _span::extent_type<T, Extent> {
 public:
   using element_type = T;
   using value_type = remove_cv_t<T>;

@@ -28,7 +28,7 @@ template <class Key> struct Traits<Key, void> {
 };
 } // namespace _hash_table
 
-template <class Key, class T, class Hash = hash<Key>, class KeyEqual = equal_to<Key>> class hash_table : iterable {
+template <class Key, class T, class Hash = hash<Key>, class KeyEqual = equal_to<Key>> class hash_table : iterable_mixin {
 public:
   using traits = _hash_table::Traits<Key, T>;
   using key_type = Key;
@@ -81,7 +81,7 @@ public:
     return *this;
   }
 
-  //--------------------  Iterators (cbegin and rebegin are derived from iterable )--------------------
+  //--------------------  Iterators (cbegin and rebegin are derived from iterable_mixin )--------------------
   auto begin() const noexcept { return m_list.begin(); }
   auto end() const noexcept { return m_list.end(); }
   auto begin() noexcept { return m_list.begin(); }

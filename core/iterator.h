@@ -383,7 +383,7 @@ template <bidirectional_iterator Iter> reverse_iterator<Iter> make_reverse_itera
 
 template <class Iter> constexpr basic_const_iterator<Iter> make_const_iterator(Iter i) { return basic_const_iterator(i); }
 
-class iterable {
+class iterable_mixin {
 public:
   constexpr auto cbegin(this auto const &self) noexcept { return self.begin(); }
   constexpr auto cend(this auto const &self) noexcept { return self.end(); }
@@ -393,6 +393,7 @@ public:
   constexpr auto crend(this auto const &self) noexcept { return self.rend(); }
 };
 
+// continuous memory iterator, works for vector, string, string_view, span
 template <class T> class array_iterator {
 public:
   using value_type = T;

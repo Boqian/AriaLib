@@ -9,7 +9,7 @@
 
 namespace aria {
 
-template <class T, class Allocator = allocator<T>> class vector : public iterable {
+template <class T, class Allocator = allocator<T>> class vector : public iterable_mixin {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;

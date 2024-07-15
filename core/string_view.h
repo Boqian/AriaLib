@@ -7,7 +7,7 @@
 
 namespace aria {
 
-template <class CharT> class basic_string_view : public iterable {
+template <class CharT> class basic_string_view : public iterable_mixin {
 public:
   using value_type = CharT;
   using pointer = CharT *;

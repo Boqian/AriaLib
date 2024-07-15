@@ -191,7 +191,7 @@ private:
   node_base_type *ptr;
 };
 
-template <class Key, class T, class Compare = less<Key>> class binary_search_tree : public iterable {
+template <class Key, class T, class Compare = less<Key>> class binary_search_tree : public iterable_mixin {
 public:
   using traits = _bst::Traits<Key, T>;
   using key_type = Key;

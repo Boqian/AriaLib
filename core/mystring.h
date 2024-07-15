@@ -12,7 +12,7 @@
 
 namespace aria {
 
-template <class CharT, class Allocator = allocator<CharT>> class basic_string : public iterable {
+template <class CharT, class Allocator = allocator<CharT>> class basic_string : public iterable_mixin {
 public:
   using size_type = size_t;
   using value_type = CharT;

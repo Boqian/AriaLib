@@ -64,7 +64,7 @@ protected:
   const node_base_type *ptr;
 };
 
-template <class T, class Allocator = allocator<T>> class list : public iterable {
+template <class T, class Allocator = allocator<T>> class list : public iterable_mixin {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;

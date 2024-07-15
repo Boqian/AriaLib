@@ -89,7 +89,7 @@ private:
   difference_type index{};
 };
 
-template <class T, class Allocator = allocator<T>> class deque : public iterable {
+template <class T, class Allocator = allocator<T>> class deque : public iterable_mixin {
 public:
   using size_type = size_t;
   using difference_type = ptrdiff_t;
