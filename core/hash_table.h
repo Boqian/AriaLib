@@ -114,14 +114,28 @@ public:
 
   //--------------------Modifiers--------------------
   pair<iterator, bool> insert(const_reference value) {
-    reserve(size() + 1);
-    const auto &key = traits::get_key(value);
-    auto &bucket = get_bucket(key);
-    if (auto it = find(bucket, key); it != m_list.end())
-      return {it, false};
+    auto [bucket_ptr, insert_pos] = find_insert_position(value);
+    if (!bucket_ptr)
+      return {insert_pos, false};
 
-    auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), value);
-    bucket.add(insert_pos);
+    insert_pos = m_list.insert(insert_pos, value);
+    bucket_ptr->add(insert_pos);
+    return {insert_pos, true};
+  }
+
+  template <class... Args> pair<iterator, bool> emplace(Args &&...args) {
+    return insert(node_handle_type(m_list.create_node(forward<Args>(args)...)));
+  }
+
+  pair<iterator, bool> insert(node_handle_type &&nh) {
+    if (!nh)
+      return {end(), false};
+    auto [bucket_ptr, insert_pos] = find_insert_position(nh->get_value());
+    if (!bucket_ptr)
+      return {insert_pos, false};
+
+    insert_pos = m_list.insert(insert_pos, move(nh));
+    bucket_ptr->add(insert_pos);
     return {insert_pos, true};
   }
 
@@ -162,20 +176,6 @@ public:
 
   node_handle_type extract(const key_type &key) { return extract(find(key)); }
 
-  pair<iterator, bool> insert(node_handle_type &&nh) {
-    if (!nh)
-      return {end(), false};
-    reserve(size() + 1);
-    const auto &key = traits::get_key(nh->get_value());
-    auto &bucket = get_bucket(key);
-    if (auto it = find(bucket, key); it != m_list.end())
-      return {it, false};
-
-    auto insert_pos = m_list.insert(bucket.empty() ? m_list.end() : bucket.first(), move(nh));
-    bucket.add(insert_pos);
-    return {insert_pos, true};
-  }
-
 protected:
   class bucket_type {
   public:
@@ -208,6 +208,16 @@ protected:
         return it;
     }
     return m_list.end();
+  }
+
+  pair<bucket_type *, iterator> find_insert_position(const_reference value) {
+    reserve(size() + 1);
+    const auto &key = traits::get_key(value);
+    auto &bucket = get_bucket(key);
+    if (auto it = find(bucket, key); it != end()) // already inserted
+      return {nullptr, it};
+    else
+      return {&bucket, bucket.empty() ? end() : bucket.first()};
   }
 
   void force_rehash(size_t bucket_count) {

@@ -64,6 +64,8 @@ protected:
   const node_base_type *ptr;
 };
 
+template <class Key, class T, class Hash, class KeyEqual> class hash_table;
+
 template <class T, class Allocator = allocator<T>> class list : public iterable_mixin {
 public:
   using size_type = size_t;
@@ -245,6 +247,7 @@ private:
   using node_type = _list::node<value_type>;
   using node_base_type = _list::node_base;
   using node_allocator_type = typename allocator_traits<Allocator>::template rebind_alloc<node_type>;
+  template <class Key, class T, class Hash, class KeyEqual> friend class hash_table;
 
   node_type *cast(node_base_type *p) const noexcept { return static_cast<node_type *>(p); }
   node_type *last() const noexcept { return cast(m_end->prev); }

@@ -113,7 +113,7 @@ TEST(test_unordered_set, basic) {
   }
 }
 
-TEST(test_unordered_set, node_handle) {
+TEST(test_unordered_map_set, node_handle) {
   {
     unordered_set<int> a = {1, 2, 3}, b = {1, 3}, c = a;
     auto nh = a.extract(2);
@@ -122,9 +122,6 @@ TEST(test_unordered_set, node_handle) {
     b.insert(move(nh));
     EXPECT_EQ(b, c);
   }
-}
-
-TEST(test_unordered_map, node_handle) {
   {
     unordered_map<int, int> a = {{1, 10}, {2, 20}, {3, 30}}, b = {{1, 10}, {3, 30}}, c = a;
     auto nh = a.extract(2);
@@ -133,5 +130,22 @@ TEST(test_unordered_map, node_handle) {
     EXPECT_EQ(b, a);
     b.insert(move(nh));
     EXPECT_EQ(b, c);
+  }
+}
+
+TEST(test_unordered_map_set, emplace) {
+  {
+    unordered_map<int, int> a = {{1, 10}, {2, 20}, {3, 30}}, b;
+    b.emplace(1, 10);
+    b.emplace(2, 20);
+    b.emplace(3, 30);
+    EXPECT_EQ(b, a);
+  }
+  {
+    unordered_set<int> a = {1, 2, 3}, b;
+    b.emplace(1);
+    b.emplace(2);
+    b.emplace(3);
+    EXPECT_EQ(b, a);
   }
 }
