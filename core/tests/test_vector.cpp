@@ -252,3 +252,9 @@ TEST(test_vector, resize) {
   v.resize(5, 100);
   EXPECT_EQ(v, vector({1, 2, 0, 100, 100}));
 }
+
+TEST(test_vector, insert) {
+  vector<int> v = {1, 2, 3, 4};
+  v.insert(v.begin() + 2, 5);
+  EXPECT_EQ(v, vector({1, 2, 5, 3, 4}));
+}

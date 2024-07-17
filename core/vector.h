@@ -177,6 +177,16 @@ public:
     return erase(pos, pos + 1);
   }
 
+  template <class U> requires same_as<value_type, remove_cvref_t<U>> iterator insert(const_iterator pos, U &&value) {
+    const auto idx = pos - begin();
+    reserve_more(1);
+    auto p = get(idx);
+    memmove(p + 1, p, sizeof(value_type) * (size() - idx));
+    construct_at(p, forward<U>(value));
+    m_size++;
+    return p;
+  }
+
 private:
   Allocator m_alloc;
   pointer m_ptr = nullptr;
