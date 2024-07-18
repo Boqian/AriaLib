@@ -67,13 +67,6 @@ public:
   const_iterator upper_bound(const Key &key) const { return aria::upper_bound(begin(), end(), key, m_cmp); }
   iterator upper_bound(const Key &key) { return as_const(*this).upper_bound(key); }
 
-  size_type count(const Key &key) const {
-    if constexpr (IsMulti)
-      return upper_bound(key) - lower_bound(key);
-    else
-      return contains(key) ? 1 : 0;
-  }
-
   //--------------------Modifiers--------------------
 
   iterator erase(iterator pos) { return m_cont.erase(pos); }
@@ -110,6 +103,8 @@ public:
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
   using Base::Base;
 
+  size_type count(const Key &key) const { return Base::contains(key) ? 1 : 0; }
+
   template <class U> requires same_as<remove_cvref_t<U>, value_type> pair<iterator, bool> insert(U &&value) {
     auto pos = Base::lower_bound(value);
     if (pos == Base::end() || Base::m_cmp(value, *pos)) {
@@ -138,6 +133,8 @@ public:
   using reverse_iterator = aria::reverse_iterator<iterator>;
   using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
   using Base::Base;
+
+  size_type count(const Key &key) const { return Base::upper_bound(key) - Base::lower_bound(key); }
 
   template <class U> requires same_as<remove_cvref_t<U>, value_type> iterator insert(U &&value) {
     return Base::m_cont.insert(Base::upper_bound(value), forward<U>(value));
