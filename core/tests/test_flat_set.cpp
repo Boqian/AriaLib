@@ -17,5 +17,9 @@ TEST(test_flat, basic) {
   for (int i : {1, 2, 3}) {
     EXPECT_NE(st.find(i), st.end());
     EXPECT_EQ(*st.find(i), i);
+    EXPECT_TRUE(st.contains(i));
+    EXPECT_EQ(st.count(i), 1);
   }
+  st.erase(st.find(2));
+  EXPECT_EQ(st, (flat_set<int>{1, 3}));
 }

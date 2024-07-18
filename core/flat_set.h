@@ -45,18 +45,38 @@ public:
   flat_set_base(initializer_list<value_type> init, const key_compare &comp = key_compare())
       : flat_set_base(init.begin(), init.end(), comp) {}
 
+  //--------------------Capacity and iterators--------------------
+
   template <class S> auto begin(this S &s) noexcept { return s.m_cont.begin(); }
   template <class S> auto end(this S &s) noexcept { return s.m_cont.end(); }
   size_type size() const noexcept { return m_cont.size(); }
   bool empty() const noexcept { return size() == 0; }
 
+  //--------------------Lookup--------------------
+
   const_iterator find(const Key &key) const {
-    auto pos = lower_bound(begin(), end(), key, m_cmp);
+    auto pos = lower_bound(key);
     return (pos == end() || m_cmp(key, *pos)) ? end() : pos;
   }
 
   iterator find(const Key &key) { return as_const(*this).find(key); }
   bool contains(const Key &key) const { return find(key) != end(); }
+
+  const_iterator lower_bound(const Key &key) const { return aria::lower_bound(begin(), end(), key, m_cmp); }
+  iterator lower_bound(const Key &key) { return as_const(*this).lower_bound(key); }
+  const_iterator upper_bound(const Key &key) const { return aria::upper_bound(begin(), end(), key, m_cmp); }
+  iterator upper_bound(const Key &key) { return as_const(*this).upper_bound(key); }
+
+  size_type count(const Key &key) const {
+    if constexpr (IsMulti)
+      return upper_bound(key) - lower_bound(key);
+    else
+      return contains(key) ? 1 : 0;
+  }
+
+  //--------------------Modifiers--------------------
+
+  iterator erase(iterator pos) { return m_cont.erase(pos); }
 
   template <class U> requires same_as<remove_cvref_t<U>, value_type> pair<iterator, bool> insert(U &&value) {
     auto pos = find_insert_position(value);
@@ -77,9 +97,9 @@ protected:
 
   iterator find_insert_position(const key_type &key) const {
     if constexpr (IsMulti)
-      return upper_bound(begin(), end(), key, m_cmp);
+      return upper_bound(key);
     else
-      return lower_bound(begin(), end(), key, m_cmp);
+      return lower_bound(key);
   }
 
   key_compare m_cmp;
@@ -92,4 +112,12 @@ public:
   using base = flat_set_base<false, Key, Compare, KeyContainer>;
   using base::base;
 };
+
+template <class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
+class flat_multiset : public flat_set_base<true, Key, Compare, KeyContainer> {
+public:
+  using base = flat_set_base<false, Key, Compare, KeyContainer>;
+  using base::base;
+};
+
 } // namespace aria
