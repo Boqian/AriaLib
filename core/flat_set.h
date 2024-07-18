@@ -78,17 +78,7 @@ public:
 
   iterator erase(iterator pos) { return m_cont.erase(pos); }
 
-  template <class U> requires same_as<remove_cvref_t<U>, value_type> pair<iterator, bool> insert(U &&value) {
-    auto pos = find_insert_position(value);
-    if constexpr (IsMulti) {
-      return {m_cont.insert(pos, forward<U>(value)), true};
-    } else {
-      if (pos == end() || m_cmp(value, *pos)) {
-        return {m_cont.insert(pos, forward<U>(value)), true};
-      } else
-        return {pos, false};
-    }
-  }
+  template <class S, class... Args> auto emplace(this S &&s, Args &&...args) { return s.insert(value_type(forward<Args>(args)...)); }
 
   container_type extract() && { return move(m_cont); }
 
@@ -97,13 +87,6 @@ public:
 protected:
   void sort() { aria::sort(begin(), end()); }
 
-  iterator find_insert_position(const key_type &key) const {
-    if constexpr (IsMulti)
-      return upper_bound(key);
-    else
-      return lower_bound(key);
-  }
-
   key_compare m_cmp;
   container_type m_cont;
 };
@@ -111,15 +94,54 @@ protected:
 template <class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
 class flat_set : public flat_set_base<false, Key, Compare, KeyContainer> {
 public:
-  using base = flat_set_base<false, Key, Compare, KeyContainer>;
-  using base::base;
+  using Base = flat_set_base<false, Key, Compare, KeyContainer>;
+  using key_type = Key;
+  using value_type = Key;
+  using pointer = value_type *;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using reference = value_type &;
+  using const_reference = const value_type &;
+  using key_compare = Compare;
+  using value_compare = Compare;
+  using iterator = typename Base::iterator;
+  using const_iterator = typename Base::const_iterator;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+  using Base::Base;
+
+  template <class U> requires same_as<remove_cvref_t<U>, value_type> pair<iterator, bool> insert(U &&value) {
+    auto pos = Base::lower_bound(value);
+    if (pos == Base::end() || Base::m_cmp(value, *pos)) {
+      return {Base::m_cont.insert(pos, forward<U>(value)), true};
+    } else {
+      return {pos, false};
+    }
+  }
 };
 
 template <class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
 class flat_multiset : public flat_set_base<true, Key, Compare, KeyContainer> {
 public:
-  using base = flat_set_base<true, Key, Compare, KeyContainer>;
-  using base::base;
+  using Base = flat_set_base<true, Key, Compare, KeyContainer>;
+  using key_type = Key;
+  using value_type = Key;
+  using pointer = value_type *;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using reference = value_type &;
+  using const_reference = const value_type &;
+  using key_compare = Compare;
+  using value_compare = Compare;
+  using iterator = typename Base::iterator;
+  using const_iterator = typename Base::const_iterator;
+  using reverse_iterator = aria::reverse_iterator<iterator>;
+  using const_reverse_iterator = aria::reverse_iterator<const_iterator>;
+  using Base::Base;
+
+  template <class U> requires same_as<remove_cvref_t<U>, value_type> iterator insert(U &&value) {
+    return Base::m_cont.insert(Base::upper_bound(value), forward<U>(value));
+  }
 };
 
 } // namespace aria
