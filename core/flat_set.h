@@ -90,6 +90,8 @@ public:
     }
   }
 
+  container_type extract() && { return move(m_cont); }
+
   bool operator==(const flat_set_base &rhs) const noexcept { return m_cont == rhs.m_cont; }
 
 protected:
@@ -116,7 +118,7 @@ public:
 template <class Key, class Compare = less<Key>, class KeyContainer = vector<Key>>
 class flat_multiset : public flat_set_base<true, Key, Compare, KeyContainer> {
 public:
-  using base = flat_set_base<false, Key, Compare, KeyContainer>;
+  using base = flat_set_base<true, Key, Compare, KeyContainer>;
   using base::base;
 };
 

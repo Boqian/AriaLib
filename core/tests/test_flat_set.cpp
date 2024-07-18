@@ -3,7 +3,7 @@
 
 using namespace aria;
 
-TEST(test_flat, basic) {
+TEST(test_flat_set, basic) {
   flat_set<int> st;
   st.insert(2);
   EXPECT_EQ(st, flat_set<int>{2});
@@ -22,4 +22,13 @@ TEST(test_flat, basic) {
   }
   st.erase(st.find(2));
   EXPECT_EQ(st, (flat_set<int>{1, 3}));
+}
+
+TEST(test_flat_multiset, basic) {
+  flat_multiset<int> st = {2, 1, 2, 3, 2, 4};
+  EXPECT_EQ(st.count(2), 3);
+  st.insert(2);
+  EXPECT_EQ(st.count(2), 4);
+  auto v = move(st).extract();
+  EXPECT_EQ(v, (vector<int>{1, 2, 2, 2, 2, 3, 4}));
 }
