@@ -56,6 +56,7 @@ public:
   }
 
   iterator find(const Key &key) { return as_const(*this).find(key); }
+  bool contains(const Key &key) const { return find(key) != end(); }
 
   template <class U> requires same_as<remove_cvref_t<U>, value_type> pair<iterator, bool> insert(U &&value) {
     auto pos = find_insert_position(value);

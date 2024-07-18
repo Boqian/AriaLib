@@ -187,6 +187,15 @@ public:
     return p;
   }
 
+  iterator erase(iterator pos) {
+    const auto idx = pos - begin();
+    auto p = get(idx);
+    destroy_at(p);
+    memmove(p, p + 1, sizeof(value_type) * (size() - idx - 1));
+    m_size--;
+    return p;
+  }
+
 private:
   Allocator m_alloc;
   pointer m_ptr = nullptr;
