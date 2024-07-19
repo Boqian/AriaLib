@@ -66,6 +66,8 @@ public:
   iterator lower_bound(const Key &key) { return as_const(*this).lower_bound(key); }
   const_iterator upper_bound(const Key &key) const { return aria::upper_bound(begin(), end(), key, m_cmp); }
   iterator upper_bound(const Key &key) { return as_const(*this).upper_bound(key); }
+  pair<const_iterator, const_iterator> equal_range(const Key &key) const { return {lower_bound(key), upper_bound(key)}; }
+  pair<iterator, iterator> equal_range(const Key &key) { return {lower_bound(key), upper_bound(key)}; }
 
   //--------------------Modifiers--------------------
 
@@ -74,6 +76,12 @@ public:
   template <class S, class... Args> auto emplace(this S &&s, Args &&...args) { return s.insert(value_type(forward<Args>(args)...)); }
 
   container_type extract() && { return move(m_cont); }
+
+  void replace(container_type &&cont) { m_cont = move(cont); }
+
+  void clear() noexcept { m_cont.clear(); }
+
+  void swap(flat_set_base &other) noexcept { aria::swap(m_cont, other.m_cont); }
 
   bool operator==(const flat_set_base &rhs) const noexcept { return m_cont == rhs.m_cont; }
 
