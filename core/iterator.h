@@ -198,21 +198,21 @@ public:
   pointer operator->() const noexcept { return it.operator->(); }
 
   basic_const_iterator &operator++() noexcept {
-    it.operator++();
+    ++it;
     return *this;
   }
   basic_const_iterator operator++(int) noexcept {
     auto temp = *this;
-    it.operator++();
+    ++(*this);
     return temp;
   }
   basic_const_iterator &operator--() noexcept {
-    it.operator--();
+    --it;
     return *this;
   }
   basic_const_iterator operator--(int) noexcept {
     auto temp = *this;
-    it.operator--();
+    --(*this);
     return temp;
   }
 
@@ -265,21 +265,21 @@ public:
   pointer operator->() const noexcept { return const_cast<pointer>(it.operator->()); }
 
   mutable_iterator &operator++() noexcept {
-    it.operator++();
+    ++it;
     return *this;
   }
   mutable_iterator operator++(int) noexcept {
     auto temp = *this;
-    it.operator++();
+    ++(*this);
     return temp;
   }
   mutable_iterator &operator--() noexcept {
-    it.operator--();
+    --it;
     return *this;
   }
   mutable_iterator operator--(int) noexcept {
     auto temp = *this;
-    it.operator--();
+    --(*this);
     return temp;
   }
 

@@ -1,21 +1,75 @@
 #pragma once
 
 #include "flat_set.h"
+#include "iterator.h"
+#include <cassert>
 
 namespace aria {
 
-// template <class FlatMapType> class flat_map_iterator {
-// public:
-//   using value_type = FlatMapType::value_type;
-//   using key_type = FlatMapType::key_type;
-//   using mapped_type = FlatMapType::mapped_type;
-//
-// private:
-//   typename FlatMapType::key_container_type &m_keys;
-//   typename FlatMapType::mapped_container_type &m_values;
-//   vector<size_t> &m_index;
-//   size_t m_idx;
-// };
+template <random_access_iterator It1, random_access_iterator It2> class joint_iterator {
+public:
+  using difference_type = ptrdiff_t;
+  using iterator_concept = decltype(_get_iter_concept<It1>()); // todo: common type of it1 and It2
+
+  joint_iterator(It1 i1, It2 i2) : a(i1), b(i2) {}
+
+  joint_iterator &operator++() noexcept {
+    ++a;
+    ++b;
+    return *this;
+  }
+  joint_iterator operator++(int) noexcept {
+    auto temp = *this;
+    ++(*this);
+    return temp;
+  }
+  joint_iterator &operator--() noexcept {
+    --a;
+    --b;
+    return *this;
+  }
+  joint_iterator operator--(int) noexcept {
+    auto temp = *this;
+    --(*this);
+    return temp;
+  }
+
+  joint_iterator &operator+=(const difference_type d) noexcept {
+    a += d;
+    b += d;
+    return *this;
+  }
+
+  joint_iterator &operator-=(const difference_type d) noexcept {
+    a -= d;
+    b -= d;
+    return *this;
+  }
+
+  joint_iterator operator+(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp += d;
+    return temp;
+  }
+
+  joint_iterator operator-(const difference_type d) const noexcept {
+    auto temp = *this;
+    temp -= d;
+    return temp;
+  }
+
+  difference_type operator-(joint_iterator rhs) const noexcept {
+    auto d1 = a - rhs.a, d2 = b - rhs.b;
+    assert(d1 == d2);
+    return d1;
+  }
+
+  auto operator<=>(const joint_iterator &) const noexcept = default;
+
+private:
+  It1 a;
+  It2 b;
+};
 
 template <class Key, class T, class Compare, class KeyContainer, class MappedContainer> class flat_map_base {
 public:
@@ -68,6 +122,8 @@ public:
   };
 
 protected:
+  void sort() {}
+
   key_compare m_cmp;
   containers m_c;
 };
