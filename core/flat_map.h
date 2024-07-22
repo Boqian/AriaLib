@@ -2,6 +2,7 @@
 
 #include "flat_set.h"
 #include "iterator.h"
+#include "optional.h"
 #include <cassert>
 
 namespace aria {
@@ -10,12 +11,21 @@ template <random_access_iterator It1, random_access_iterator It2> class joint_it
 public:
   using difference_type = ptrdiff_t;
   using iterator_concept = decltype(_get_iter_concept<It1>()); // todo: common type of it1 and It2
+  using type1 = iter_value_t<It1>;
+  using type2 = iter_value_t<It2>;
+  using value_type = pair<type1, type2>;
+  using reference = pair<type1 &, type2 &>;
+  using pointer = const pair<type1 &, type2 &> *;
 
-  joint_iterator(It1 i1, It2 i2) : a(i1), b(i2) {}
+  joint_iterator(It1 i1, It2 i2) : a(i1), b(i2), ref(in_place, *i1, *i2) {}
+
+  reference operator*() const noexcept { return ref.value(); }
+  pointer operator->() const noexcept { return &(ref.value()); }
 
   joint_iterator &operator++() noexcept {
     ++a;
     ++b;
+    update_ref();
     return *this;
   }
   joint_iterator operator++(int) noexcept {
@@ -26,6 +36,7 @@ public:
   joint_iterator &operator--() noexcept {
     --a;
     --b;
+    update_ref();
     return *this;
   }
   joint_iterator operator--(int) noexcept {
@@ -37,12 +48,14 @@ public:
   joint_iterator &operator+=(const difference_type d) noexcept {
     a += d;
     b += d;
+    update_ref();
     return *this;
   }
 
   joint_iterator &operator-=(const difference_type d) noexcept {
     a -= d;
     b -= d;
+    update_ref();
     return *this;
   }
 
@@ -66,9 +79,18 @@ public:
 
   auto operator<=>(const joint_iterator &) const noexcept = default;
 
+  friend void iter_swap(joint_iterator lhs, joint_iterator rhs) {
+    using aria::iter_swap;
+    iter_swap(lhs.a, rhs.a);
+    iter_swap(lhs.b, rhs.b);
+  }
+
 private:
+  void update_ref() { ref.emplace(*a, *b); }
+
   It1 a;
   It2 b;
+  optional<pair<type1 &, type2 &>> ref;
 };
 
 template <class Key, class T, class Compare, class KeyContainer, class MappedContainer> class flat_map_base {
