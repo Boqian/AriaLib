@@ -14,26 +14,28 @@ public:
   const char *what() const noexcept override { return "bad variant access"; }
 };
 
-template <class... Ts> struct _variant_storage {};
-template <class First, class... Rest> struct _variant_storage<First, Rest...> {
+namespace _variant {
+
+template <class... Ts> struct storage {};
+template <class First, class... Rest> struct storage<First, Rest...> {
   static constexpr size_t size = 1 + sizeof...(Rest);
   union {
     remove_cv_t<First> head;
-    _variant_storage<Rest...> tail;
+    storage<Rest...> tail;
   };
 
-  template <class... Args> constexpr _variant_storage(integral_constant<size_t, 0>, Args &&...args) : head(forward<Args &&>(args)...) {}
+  template <class... Args> constexpr storage(integral_constant<size_t, 0>, Args &&...args) : head(forward<Args &&>(args)...) {}
   template <size_t I, class... Args>
     requires(I > 0)
-  constexpr _variant_storage(integral_constant<size_t, I>, Args &&...args)
+  constexpr storage(integral_constant<size_t, I>, Args &&...args)
       : tail(integral_constant<size_t, I - 1>(), forward<Args &&>(args)...) {}
 
-  constexpr _variant_storage() noexcept {}
-  constexpr ~_variant_storage() noexcept {}
-  constexpr _variant_storage(_variant_storage &&) = default;
-  constexpr _variant_storage(const _variant_storage &) = default;
-  constexpr _variant_storage &operator=(_variant_storage &&) = default;
-  constexpr _variant_storage &operator=(const _variant_storage &) = default;
+  constexpr storage() noexcept {}
+  constexpr ~storage() noexcept {}
+  constexpr storage(storage &&) = default;
+  constexpr storage(const storage &) = default;
+  constexpr storage &operator=(storage &&) = default;
+  constexpr storage &operator=(const storage &) = default;
 
   constexpr First &get() & noexcept { return head; }
   constexpr const First &get() const & noexcept { return head; }
@@ -41,31 +43,33 @@ template <class First, class... Rest> struct _variant_storage<First, Rest...> {
   constexpr const First &&get() const && noexcept { return move(head); }
 };
 
-template <size_t I, class Storage> constexpr decltype(auto) _variant_raw_get(Storage &&obj) {
+template <size_t I, class Storage> constexpr decltype(auto) raw_get(Storage &&obj) {
   static_assert(I < 32, "reached maximum");
   if constexpr (I == 0) {
     return static_cast<Storage &&>(obj).get();
   } else {
-    return _variant_raw_get<I - 1>(static_cast<Storage &&>(obj).tail);
+    return raw_get<I - 1>(static_cast<Storage &&>(obj).tail);
   }
 }
 
 template <class Storage, class Func> decltype(auto) visit_with_index(Func &func, Storage &storage, size_t index) {
   switch (index) {
   case (1):
-    return Func(_variant_raw_get<1>(storage));
+    return Func(raw_get<1>(storage));
   case (2):
-    return Func(_variant_raw_get<2>(storage));
+    return Func(raw_get<2>(storage));
   case (3):
-    return Func(_variant_raw_get<3>(storage));
+    return Func(raw_get<3>(storage));
   case (4):
-    return Func(_variant_raw_get<4>(storage));
+    return Func(raw_get<4>(storage));
   case (5):
-    return Func(_variant_raw_get<5>(storage));
+    return Func(raw_get<5>(storage));
   default:
     throw(bad_variant_access{});
   }
 }
+
+} // namespace _variant
 
 //------------------------- overload match detector -------------------------
 
@@ -91,9 +95,9 @@ concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts.
 
 //------------------------- variant -------------------------
 
-template <class... Ts> class variant : public _variant_storage<Ts...> {
+template <class... Ts> class variant : public _variant::storage<Ts...> {
 public:
-  using Storage = _variant_storage<Ts...>;
+  using Storage = _variant::storage<Ts...>;
   constexpr variant()
     requires is_default_constructible_v<nth_type<0, Ts...>>
       : Storage(integral_constant<size_t, 0>()), which(0) {}
@@ -134,22 +138,22 @@ template <class T, class... Ts> constexpr bool holds_alternative(const variant<T
 template <size_t I, class... Ts> constexpr auto &get(variant<Ts...> &v) {
   if (I != v.index())
     throw bad_variant_access{};
-  return _variant_raw_get<I>(v);
+  return _variant::raw_get<I>(v);
 }
 template <size_t I, class... Ts> constexpr const auto &get(const variant<Ts...> &v) {
   if (I != v.index())
     throw bad_variant_access{};
-  return _variant_raw_get<I>(v);
+  return _variant::raw_get<I>(v);
 }
 template <size_t I, class... Ts> constexpr auto &&get(variant<Ts...> &&v) {
   if (I != v.index())
     throw bad_variant_access{};
-  return _variant_raw_get<I>(move(v));
+  return _variant::raw_get<I>(move(v));
 }
 template <size_t I, class... Ts> constexpr const auto &&get(const variant<Ts...> &&v) {
   if (I != v.index())
     throw bad_variant_access{};
-  return _variant_raw_get<I>(move(v));
+  return _variant::raw_get<I>(move(v));
 }
 template <class T, class... Ts> constexpr T &get(variant<Ts...> &v) { return get<index_of<T, Ts...>()>(v); }
 template <class T, class... Ts> constexpr const T &get(const variant<Ts...> &v) { return get<index_of<T, Ts...>()>(v); }
