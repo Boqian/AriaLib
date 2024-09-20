@@ -14,6 +14,19 @@ TEST(test_variant, variant_storage) {
   static_assert(_variant::raw_get<2>(y) == 'c');
 }
 
+TEST(test_variant, visit_with_index) {
+  using namespace _variant;
+  using var = _variant::storage<int, double, char>;
+  var x(integral_constant<size_t, 0>(), 1);
+  var y(integral_constant<size_t, 2>(), 'c');
+
+  auto f = [](auto &x) { x += 1; };
+  _variant::visit_with_index(f, x, 0);
+  EXPECT_EQ(_variant::raw_get<0>(x), 2);
+  _variant::visit_with_index(f, y, 2);
+  EXPECT_EQ(_variant::raw_get<2>(y), 'd');
+}
+
 TEST(test_variant, basic) {
   using var = variant<int, double, char>;
   {
@@ -47,4 +60,32 @@ TEST(test_variant, basic) {
   static_assert(is_same_v<variant_alternative_t<0, var>, int>);
   static_assert(is_same_v<variant_alternative_t<1, var>, double>);
   static_assert(is_same_v<variant_alternative_t<2, var>, char>);
+}
+
+struct Counter {
+  static inline int n_dtor = 0;
+  static inline int n_ctor = 0;
+  static inline int n_cctor = 0;
+  static void init() {
+    n_ctor = 0;
+    n_dtor = 0;
+  }
+};
+
+struct A {
+  A() { Counter::n_ctor++; }
+  A(const A &) { Counter::n_cctor++; }
+  ~A() { Counter::n_dtor++; }
+};
+
+TEST(test_variant, destuctor) {
+  using var = variant<int, A>;
+  A a;
+  Counter::init();
+  {
+    var v(a);
+    EXPECT_EQ(Counter::n_cctor, 1);
+    EXPECT_EQ(Counter::n_dtor, 0);
+  }
+  EXPECT_EQ(Counter::n_dtor, 1);
 }

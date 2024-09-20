@@ -16,7 +16,9 @@ public:
 
 namespace _variant {
 
-template <class... Ts> struct storage {};
+template <class... Ts> struct storage {
+  static constexpr size_t size = 0;
+};
 template <class First, class... Rest> struct storage<First, Rest...> {
   static constexpr size_t size = 1 + sizeof...(Rest);
   union {
@@ -45,6 +47,7 @@ template <class First, class... Rest> struct storage<First, Rest...> {
 
 template <size_t I, class Storage> constexpr decltype(auto) raw_get(Storage &&obj) {
   static_assert(I < 32, "reached maximum");
+  static_assert(I < obj.size, "out of range");
   if constexpr (I == 0) {
     return static_cast<Storage &&>(obj).get();
   } else {
@@ -52,20 +55,14 @@ template <size_t I, class Storage> constexpr decltype(auto) raw_get(Storage &&ob
   }
 }
 
-template <class Storage, class Func> decltype(auto) visit_with_index(Func &func, Storage &storage, size_t index) {
-  switch (index) {
-  case (1):
-    return Func(raw_get<1>(storage));
-  case (2):
-    return Func(raw_get<2>(storage));
-  case (3):
-    return Func(raw_get<3>(storage));
-  case (4):
-    return Func(raw_get<4>(storage));
-  case (5):
-    return Func(raw_get<5>(storage));
-  default:
+template <class Storage, class Func> constexpr decltype(auto) visit_with_index(Func &func, Storage &storage, size_t index) {
+  if constexpr (storage.size == 0) {
     throw(bad_variant_access{});
+  } else {
+    if (index == 0)
+      return func(storage.get());
+    else
+      return visit_with_index(func, storage.tail, index - 1);
   }
 }
 
@@ -102,7 +99,7 @@ public:
     requires is_default_constructible_v<nth_type<0, Ts...>>
       : Storage(integral_constant<size_t, 0>()), which(0) {}
 
-  constexpr ~variant() {}
+  constexpr ~variant() { destory(); }
 
   template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M, Ts...>()>
     requires has_non_ambiguous_match<T, Ts...>
@@ -112,9 +109,13 @@ public:
   constexpr bool valueless_by_exception() const noexcept { return which == variant_npos; }
 
 private:
-  template <size_t I> void destroy() { destroy_at(&_variant_raw_get<I>(*this)); }
+  constexpr Storage &storage() { return *this; }
 
-  void destory() {}
+  constexpr void destory() {
+    auto f = [](auto &x) { destroy_at(&x); };
+    _variant::visit_with_index(f, storage(), which);
+    which = variant_npos;
+  }
 
   size_t which = variant_npos;
 };
