@@ -17,7 +17,7 @@ public:
 namespace _variant {
 
 template <class... Ts> struct storage {
-  static constexpr size_t size = 0;
+  static constexpr size_t size = sizeof...(Ts);
 };
 template <class First, class... Rest> struct storage<First, Rest...> {
   static constexpr size_t size = 1 + sizeof...(Rest);
@@ -26,11 +26,9 @@ template <class First, class... Rest> struct storage<First, Rest...> {
     storage<Rest...> tail;
   };
 
-  template <class... Args> constexpr storage(integral_constant<size_t, 0>, Args &&...args) : head(forward<Args &&>(args)...) {}
-  template <size_t I, class... Args>
-    requires(I > 0)
-  constexpr storage(integral_constant<size_t, I>, Args &&...args)
-      : tail(integral_constant<size_t, I - 1>(), forward<Args &&>(args)...) {}
+  template <class... Args> constexpr storage(integral_constant<size_t, 0>, Args &&...args) : head(forward<Args>(args)...) {}
+  template <size_t I, class... Args> requires(I > 0)
+  constexpr storage(integral_constant<size_t, I>, Args &&...args) : tail(integral_constant<size_t, I - 1>(), forward<Args>(args)...) {}
 
   constexpr storage() noexcept {}
   constexpr ~storage() noexcept {}
@@ -66,6 +64,23 @@ template <class Storage, class Func> constexpr decltype(auto) visit_with_index(F
   }
 }
 
+template <class S1, class S2, class Func> constexpr decltype(auto) bivisit_with_index(Func &func, S1 &&a, S2 &&b, size_t index) {
+  static_assert(same_as<remove_cvref_t<S1>, remove_cvref_t<S2>>);
+  if constexpr (a.size == 0) {
+    throw(bad_variant_access{});
+  } else {
+    if (index == 0)
+      return func(forward<S1>(a).get(), forward<S2>(b).get());
+    else
+      return bivisit_with_index(func, forward_like<S1>(a.tail), forward_like<S2>(b.tail), index - 1);
+  }
+}
+
+template <class S1, class S2> void construct_from(S1 &dest, S2 &&src, size_t index) {
+  auto f = [](auto &dest_head, auto &&src_head) { construct_at(&dest_head, src_head); }; // todo forward src_head
+  bivisit_with_index(f, dest, forward<S2>(src), index);
+}
+
 } // namespace _variant
 
 //------------------------- overload match detector -------------------------
@@ -73,9 +88,7 @@ template <class Storage, class Func> constexpr decltype(auto) visit_with_index(F
 template <size_t N, class A> struct overload_frag {
   using type = A;
   using arr1 = A[1];
-  template <class T>
-    requires requires { arr1{declval<T>()}; }
-  auto operator()(A, T &&) -> overload_frag<N, A>;
+  template <class T> requires requires { arr1{declval<T>()}; } auto operator()(A, T &&) -> overload_frag<N, A>;
 };
 
 template <class Seq, class... Args> struct make_overload;
@@ -87,34 +100,39 @@ template <size_t... Idx, class... Args> struct make_overload<index_sequence<Idx.
 template <class T, class... Ts>
 using best_overload_match = typename decltype(make_overload<make_index_sequence<sizeof...(Ts)>, Ts...>{}(declval<T>(), declval<T>()))::type;
 
-template <class T, class... Ts>
-concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts...>; };
+template <class T, class... Ts> concept has_non_ambiguous_match = requires { typename best_overload_match<T, Ts...>; };
 
 //------------------------- variant -------------------------
 
 template <class... Ts> class variant : public _variant::storage<Ts...> {
 public:
   using Storage = _variant::storage<Ts...>;
-  constexpr variant()
-    requires is_default_constructible_v<nth_type<0, Ts...>>
-      : Storage(integral_constant<size_t, 0>()), which(0) {}
+  constexpr variant() requires is_default_constructible_v<nth_type<0, Ts...>> : Storage(integral_constant<size_t, 0>()), which(0) {}
 
   constexpr ~variant() { destory(); }
 
-  template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M, Ts...>()>
-    requires has_non_ambiguous_match<T, Ts...>
-  constexpr variant(T &&t) : Storage(integral_constant<size_t, Idx>(), forward<T &&>(t)), which(Idx) {}
+  template <class T, class M = best_overload_match<T, Ts...>, size_t Idx = index_of<M, Ts...>()> requires has_non_ambiguous_match<T, Ts...>
+  constexpr variant(T &&t) : Storage(integral_constant<size_t, Idx>(), forward<T>(t)), which(Idx) {}
+
+  constexpr variant(const variant &rhs) : which(rhs.which) {
+    if (!rhs.valueless_by_exception()) {
+      _variant::construct_from(storage(), rhs.storage(), rhs.index());
+    }
+  }
 
   constexpr size_t index() const noexcept { return which; }
   constexpr bool valueless_by_exception() const noexcept { return which == variant_npos; }
 
 private:
   constexpr Storage &storage() { return *this; }
+  constexpr const Storage &storage() const { return *this; }
 
   constexpr void destory() {
-    auto f = [](auto &x) { destroy_at(&x); };
-    _variant::visit_with_index(f, storage(), which);
-    which = variant_npos;
+    if (!valueless_by_exception()) {
+      auto f = [](auto &x) { destroy_at(&x); };
+      _variant::visit_with_index(f, storage(), which);
+      which = variant_npos;
+    }
   }
 
   size_t which = variant_npos;

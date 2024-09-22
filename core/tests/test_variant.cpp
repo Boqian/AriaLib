@@ -65,17 +65,23 @@ TEST(test_variant, basic) {
 struct Counter {
   static inline int n_dtor = 0;
   static inline int n_ctor = 0;
-  static inline int n_cctor = 0;
+  static inline int n_copy_ctor = 0;
   static void init() {
     n_ctor = 0;
     n_dtor = 0;
+    n_copy_ctor = 0;
   }
 };
 
 struct A {
-  A() { Counter::n_ctor++; }
-  A(const A &) { Counter::n_cctor++; }
+  explicit A() { Counter::n_ctor++;  }
   ~A() { Counter::n_dtor++; }
+  A(const A &) { Counter::n_copy_ctor++; }
+  A(A &&) = default;
+  A &operator=(const A &) = default;
+  A &operator=( A &&) = default;
+
+  int val{};
 };
 
 TEST(test_variant, destuctor) {
@@ -84,8 +90,41 @@ TEST(test_variant, destuctor) {
   Counter::init();
   {
     var v(a);
-    EXPECT_EQ(Counter::n_cctor, 1);
+    EXPECT_EQ(Counter::n_copy_ctor, 1);
     EXPECT_EQ(Counter::n_dtor, 0);
   }
   EXPECT_EQ(Counter::n_dtor, 1);
+}
+
+TEST(test_variant, copy_construct) {
+  using var = variant<int, A, char>;
+  {
+    A a;
+    var v(a);
+    Counter::init();
+    {
+      var u(v);
+      EXPECT_EQ(u.index(), 1);
+      EXPECT_TRUE(holds_alternative<A>(u));
+      EXPECT_EQ(Counter::n_copy_ctor, 1);
+      EXPECT_EQ(Counter::n_dtor, 0);
+    }
+    EXPECT_EQ(Counter::n_dtor, 1);
+  }
+  { 
+    int x = 555;
+    var a(x);
+    var b(a);
+    EXPECT_EQ(b.index(), 0);
+    EXPECT_TRUE(holds_alternative<int>(b));
+    EXPECT_EQ(get<int>(b), 555);
+  }
+  {
+    char x = 'g';
+    var a(x);
+    var b(a);
+    EXPECT_EQ(b.index(), 2);
+    EXPECT_TRUE(holds_alternative<char>(b));
+    EXPECT_EQ(get<char>(b), 'g');
+  }
 }
