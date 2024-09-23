@@ -244,13 +244,20 @@ template <class Ptr> constexpr auto to_address(const Ptr &val) noexcept {
 }
 
 //------------------------- forward_like -------------------------//
-template <bool IsConst, class T> using _maybe_const = conditional_t<IsConst, const T, T>;
-
-template <class T, class U, class Tmp = _maybe_const<is_const_v<remove_reference_t<T>>, remove_reference_t<U>>>
-using _forward_like_t = conditional_t<is_rvalue_reference_v<T&&>, Tmp &&, Tmp &>;
-
-template <class T, class U> [[nodiscard]] constexpr decltype(auto) forward_like(U &&u) noexcept {
-  return static_cast<_forward_like_t<T, U>>(u);
+template <class T, class U> constexpr decltype(auto) forward_like(U&& x) noexcept {
+  constexpr bool is_adding_const = is_const_v<remove_reference_t<T>>;
+  if constexpr (is_lvalue_reference_v<T &&>) {
+    if constexpr (is_adding_const)
+      return as_const(x);
+    else
+      return static_cast<U &>(x);
+  } else {
+    if constexpr (is_adding_const)
+      return move(as_const(x));
+    else
+      return move(x);
+  }
 }
+
 
 } // namespace aria
