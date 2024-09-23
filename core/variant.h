@@ -76,11 +76,6 @@ template <class S1, class S2, class Func> constexpr decltype(auto) bivisit_with_
   }
 }
 
-template <class S1, class S2> void construct_from(S1 &dest, S2 &&src, size_t index) {
-  auto f = [](auto &dest_head, auto &&src_head) { construct_at(&dest_head, src_head); }; // todo forward src_head
-  bivisit_with_index(f, dest, forward<S2>(src), index);
-}
-
 } // namespace _variant
 
 //------------------------- overload match detector -------------------------
@@ -115,9 +110,13 @@ public:
   constexpr variant(T &&t) : Storage(integral_constant<size_t, Idx>(), forward<T>(t)), which(Idx) {}
 
   constexpr variant(const variant &rhs) : which(rhs.which) {
-    if (!rhs.valueless_by_exception()) {
-      _variant::construct_from(storage(), rhs.storage(), rhs.index());
-    }
+    if (!rhs.valueless_by_exception()) 
+      construct_from(rhs.storage(), rhs.index());
+  }
+
+  constexpr variant(variant &&rhs) noexcept : which(rhs.which) {
+    if (!rhs.valueless_by_exception())
+      construct_from(move(rhs.storage()), rhs.index());   
   }
 
   constexpr size_t index() const noexcept { return which; }
@@ -133,6 +132,11 @@ private:
       _variant::visit_with_index(f, storage(), which);
       which = variant_npos;
     }
+  }
+
+  template <class S> void construct_from(S &&src, size_t index) {
+    auto f = []<typename T>(auto &dest_head, T &&src_head) { construct_at(&dest_head, forward<T>(src_head)); }; 
+    _variant::bivisit_with_index(f, storage(), forward<S>(src), index);
   }
 
   size_t which = variant_npos;

@@ -1,5 +1,6 @@
 #include "variant.h"
 #include "gtest/gtest.h"
+#include "mystring.h"
 
 using namespace aria;
 
@@ -66,10 +67,12 @@ struct Counter {
   static inline int n_dtor = 0;
   static inline int n_ctor = 0;
   static inline int n_copy_ctor = 0;
+  static inline int n_move_ctor = 0;
   static void init() {
     n_ctor = 0;
     n_dtor = 0;
     n_copy_ctor = 0;
+    n_move_ctor = 0;
   }
 };
 
@@ -77,7 +80,8 @@ struct A {
   explicit A() { Counter::n_ctor++;  }
   ~A() { Counter::n_dtor++; }
   A(const A &) { Counter::n_copy_ctor++; }
-  A(A &&) = default;
+  A(A &&) noexcept  { Counter::n_move_ctor++; }
+  
   A &operator=(const A &) = default;
   A &operator=( A &&) = default;
 
@@ -126,5 +130,33 @@ TEST(test_variant, copy_construct) {
     EXPECT_EQ(b.index(), 2);
     EXPECT_TRUE(holds_alternative<char>(b));
     EXPECT_EQ(get<char>(b), 'g');
+  }
+}
+
+TEST(test_variant, move_construct) {
+  using var = variant<int, A, aria::string>;
+  {
+    A a;
+    var v(a);
+    Counter::init();
+    {
+      var u(move(v));
+      EXPECT_EQ(u.index(), 1);
+      EXPECT_TRUE(holds_alternative<A>(u));
+      EXPECT_EQ(Counter::n_move_ctor, 1);
+      EXPECT_EQ(Counter::n_dtor, 0);
+    }
+    EXPECT_EQ(Counter::n_dtor, 1);
+  }
+  {
+    string s = "haha";
+    var a(s);
+    var b(move(a));
+    EXPECT_EQ(b.index(), 2);
+    EXPECT_TRUE(holds_alternative<string>(b));
+    EXPECT_EQ(get<string>(b), "haha");
+    EXPECT_EQ(a.index(), 2);
+    EXPECT_TRUE(holds_alternative<string>(a));
+    EXPECT_EQ(get<string>(a), "");
   }
 }

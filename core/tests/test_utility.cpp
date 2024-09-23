@@ -130,3 +130,12 @@ TEST(test_tuple, basic) {
   }
   { tuple<int, int> p('a', 1u); }
 }
+
+TEST(test_utility, forward_like) {
+  int a = 0;
+  double b = 0;
+  static_assert(same_as<decltype(forward_like<int &>(b)), double &>);
+  static_assert(same_as<decltype(forward_like<int &&>(b)), double &&>);
+  static_assert(same_as<decltype(forward_like<decltype(a)>(b)), double &>);
+  static_assert(same_as<decltype(forward_like<decltype(move(a))>(b)), double &&>);
+}
